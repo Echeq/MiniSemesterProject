@@ -7,8 +7,8 @@ Works on desktop and mobile phones.
 
 | Role | Name |
 |------|------|
-| Frontend Lead & UI Specialist | @goanarbolkong |
-| Backend Lead & API Architect | @MemerZxZ |
+| Frontend Lead & UI Specialist | @MemerZxZ |
+| Backend Lead & API Architect | @goanarbolkong |
 | Project Manager & Fullstack QA | @Echeq |
 
 ## Tech Stack
