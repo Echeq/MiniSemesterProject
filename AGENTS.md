@@ -17,19 +17,16 @@ Project state: **scaffold** (no source code or package.json yet).
 
 ## Team
 
-- **Frontend** (`frontend/src/`) — @goanarbolkong
-- **Backend** (Supabase) — @MemerZxZ
+- **Frontend** (`frontend/src/`) — @MemerZxZ
+- **Backend** (Supabase) — @goanarbolkong
 - **PM/QA** — @Echeq
 
 ## Setup
 
-```bash
-cd frontend
-npm create vite@latest . -- --template react
-npm install supabase @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
-```
+See:
 
-Create `frontend/.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- [Supabase setup](docs/setup/supabase.md) — Create project, get API keys, `.env`
+- [npm setup](docs/setup/npm.md) — Scaffold Vite, install deps, run dev server
 
 **Gotcha:** Backend is pure Supabase — no server code. The `backend/src/` subdirectories (controllers, routes, services) exist only for Edge Functions. Schema goes in `supabase/`.
 
