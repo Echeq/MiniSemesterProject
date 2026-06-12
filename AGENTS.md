@@ -1,6 +1,10 @@
 # AGENTS.md — TaskFlow
 
-Project state: **scaffold** (no source code or package.json yet).
+Project state: **backend ready, frontend implemented**. Database schema, RLS,
+and realtime config live in `supabase/` (see `supabase/README.md` for the API
+contract). Frontend (React + Vite + Tailwind v4 + dnd-kit) lives in
+`frontend/src/` — auth, Kanban board with drag & drop, and realtime sync are
+in place. Needs `frontend/.env` credentials to run against a live project.
 
 ## AI Commands
 
