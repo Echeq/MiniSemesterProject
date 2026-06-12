@@ -9,6 +9,12 @@ dist/
 .env.local
 .env.*.local
 
+# Temporary plans
+.opencode/plans/
+
+# Orphaned root artifact
+/package-lock.json
+
 # OS
 .DS_Store
 Thumbs.db
