@@ -1,26 +1,24 @@
-# npm setup (first time only)
+# npm setup
 
-1. Navigate to `frontend/`:
-   ```bash
-   cd frontend
-   ```
-2. Scaffold a Vite + React project:
-   ```bash
-   npm create vite@latest . -- --template react
-   ```
-   This creates `package.json`, `vite.config.js`, `index.html`, and a default `src/` with App.jsx.
-3. Install project dependencies:
-   ```bash
-   npm install supabase @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
-   ```
-   - `supabase` — Supabase client SDK
-   - `@dnd-kit/core` — Drag & drop engine
-   - `@dnd-kit/sortable` — Sortable presets for Kanban columns
-   - `@dnd-kit/utilities` — CSS transform & measurement helpers
-
-## Run dev server
+## Para nuevos desarrolladores (clonando el repo)
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
+
+Esto instala todas las dependencias ya declaradas en `package.json` y levanta el servidor de desarrollo en `http://localhost:5173`.
+
+## Comandos disponibles
+
+| Comando | Acción |
+|---|---|
+| `npm run dev` | Inicia servidor de desarrollo Vite |
+| `npm run build` | Typecheck (`tsc -b`) + build producción (`vite build`) |
+| `npm run preview` | Previsualiza el build de producción |
+
+## Notas
+
+- Todos los comandos se ejecutan desde `frontend/`. No hay `package.json` en la raíz del proyecto.
+- `.env` va en `frontend/` (ver [Supabase setup](supabase.md)).

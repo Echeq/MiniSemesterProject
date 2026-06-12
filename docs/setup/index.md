@@ -1,6 +1,6 @@
 # Setup
 
-Choose a guide below:
+Elegí la guía según tu situación:
 
-- [Supabase setup](supabase.md) — Create a Supabase project, get API keys, configure `.env`
-- [npm setup](npm.md) — Scaffold Vite + React, install dependencies, run dev server
+- **[npm setup](npm.md)** — Instalar dependencias y correr el proyecto
+- **[Supabase setup](supabase.md)** — Configurar Supabase y variables de entorno
