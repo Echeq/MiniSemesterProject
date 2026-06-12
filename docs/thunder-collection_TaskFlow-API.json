@@ -1,0 +1,224 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "TaskFlow API",
+  "created": "2026-06-12",
+  "folders": [
+    {
+      "name": "Auth",
+      "containerId": "",
+      "created": "2026-06-12",
+      "sortNum": 10
+    },
+    {
+      "name": "Tasks",
+      "containerId": "",
+      "created": "2026-06-12",
+      "sortNum": 20
+    },
+    {
+      "name": "Profiles",
+      "containerId": "",
+      "created": "2026-06-12",
+      "sortNum": 30
+    }
+  ],
+  "requests": [
+    {
+      "name": "Sign In (dev account)",
+      "containerId": "Auth",
+      "method": "POST",
+      "sortNum": 10,
+      "url": "{{supabaseUrl}}/auth/v1/token?grant_type=password",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"email\": \"dev@taskflow.local\",\n  \"password\": \"devpass123\"\n}"
+      },
+      "preScript": "",
+      "testScript": "const json = JSON.parse(req.body);\r\nconst res = JSON.parse(res.text);\r\nif (res.access_token) {\r\n  thunder.setEnvVar('accessToken', res.access_token);\r\n  thunder.setEnvVar('userId', res.user.id);\r\n  thunder.setEnvVar('userEmail', res.user.email);\r\n}"
+    },
+    {
+      "name": "Get Current User",
+      "containerId": "Auth",
+      "method": "GET",
+      "sortNum": 20,
+      "url": "{{supabaseUrl}}/auth/v1/user",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Sign Out",
+      "containerId": "Auth",
+      "method": "POST",
+      "sortNum": 30,
+      "url": "{{supabaseUrl}}/auth/v1/logout",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "List All Tasks",
+      "containerId": "Tasks",
+      "method": "GET",
+      "sortNum": 10,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?select=*&order=position.asc",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "List Tasks with Assignee Profile",
+      "containerId": "Tasks",
+      "method": "GET",
+      "sortNum": 15,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?select=*,assignee:profiles!tasks_assignee_fkey(display_name,avatar_url)&order=position.asc",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Get Task by ID",
+      "containerId": "Tasks",
+      "method": "GET",
+      "sortNum": 20,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}&select=*",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Create Task (To Do)",
+      "containerId": "Tasks",
+      "method": "POST",
+      "sortNum": 30,
+      "url": "{{supabaseUrl}}/rest/v1/tasks",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"title\": \"Thunder Client test\",\n  \"description\": \"Created from Thunder Client\",\n  \"status\": \"todo\",\n  \"position\": 1024,\n  \"created_by\": \"{{userId}}\"\n}"
+      },
+      "preScript": "",
+      "testScript": "const res = JSON.parse(res.text);\r\nif (res[0]?.id) {\r\n  thunder.setEnvVar('taskId', res[0].id);\r\n}"
+    },
+    {
+      "name": "Update Task Title",
+      "containerId": "Tasks",
+      "method": "PATCH",
+      "sortNum": 40,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"title\": \"Updated title via PATCH\",\n  \"status\": \"doing\"\n}"
+      },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Update Task Position (Drag & Drop)",
+      "containerId": "Tasks",
+      "method": "PATCH",
+      "sortNum": 50,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"position\": 2500,\n  \"status\": \"done\"\n}"
+      },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Delete Task",
+      "containerId": "Tasks",
+      "method": "DELETE",
+      "sortNum": 60,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "List Profiles",
+      "containerId": "Profiles",
+      "method": "GET",
+      "sortNum": 10,
+      "url": "{{supabaseUrl}}/rest/v1/profiles?select=*",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Anonymous: List Tasks (should be empty)",
+      "containerId": "Tasks",
+      "method": "GET",
+      "sortNum": 5,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?select=*",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    }
+  ]
+}

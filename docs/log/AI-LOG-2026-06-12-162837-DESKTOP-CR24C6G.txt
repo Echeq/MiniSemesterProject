@@ -1,0 +1,115 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-12
+Time:         16:28:37
+Git Branch:   supabase-backend
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Create/update AGENTS.md with high-signal repo instructions
+2. Test the API and explain how to use it
+3. Generate Thunder Client routes for testing the API
+4. Step-by-step guide for manual Thunder Client Activity requests
+5. @ai-log — generate this report confirming APIs were successfully created
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. AGENTS.md rewritten with verified info: stack versions, exact npm commands,
+   frontend entry flow, pure-Supabase architecture note (backend/ is stale),
+   float-based drag-drop positioning scheme (critical for dnd-kit), real .env
+   values, and gotchas about composables/, docs/structure.md inaccuracies,
+   and Tailwind v4 Vite plugin.
+
+2. Installed vitest + dotenv, configured test runner, and wrote 21 tests
+   (20 passed on first run, 1 fixed — column-level grant test).
+   - Auth: sign in (valid + invalid), get user (authed + anon)
+   - Tasks CRUD: create (success + validation + RLS), read (list + join +
+     anon), update (title, status, column grant), delete (owner + anon)
+   - Profiles: list (authed + anon)
+   - positionBetween: midpoint, max+1024, before-first, default
+
+3. Created docs/thunder-collection_TaskFlow-API.json (14 requests, 3 folders)
+   with pre-request scripts to auto-set env vars.
+
+4. When user couldn't import (Thunder Client paywall), provided step-by-step
+   manual Activity creation guide with individual copy-paste instructions.
+
+5. This log file.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md                              (modified — rewritten entirely)
+frontend/package.json                  (modified — added test scripts + deps)
+frontend/package-lock.json             (modified — vitest + dotenv deps)
+frontend/vitest.config.js              (new — vitest config)
+frontend/tests/api.test.js             (new — 21 API integration tests)
+docs/thunder-collection_TaskFlow-API.json (new — Thunder Client collection)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+=== AGENTS.md (before) ===
+42-line file with stale info:
+- Outdated team table, setup section with npm create vite@latest (wrong)
+- Claimed backend/src/ subdirectories exist (they don't on disk)
+- No dev commands, no architecture flow, no positioning scheme
+- No environment variables section
+
+=== frontend/package.json (before) ===
+- scripts: { dev, build, lint, preview }
+- devDependencies: no test runner, no dotenv
+
+(Other files are new — no "before" content)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+=== AGENTS.md (after) ===
+Project state: frontend implemented, backend is pure Supabase.
+Stack: React 19 + Vite 8, Tailwind CSS v4, @dnd-kit.
+Backend: Supabase (PostgreSQL + Auth + Realtime).
+Commands from frontend/: npm run dev, npm run lint, npm run build.
+Architecture: main.jsx → App.jsx → AuthGate → AuthForm/BoardPage.
+API client returns null if env vars missing (graceful fallback).
+Realtime: tasks table in supabase_realtime, FULL replica identity.
+Position: float8 column, new=max+1024, reorder=midpoint, end=last+1024.
+Environment: explicit .env template with project ref and anon key.
+AI Commands: @ai-log, @ai-commit (conventional commit types).
+Gotchas: backend/ stale artifacts, migrations pre-applied, composables/
+empty, docs/structure.md inaccurate, Tailwind v4 no config file.
+
+=== frontend/package.json (after) ===
+Added scripts: test: "vitest run", test:watch: "vitest"
+Added devDependencies: dotenv ^17.4.2, vitest ^4.1.8
+
+=== frontend/vitest.config.js ===
+Uses @vitejs/plugin-react + @tailwindcss/vite plugins.
+config: { globals: true, testTimeout: 15000 }
+
+=== frontend/tests/api.test.js ===
+21 tests covering:
+- POST /auth/v1/token: valid sign in, invalid password
+- GET /auth/v1/user: authenticated, unauthenticated
+- POST /rest/v1/tasks: create, empty title rejected, wrong created_by rejected
+- GET /rest/v1/tasks: list, join assignee profile, anonymous empty
+- PATCH /rest/v1/tasks: title, status, cannot change created_by (42501)
+- DELETE /rest/v1/tasks: owner delete, anonymous silent block
+- GET /rest/v1/profiles: authenticated, anonymous empty
+- positionBetween: midpoint, max+1024, before-first, default
+
+=== docs/thunder-collection_TaskFlow-API.json ===
+14 requests in 3 folders (Auth, Tasks, Profiles). Uses {{env}} variables
+with testScripts to auto-set accessToken, userId, taskId on Sign In and
+Create Task responses.
