@@ -1,6 +1,6 @@
 # MiniSemesterProject
 
-A full-stack project with Vue 3 frontend and NestJS backend.
+A Kanban board built with React 19 + Supabase.
 
 ## Team
 
@@ -12,40 +12,34 @@ A full-stack project with Vue 3 frontend and NestJS backend.
 
 ## Tech Stack
 
-- **Frontend:** Vue 3 + Vite, Pinia, Three.js / TresJS, vue-draggable-plus
-- **Backend:** NestJS 11, Prisma 6, Socket.IO, Redis (ioredis)
+- **Frontend:** React 19 + Vite 8, Tailwind CSS v4, TypeScript 6, @dnd-kit
+- **Backend:** Supabase (Auth, PostgREST, Realtime)
 - **Export:** xlsx, jsPDF
 - **AI Assistant:** OpenCode
 
 ## Features
 
-- Kanban board (drag & drop with vue-draggable-plus)
-- 3D visualizations with Three.js / TresJS
-- Real-time updates via WebSocket (Socket.IO)
-- Task management with priorities, due dates, and tags
+- Kanban board (drag & drop with @dnd-kit)
+- Real-time updates via Supabase Realtime
+- Task management with due dates and assignments
 - Export to XLSX and PDF
 - AI-powered development with auto-logging and auto-committing
 
-## Prisma Schema
+## Database
 
-Six models in `backend/prisma/schema.prisma`:
+The database runs on **Supabase** (PostgreSQL). Migrations are in `supabase/migrations/`.
 
-- **User** — Auth, project memberships, assigned tasks
-- **Project** — Kanban projects with members, columns, tasks
-- **ProjectMember** — Many-to-many User ↔ Project with role
-- **BoardColumn** — Named column per project mapped to a TaskStatus
-- **Task** — Title, description, status, priority, due date, order, assignee, tags
-- **Tag** — Many-to-many with Task
+Two tables: `profiles` (one per auth user) and `tasks` (Kanban cards with status `todo`/`doing`/`done`, fractional-position ordering, and RLS policies).
 
 ## Quick Links
 
 | Guide | Description |
 |-------|-------------|
+| [API Reference](docs/api.md) | Supabase auth, tasks CRUD, realtime subscriptions |
 | [Project Structure](docs/guide/structure.md) | Full directory tree |
-| [Setup index](docs/setup/index.md) | Choose backend or frontend setup |
+| [Frontend setup](docs/setup/frontend.md) | React 19, Vite, dependencies |
 | [Backend setup](docs/setup/backend.md) | NestJS, Prisma, PostgreSQL, Redis |
-| [Frontend setup](docs/setup/frontend.md) | Vue 3, Vite, dependencies |
-| [Prisma schema](backend/prisma/schema.prisma) | Database models |
+| [Supabase setup](docs/setup/supabase.md) | Supabase project, credentials, RLS |
 | [AI Guide](docs/guide/ai.md) | OpenCode, @ai-log, @ai-commit, workflow |
 
 ## AI Skills

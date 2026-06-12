@@ -1,0 +1,66 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-12
+Time:         16:48:55
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User asked to create an API documentation file at /docs/api.md explaining the API surface and how to use it (in English), then add it to the Quick Links table in README.md.
+
+Implicitly: also update AGENTS.md first (previous turn).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Investigated the codebase to understand the current API surface (Supabase auth, tasks CRUD, realtime, profiles).
+2. Wrote docs/api.md covering:
+   - Supabase client setup
+   - Authentication (sign up, sign in, session, sign out, state listener)
+   - Tables: profiles (schema, RLS, read/update) and tasks (schema, RLS, full CRUD, fractional-index reordering)
+   - Realtime subscriptions (postgres_changes on tasks)
+   - Seed data and migrations
+   - Thunder Client collection
+   - Legacy NestJS backend note
+3. Updated README.md:
+   - Changed description from "Vue 3 + NestJS" to "React 19 + Supabase"
+   - Updated Tech Stack, Features, Database sections
+   - Added API Reference link to Quick Links
+4. Updated AGENTS.md (previous turn) to reflect React 19 + Supabase stack and mark Vue/NestJS code as stale.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+README.md
+docs/api.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md — Older version documented Vue 3 + NestJS stack, out-of-date commands, stale Prisma schema, setup section, no mention of Supabase or mid-migration state. (Full diff in git output above.)
+
+README.md — Older version described "Vue 3 frontend and NestJS backend" with old tech stack, Prisma Schema section, stale Quick Links. (Full diff in git output above.)
+
+docs/api.md — Did not exist (new file).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md — Restructured with: mid-migration state banner, React 19 + Supabase stack table, updated commands, Supabase-centric architecture section, stale backend/frontend code warnings, conventions with TypeScript/lint commands.
+
+README.md — Updated to: "Kanban board built with React 19 + Supabase", current tech stack, simplified Database section, API Reference and Supabase setup links in Quick Links table.
+
+docs/api.md — New file with 286 lines (full content above). Covers Supabase client setup, Auth API, profiles and tasks tables (schema, RLS, CRUD, fractional indexing), Realtime subscriptions, seed data, migrations reference, Thunder Client collection, and legacy NestJS note.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
