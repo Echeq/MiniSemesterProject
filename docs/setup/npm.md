@@ -1,6 +1,6 @@
 # npm setup
 
-## Para nuevos desarrolladores (clonando el repo)
+## For new developers (cloning the repo)
 
 ```bash
 cd frontend
@@ -8,17 +8,17 @@ npm install
 npm run dev
 ```
 
-Esto instala todas las dependencias ya declaradas en `package.json` y levanta el servidor de desarrollo en `http://localhost:5173`.
+This installs all dependencies declared in `package.json` and starts the Vite dev server at `http://localhost:5173`.
 
-## Comandos disponibles
+## Available commands
 
-| Comando | Acción |
+| Command | Action |
 |---|---|
-| `npm run dev` | Inicia servidor de desarrollo Vite |
-| `npm run build` | Typecheck (`tsc -b`) + build producción (`vite build`) |
-| `npm run preview` | Previsualiza el build de producción |
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Typecheck (`tsc -b`) + production build (`vite build`) |
+| `npm run preview` | Preview the production build |
 
-## Notas
+## Notes
 
-- Todos los comandos se ejecutan desde `frontend/`. No hay `package.json` en la raíz del proyecto.
-- `.env` va en `frontend/` (ver [Supabase setup](supabase.md)).
+- All commands run from `frontend/`. There is no `package.json` at the project root.
+- `.env` goes in `frontend/` (see [Supabase setup](supabase.md)).

@@ -32,7 +32,7 @@ Works on desktop and mobile phones.
 | [Project Structure](docs/guide/structure.md) | Full directory tree |
 | [Setup index](docs/setup/index.md) | Choose Supabase or npm setup guide |
 | [Supabase setup](docs/setup/supabase.md) | Create project, get API keys, .env |
-| [npm setup](docs/setup/npm.md) | Scaffold Vite, install deps, run dev server |
+| [npm setup](docs/setup/npm.md) | Install dependencies and run the project |
 | [AI Guide](docs/guide/ai.md) | OpenCode, @ai-log, @ai-commit, workflow |
 
 ## AI Skills

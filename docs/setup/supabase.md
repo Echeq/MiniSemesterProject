@@ -1,39 +1,39 @@
 # Supabase setup
 
-## Opción A: Usar el proyecto existente (recomendado)
+## Option A: Use the existing project (recommended)
 
-Si otro miembro del equipo ya creó el proyecto Supabase, pedile las siguientes credenciales desde **Project Settings > API**:
+If another team member has already created the Supabase project, ask them for these credentials from **Project Settings > API**:
 
 - **Project URL** — `https://xxxxx.supabase.co`
-- **anon public key** — Clave pública que empieza con `sb_publishable_...`
+- **anon public key** — Public key starting with `sb_publishable_...`
 
-Luego creá `frontend/.env`:
+Then create `frontend/.env`:
 
 ```env
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_tu_key_aqui
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
 ```
 
-## Opción B: Crear un proyecto nuevo
+## Option B: Create a new project
 
-1. Crear cuenta gratis en https://supabase.com
-2. Crear un nuevo proyecto (elegí una región cercana)
-3. Una vez creado, andá a **Project Settings > API**
-4. Copiá **Project URL** y **anon public key**
-5. Creá `frontend/.env` como en la Opción A
+1. Create a free account at https://supabase.com
+2. Create a new project (choose a nearby region)
+3. Once created, go to **Project Settings > API**
+4. Copy the **Project URL** and **anon public key**
+5. Create `frontend/.env` as in Option A
 
-## Variables de entorno
+## Environment variables
 
-| Variable | Requerida | Defecto | Descripción |
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `VITE_SUPABASE_URL` | Sí | — | URL del proyecto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Sí | — | Anon public key |
-| `VITE_API_BASE_URL` | No | `http://localhost:3000/api` | Solo si usás un backend custom |
+| `VITE_SUPABASE_URL` | Yes | — | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Yes | — | Anon public key |
+| `VITE_API_BASE_URL` | No | `http://localhost:3000/api` | Only if using a custom backend |
 
-## Seguridad
+## Security
 
-La **anon key** es segura para usar en el cliente porque Supabase usa **Row Level Security (RLS)** en las tablas. Si no configurás RLS, las tablas están protegidas por defecto. Consultá con el backend lead (@goanarbolkong) antes de modificar políticas de RLS.
+The **anon key** is safe to use on the client because Supabase uses **Row Level Security (RLS)** on tables. If RLS is not configured, tables are protected by default. Consult the backend lead (@goanarbolkong) before modifying RLS policies.
 
 ## Backend
 
-El backend es puro Supabase — no hay servidor que correr. Los esquemas de base de datos van en `supabase/` y las Edge Functions en `backend/src/`.
+The backend is pure Supabase — no server to run. Database schemas live in `supabase/` and Edge Functions in `backend/src/`.

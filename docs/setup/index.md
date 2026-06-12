@@ -1,6 +1,6 @@
 # Setup
 
-Elegí la guía según tu situación:
+Choose the guide for your situation:
 
-- **[npm setup](npm.md)** — Instalar dependencias y correr el proyecto
-- **[Supabase setup](supabase.md)** — Configurar Supabase y variables de entorno
+- **[npm setup](npm.md)** — Install dependencies and run the project
+- **[Supabase setup](supabase.md)** — Configure Supabase and environment variables
