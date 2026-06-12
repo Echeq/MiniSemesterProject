@@ -2,10 +2,10 @@
 
 Project state: **scaffold** (no source code or package.json yet).
 
-## Logging
+## AI Commands
 
-After every AI interaction, type `@ai-log` to log it.  
-Logs go to `docs/log/`. Skill in `.opencode/skills/ai-log-generate/SKILL.md`.
+- `@ai-log` — Log the last interaction to `docs/log/`
+- `@ai-commit` — Stage all changes and create a conventional commit
 
 ## Stack
 
