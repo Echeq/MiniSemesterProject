@@ -17,7 +17,7 @@ export default function Column({ status, tasks, onTaskClick }) {
 
   return (
     <div
-      className={`flex w-72 flex-shrink-0 flex-col rounded-xl border-t-4 bg-slate-50 sm:w-80 ${ACCENTS[status]}`}
+      className={`flex min-w-[260px] flex-1 flex-col rounded-xl border-t-4 bg-slate-50 sm:min-w-72 sm:flex-none sm:w-80 ${ACCENTS[status]}`}
     >
       <div className="flex items-center justify-between px-3 py-2">
         <h2 className="text-sm font-semibold text-slate-700">

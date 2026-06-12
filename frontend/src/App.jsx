@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
+import { useProfile } from './hooks/useProfile'
 import { useBoard } from './hooks/useBoard'
 import AuthForm from './components/AuthForm'
 import Header from './components/Header'
 import Board from './components/Board'
 import TaskModal from './components/TaskModal'
+import ProfileSettings from './components/ProfileSettings'
 
 function MissingEnv() {
   return (
@@ -26,33 +28,81 @@ function MissingEnv() {
   )
 }
 
+function ProfileMenu({ displayName, avatarUrl, onClick }) {
+  const initial = (displayName ?? '?')[0]?.toUpperCase() || '?'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full bg-white pl-1 pr-3 py-1 shadow-md hover:shadow-lg transition-shadow active:scale-95"
+    >
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt=""
+          className="h-9 w-9 rounded-full object-cover"
+        />
+      ) : (
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+          {initial}
+        </span>
+      )}
+      <span className="hidden text-sm font-medium text-slate-700 sm:inline">
+        {displayName}
+      </span>
+    </button>
+  )
+}
+
 function BoardPage({ session }) {
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useBoard()
-  const [modal, setModal] = useState(null) // null | 'new' | task object
+  const { profile, updateProfile } = useProfile(session.user.id)
+  const [taskModal, setTaskModal] = useState(null)
+  const [profileModal, setProfileModal] = useState(false)
+
+  const displayName =
+    profile?.display_name ||
+    session.user.user_metadata?.display_name ||
+    session.user.email
 
   return (
-    <div className="flex h-full flex-col bg-slate-100">
-      <Header session={session} onNewTask={() => setModal('new')} />
+    <div className="flex h-full flex-col bg-slate-100 pb-20 sm:pb-16">
+      <Header displayName={displayName} onNewTask={() => setTaskModal('new')} />
       {error && (
         <p className="px-6 py-2 text-sm text-red-600">Error: {error}</p>
       )}
-      {loading ? (
-        <p className="p-6 text-sm text-slate-500">Loading board…</p>
-      ) : (
-        <Board
-          tasks={tasks}
-          updateTask={updateTask}
-          onTaskClick={(task) => setModal(task)}
-        />
-      )}
-      {modal && (
+      <div className="relative flex min-h-0 flex-1">
+        {loading ? (
+          <p className="p-6 text-sm text-slate-500">Loading board…</p>
+        ) : (
+          <Board
+            tasks={tasks}
+            updateTask={updateTask}
+            onTaskClick={(task) => setTaskModal(task)}
+          />
+        )}
+      </div>
+      {taskModal && (
         <TaskModal
-          task={modal === 'new' ? null : modal}
+          task={taskModal === 'new' ? null : taskModal}
           onCreate={createTask}
           onUpdate={updateTask}
           onDelete={deleteTask}
-          onClose={() => setModal(null)}
+          onClose={() => setTaskModal(null)}
+        />
+      )}
+      <ProfileMenu
+        displayName={displayName}
+        avatarUrl={profile?.avatar_url}
+        onClick={() => setProfileModal(true)}
+      />
+      {profileModal && (
+        <ProfileSettings
+          profile={profile}
+          onUpdate={updateProfile}
+          onClose={() => setProfileModal(false)}
         />
       )}
     </div>

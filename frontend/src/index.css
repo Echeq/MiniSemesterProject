@@ -5,3 +5,9 @@ body,
 #root {
   height: 100%;
 }
+
+/* Prevent horizontal overscroll / swipe-back on mobile when scrolling the board */
+body {
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}

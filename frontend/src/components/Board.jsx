@@ -64,7 +64,7 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+      <div className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain p-3 sm:gap-4 sm:p-6">
         {STATUSES.map((status) => (
           <Column
             key={status}

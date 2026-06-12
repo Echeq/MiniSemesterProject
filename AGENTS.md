@@ -5,67 +5,46 @@
 - `@ai-log` — Log the last interaction to `docs/log/`
 - `@ai-commit` — Stage all changes and create a conventional commit
 
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Vue 3 + Vite, Pinia, Three.js / TresJS, vue-draggable-plus |
-| Backend | NestJS 11, Prisma 6, Socket.IO, Redis (ioredis) |
-| Export | xlsx, jsPDF |
-| AI Assistant | OpenCode |
-
-## Team
-
-- **Frontend** (`frontend/`) — @MemerZxZ
-- **Backend/API** (`backend/`) — @goanarbolkong
-- **PM/QA** — @Echeq
-
 ## Commands
 
 | Directory | Command | Action |
 |---|---|---|
-| `frontend/` | `npm run dev` | Start Vite dev server |
-| `frontend/` | `npm run build` | Typecheck + production build |
-| `backend/` | `npm run start:dev` | Start NestJS dev server |
+| `frontend/` | `npm run dev` | Vite dev server |
+| `frontend/` | `npm run build` | Production build (no typecheck) |
+| `frontend/` | `npm test` | Run vitest |
+| `backend/` | `npm run start:dev` | NestJS dev server (--watch) |
+| `backend/` | `npm run lint` | ESLint --fix (flat config in `eslint.config.mjs`) |
+| `backend/` | `npm test` | Jest unit tests (`*.spec.ts`) |
+| `backend/` | `npm run test:e2e` | Jest e2e tests (`*.e2e-spec.ts`) |
+| `backend/` | `npx prisma generate` | Regenerate Prisma client (`backend/generated/prisma/`) |
+| `backend/` | `npx prisma migrate dev` | Run pending Prisma migrations |
 | `backend/` | `npx prisma studio` | Open Prisma DB browser |
-| `backend/` | `npx prisma migrate dev` | Run pending migrations |
-| `backend/` | `npx prisma generate` | Regenerate Prisma client after schema changes |
-
-## Prisma schema (`backend/prisma/schema.prisma`)
-
-**Enums:** `Role`, `TaskStatus`, `Priority`, `ProjectStatus`
-
-**Models:**
-- **User** — Auth, projects (via ProjectMember), assigned tasks
-- **Project** — Kanban projects with members, columns, tasks
-- **ProjectMember** — Many-to-many User <-> Project with role
-- **BoardColumn** — Named column mapped to a TaskStatus per project
-- **Task** — Title, description, status, priority, due date, order, assignee, tags
-- **Tag** — Many-to-many with Task (implicit join table)
+| `supabase/` | `supabase start` | Start local Supabase |
+| `supabase/` | `supabase db reset` | Run all migrations + seed |
 
 ## Architecture
 
-### Backend (`backend/`)
-- NestJS modules in `src/` (app module scaffolded, add feature modules as needed)
-- Prisma service in `src/prisma/` (to be created when adding DB queries)
-- Prisma Client generated to `backend/generated/prisma/` — never committed
-- Socket.IO gateway in `src/gateways/` (to be created)
-- `.env` vars: `DATABASE_URL` (PostgreSQL), `REDIS_URL` (Redis)
+- **Frontend** is **React 19 + Vite 8 + Tailwind 4 + @dnd-kit + Supabase**.  
+  Entry: `frontend/src/main.jsx` → `App.jsx`.  
+  **Vue 3 scaffolding** (`App.vue`, `main.ts`, `pages/`, `stores/`) exists but is **dead code** — do not edit.
+- **Supabase** is the *actual* current backend (auth, DB, realtime).  
+  Migrations in `supabase/migrations/`. Tasks use `task_status` enum: `todo | doing | done`.  
+  Drag-and-drop ordering uses a custom `positionBetween()` scheme (see `tests/api.test.js` and `supabase/README.md`).
+- **NestJS backend** (`backend/`) is scaffolded only (`GET /` → "Hello World!").  
+  No Prisma migrations directory exists yet. Feature modules (Prisma service, Socket.IO gateway) not built.
+- **No CI/CD** configured.
+- OpenCode config is in `.opencode/` (no `opencode.json` at root).
 
-### Frontend (`frontend/`)
-- Vue 3 SPA with TypeScript, Pinia stores, Vue Router
-- Key dirs: `src/pages/`, `src/stores/`, `src/api/`, `src/composables/`, `src/components/`
-- `.env` vars: `VITE_API_BASE_URL` (defaults to `http://localhost:3000`)
+## Supabase constraints
 
-## Setup
-
-- **`.env` files**: `frontend/.env` and `backend/.env` — never committed.
-- **Backend** requires a running PostgreSQL instance (local or remote). Configure `DATABASE_URL` in `backend/.env`.
-- **Redis** is required for Socket.IO adapter. Configure `REDIS_URL` in `backend/.env`.
+| Field | Limit |
+|---|---|
+| `tasks.description` | ≤ 5000 chars |
+| `profiles.display_name` | ≤ 100 chars |
+| Tasks table | RLS enforced, single shared board |
 
 ## Conventions
 
-- `.env` files are never committed.
-- `backend/generated/prisma/` is never committed (in `.gitignore`).
+- `.env` files and `backend/generated/prisma/` are never committed.
 - Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
-- Single frontend package under `frontend/`, single backend package under `backend/` — not a monorepo.
+- Frontend `src/` is **JSX** (not TypeScript). `tsconfig.json` is for config/build tooling only.
