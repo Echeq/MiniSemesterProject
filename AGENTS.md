@@ -1,4 +1,4 @@
-# AGENTS.md — TaskFlow
+# AGENTS.md — MiniSemesterProject
 
 ## AI Commands
 
@@ -9,40 +9,63 @@
 
 | Layer | Technology |
 |---|---|
-| Frontend | React + Vite, Tailwind CSS, @dnd-kit/core |
-| Backend | Supabase (PostgreSQL + Auth + Realtime) |
-| Auth | Supabase Auth |
+| Frontend | Vue 3 + Vite, Pinia, Three.js / TresJS, vue-draggable-plus |
+| Backend | NestJS 11, Prisma 6, Socket.IO, Redis (ioredis) |
+| Export | xlsx, jsPDF |
+| AI Assistant | OpenCode |
 
 ## Team
 
-- **Frontend** (`frontend/src/`) — @MemerZxZ
-- **Backend** (Supabase) — @goanarbolkong
+- **Frontend** (`frontend/`) — @MemerZxZ
+- **Backend/API** (`backend/`) — @goanarbolkong
 - **PM/QA** — @Echeq
 
-## Project state
+## Commands
 
-Auth scaffolded (login/signup pages, AuthContext, ProtectedRoute, supabase client). Kanban features (`components/kanban/`, `components/forms/`), backend Edge Functions (`backend/src/` stubs), and Supabase schema (`supabase/`) not yet implemented.
+| Directory | Command | Action |
+|---|---|---|
+| `frontend/` | `npm run dev` | Start Vite dev server |
+| `frontend/` | `npm run build` | Typecheck + production build |
+| `backend/` | `npm run start:dev` | Start NestJS dev server |
+| `backend/` | `npx prisma studio` | Open Prisma DB browser |
+| `backend/` | `npx prisma migrate dev` | Run pending migrations |
+| `backend/` | `npx prisma generate` | Regenerate Prisma client after schema changes |
 
-## Commands (run from `frontend/`)
+## Prisma schema (`backend/prisma/schema.prisma`)
 
-| Command | Action |
-|---|---|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | `tsc -b && vite build` (typecheck first) |
-| `npm run preview` | Preview production build |
+**Enums:** `Role`, `TaskStatus`, `Priority`, `ProjectStatus`
 
-No lint, test, or format scripts configured yet.
+**Models:**
+- **User** — Auth, projects (via ProjectMember), assigned tasks
+- **Project** — Kanban projects with members, columns, tasks
+- **ProjectMember** — Many-to-many User <-> Project with role
+- **BoardColumn** — Named column mapped to a TaskStatus per project
+- **Task** — Title, description, status, priority, due date, order, assignee, tags
+- **Tag** — Many-to-many with Task (implicit join table)
+
+## Architecture
+
+### Backend (`backend/`)
+- NestJS modules in `src/` (app module scaffolded, add feature modules as needed)
+- Prisma service in `src/prisma/` (to be created when adding DB queries)
+- Prisma Client generated to `backend/generated/prisma/` — never committed
+- Socket.IO gateway in `src/gateways/` (to be created)
+- `.env` vars: `DATABASE_URL` (PostgreSQL), `REDIS_URL` (Redis)
+
+### Frontend (`frontend/`)
+- Vue 3 SPA with TypeScript, Pinia stores, Vue Router
+- Key dirs: `src/pages/`, `src/stores/`, `src/api/`, `src/composables/`, `src/components/`
+- `.env` vars: `VITE_API_BASE_URL` (defaults to `http://localhost:3000`)
 
 ## Setup
 
-- **`.env` file** goes in `frontend/` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (both required). `VITE_API_BASE_URL` is optional (defaults to `http://localhost:3000/api`). See `frontend/.env.example`.
-- **Backend** is pure Supabase — no server code. `backend/src/` subdirectories exist only for Edge Function stubs. Schema goes in `supabase/`.
-- See [Supabase setup](docs/setup/supabase.md) and [npm setup](docs/setup/npm.md).
+- **`.env` files**: `frontend/.env` and `backend/.env` — never committed.
+- **Backend** requires a running PostgreSQL instance (local or remote). Configure `DATABASE_URL` in `backend/.env`.
+- **Redis** is required for Socket.IO adapter. Configure `REDIS_URL` in `backend/.env`.
 
 ## Conventions
 
 - `.env` files are never committed.
-- TypeScript **strict mode** with `noUnusedLocals` and `noUnusedParameters` — no dead code.
-- No path aliases configured (no `@/` imports).
-- Single frontend package under `frontend/`, not a monorepo. No root `package.json`.
+- `backend/generated/prisma/` is never committed (in `.gitignore`).
 - Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+- Single frontend package under `frontend/`, single backend package under `backend/` — not a monorepo.

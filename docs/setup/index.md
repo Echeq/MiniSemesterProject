@@ -1,6 +1,6 @@
 # Setup
 
-Choose the guide for your situation:
+Choose the guide for your area:
 
-- **[npm setup](npm.md)** — Install dependencies and run the project
-- **[Supabase setup](supabase.md)** — Configure Supabase and environment variables
+- **[Backend setup](backend.md)** — NestJS, Prisma, PostgreSQL, Redis
+- **[Frontend setup](frontend.md)** — Vue 3, Vite, dependencies

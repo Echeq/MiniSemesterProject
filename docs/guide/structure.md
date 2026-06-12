@@ -1,41 +1,73 @@
 # Project Structure
 
 ```
-TaskFlow/
+MiniSemesterProject/
 ├── .opencode/
 │   ├── scripts/
-│   │   ├── new-ai-log.sh         # Bash script for AI logging (Mac/Linux)
-│   │   └── new-ai-log.ps1        # PowerShell script for AI logging (Windows)
+│   │   ├── new-ai-log.ps1          # PowerShell script for AI logging (Windows)
+│   │   └── new-ai-log.sh           # Bash script for AI logging (Mac/Linux)
 │   └── skills/
 │       ├── ai-commit/
-│       │   └── SKILL.md           # @ai-commit skill
+│       │   └── SKILL.md            # @ai-commit skill
 │       └── ai-log-generate/
-│           └── SKILL.md           # @ai-log skill
+│           └── SKILL.md            # @ai-log skill
 ├── backend/
-│   └── src/
-│       ├── controllers/           # API route handlers
-│       ├── middleware/             # Auth & validation middleware
-│       ├── routes/                # API route definitions
-│       ├── services/              # Business logic
-│       └── utils/                 # Shared utilities
+│   ├── prisma/
+│   │   └── schema.prisma           # Database models (User, Project, Task, Tag, …)
+│   ├── src/
+│   │   ├── app.controller.ts       # Root NestJS controller
+│   │   ├── app.controller.spec.ts
+│   │   ├── app.module.ts           # Root module (import feature modules here)
+│   │   ├── app.service.ts
+│   │   └── main.ts                 # NestJS entrypoint
+│   ├── test/
+│   │   ├── app.e2e-spec.ts
+│   │   └── jest-e2e.json
+│   ├── .env                        # DATABASE_URL, REDIS_URL
+│   ├── .prettierrc
+│   ├── eslint.config.mjs
+│   ├── nest-cli.json
+│   ├── package.json
+│   ├── prisma.config.ts            # Prisma 6 config (schema path, datasource)
+│   ├── tsconfig.build.json
+│   └── tsconfig.json
 ├── docs/
-│   ├── ai-guide.md                # OpenCode + AI skills guide
-│   ├── log/                       # AI interaction log files
-│   ├── setup.md                   # How to run the project
-│   └── structure.md               # This file
+│   ├── guide/
+│   │   ├── ai.md                   # OpenCode + AI skills guide
+│   │   └── structure.md            # This file
+│   ├── log/                        # AI interaction log files
+│   └── setup/
+│       ├── index.md                # Setup guides index
+│       ├── backend.md              # NestJS + Prisma + Redis setup
+│       ├── frontend.md             # Vue 3 setup
+│       ├── npm.md                  # (legacy)
+│       └── supabase.md             # (legacy)
 ├── frontend/
-│   └── src/
-│       ├── api/                   # Supabase client & API calls
-│       ├── components/
-│       │   ├── forms/             # Task & auth forms
-│       │   ├── kanban/            # Kanban board components
-│       │   └── ui/                # Reusable UI components
-│       ├── contexts/              # React contexts (auth, theme)
-│       ├── hooks/                 # Custom React hooks
-│       ├── pages/                 # Route pages (Login, Board, etc.)
-│       ├── styles/                # Global styles & Tailwind config
-│       └── utils/                 # Shared helpers
-├── supabase/                      # Database schema & Edge Functions
-├── AGENTS.md                      # Instructions for AI workers (/init)
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── client.ts           # Fetch wrapper for backend API
+│   │   ├── assets/
+│   │   ├── components/             # Vue components (add as needed)
+│   │   ├── composables/            # Vue composables (add as needed)
+│   │   ├── pages/
+│   │   │   └── HomePage.vue
+│   │   ├── stores/
+│   │   │   └── task.ts             # Pinia store example
+│   │   ├── App.vue
+│   │   ├── main.ts                 # Vue SPA entrypoint
+│   │   └── style.css
+│   ├── .vscode/
+│   │   └── extensions.json
+│   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+├── supabase/                       # (legacy, empty)
+├── AGENTS.md                       # Instructions for AI workers (/init)
 └── README.md
 ```
