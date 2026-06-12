@@ -1,78 +1,71 @@
-# AGENTS.md — TaskFlow
+# AGENTS.md — MiniSemesterProject
 
-Project state: **frontend implemented, backend is pure Supabase**. Database
-schema, RLS, and realtime config live in `supabase/migrations/` (3 migration
-files applied in order). See `supabase/README.md` for the full API contract.
+## AI Commands
+
+- `@ai-log` — Log the last interaction to `docs/log/`
+- `@ai-commit` — Stage all changes and create a conventional commit
 
 ## Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19 + Vite 8, Tailwind CSS v4, @dnd-kit |
-| Backend | Supabase (PostgreSQL + Auth + Realtime) |
-| Auth | Supabase Auth (email/password) |
+| Frontend | Vue 3 + Vite, Pinia, Three.js / TresJS, vue-draggable-plus |
+| Backend | NestJS 11, Prisma 6, Socket.IO, Redis (ioredis) |
+| Export | xlsx, jsPDF |
+| AI Assistant | OpenCode |
 
-## Commands (run from `frontend/`)
+## Team
 
-```bash
-npm run dev      # Vite dev server → http://localhost:5173
-npm run lint     # ESLint flat config (js, jsx)
-npm run build    # production build
-```
+- **Frontend** (`frontend/`) — @MemerZxZ
+- **Backend/API** (`backend/`) — @goanarbolkong
+- **PM/QA** — @Echeq
 
-No test script exists yet.
+## Commands
+
+| Directory | Command | Action |
+|---|---|---|
+| `frontend/` | `npm run dev` | Start Vite dev server |
+| `frontend/` | `npm run build` | Typecheck + production build |
+| `backend/` | `npm run start:dev` | Start NestJS dev server |
+| `backend/` | `npx prisma studio` | Open Prisma DB browser |
+| `backend/` | `npx prisma migrate dev` | Run pending migrations |
+| `backend/` | `npx prisma generate` | Regenerate Prisma client after schema changes |
+
+## Prisma schema (`backend/prisma/schema.prisma`)
+
+**Enums:** `Role`, `TaskStatus`, `Priority`, `ProjectStatus`
+
+**Models:**
+- **User** — Auth, projects (via ProjectMember), assigned tasks
+- **Project** — Kanban projects with members, columns, tasks
+- **ProjectMember** — Many-to-many User <-> Project with role
+- **BoardColumn** — Named column mapped to a TaskStatus per project
+- **Task** — Title, description, status, priority, due date, order, assignee, tags
+- **Tag** — Many-to-many with Task (implicit join table)
 
 ## Architecture
 
-- **Frontend entry:** `main.jsx` → `App.jsx` → `AuthGate` → `AuthForm` or `BoardPage`
-- **Backend is pure Supabase** — there is no server to run. All CRUD goes
-  through `supabase-js` with RLS enforcing access. The `backend/` directory
-  is stale NestJS build artifacts (no source, no package.json); ignore it.
-- **API client** (`frontend/src/api/supabaseClient.js`) returns `null` if
-  `VITE_SUPABASE_URL` or `VITE_SUPABASE_ANON_KEY` are missing — the app
-  renders a setup hint instead of crashing.
-- **Realtime:** the `tasks` table is in the `supabase_realtime` publication
-  with FULL replica identity. The `useBoard` hook subscribes to `*` changes
-  on `public.tasks`.
+### Backend (`backend/`)
+- NestJS modules in `src/` (app module scaffolded, add feature modules as needed)
+- Prisma service in `src/prisma/` (to be created when adding DB queries)
+- Prisma Client generated to `backend/generated/prisma/` — never committed
+- Socket.IO gateway in `src/gateways/` (to be created)
+- `.env` vars: `DATABASE_URL` (PostgreSQL), `REDIS_URL` (Redis)
 
-## Drag & drop positioning scheme
+### Frontend (`frontend/`)
+- Vue 3 SPA with TypeScript, Pinia stores, Vue Router
+- Key dirs: `src/pages/`, `src/stores/`, `src/api/`, `src/composables/`, `src/components/`
+- `.env` vars: `VITE_API_BASE_URL` (defaults to `http://localhost:3000`)
 
-`position` is a float8 column used for ordering within each Kanban column.
-This is non-obvious and must be preserved when modifying drag-and-drop code:
+## Setup
 
-- **New card:** `max(position)` in target column + 1024
-- **Reorder between neighbors:** `(above.position + below.position) / 2`
-- **Drop at end of column:** `(last position) + 1024`
+- **`.env` files**: `frontend/.env` and `backend/.env` — never committed.
+- **Backend** requires a running PostgreSQL instance (local or remote). Configure `DATABASE_URL` in `backend/.env`.
+- **Redis** is required for Socket.IO adapter. Configure `REDIS_URL` in `backend/.env`.
 
-Each move is a single-row UPDATE — no renumbering of other rows.
+## Conventions
 
-## Environment
-
-Create `frontend/.env` (gitignored):
-
-```env
-VITE_SUPABASE_URL=https://iudqysuvrgxeaxyllfiw.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_PNf2JjyVPSoz-_zZ9kH_8A_WMB8lhZn
-```
-
-The project ref is `iudqysuvrgxeaxyllfiw`. Both values are in
-`docs/setup.md`. The anon key is publishable — RLS does real protection.
-
-## AI Commands (OpenCode skills)
-
-- `@ai-log` — Log the last interaction to `docs/log/`
-- `@ai-commit` — Stage all changes, create a conventional commit (`feat:` /
-  `fix:` / `chore:` / etc.)
-
-## Gotchas
-
-- `.env` files are never committed. However, `backend/.env` with placeholder
-  values IS committed — ignore it, it has no real secrets.
-- Schema migrations in `supabase/migrations/` are **already applied** to the
-  team project. To add new migrations, use `npx supabase db push` after
-  linking to the project ref above.
-- The `frontend/src/composables/` directory exists but is empty — unused.
-- `docs/structure.md` describes `backend/src/{controllers,routes,services}`
-  that don't exist on disk. Trust `supabase/README.md` for schema/API info.
-- Tailwind CSS v4 uses the Vite plugin (`@tailwindcss/vite`) — no
-  `tailwind.config.js`, config is in `frontend/src/index.css`.
+- `.env` files are never committed.
+- `backend/generated/prisma/` is never committed (in `.gitignore`).
+- Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+- Single frontend package under `frontend/`, single backend package under `backend/` — not a monorepo.

@@ -1,0 +1,95 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-12
+Time:         15:09:03
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. "tenemos PostgreSQL 17?" — asked about PG version
+2. "que version es nuestro nodejs?" — asked about Node version
+3. Provided required stack specs (NestJS 11, Prisma 6, Vue 3, Pinia, Socket.IO, etc.)
+4. "Ahora actualiza el AGENT y Skills para que sepan que deben utilizar esas cosas que acabamos de implementar"
+5. "ahora actualiza el readme, agrega en estructuras la estrucutra que acabamos agregar, recuerda que todo en ingles!"
+6. "@ai-log"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Checked PG version: local not installed, Supabase runs PG 17. Checked Node: v24.14.1.
+2. Updated AGENTS.md with new stack (NestJS, Prisma, Vue 3, Pinia, etc.):
+   - Added "Prisma schema" section with models list
+   - Added "Architecture" section for backend/frontend
+   - Added npx prisma generate command
+   - Noted generated/prisma/ is never committed
+3. Updated ai-commit skill with notes about what not to commit (.env, generated/, etc.)
+4. Migrated entire project:
+   - backend/ → NestJS 11 scaffold + Prisma + Socket.IO + ioredis
+   - frontend/ → Vue 3 + Vite + Pinia + Vue Router + Three.js + TresJS + deps
+   - Created Prisma schema (User, Project, ProjectMember, BoardColumn, Task, Tag)
+   - Removed all old React/Supabase code
+5. Updated README.md with Prisma schema/Features sections, link to schema file
+6. Updated docs/guide/structure.md with real project structure on disk
+7. Updated docs/setup/ with new backend.md, frontend.md, updated index.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+.opencode/skills/ai-commit/SKILL.md
+README.md
+docs/guide/structure.md
+docs/setup/index.md
+docs/setup/backend.md
+docs/setup/frontend.md
+backend/package.json
+backend/.env
+backend/prisma/schema.prisma
+backend/prisma.config.ts
+backend/src/ (all files — NestJS scaffold)
+frontend/package.json
+frontend/src/main.ts
+frontend/src/App.vue
+frontend/src/pages/HomePage.vue
+frontend/src/stores/task.ts
+frontend/src/api/client.ts
+frontend/src/style.css
+frontend/vite.config.ts
+frontend/tsconfig.json
+frontend/tsconfig.app.json
+frontend/tsconfig.node.json
+frontend/index.html
++ deleted ~30 React files (components, pages, contexts, hooks, styles)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- AGENTS.md: old stack (React + Supabase), no Prisma/Architecture sections
+- ai-commit skill: basic, no notes about generated files
+- README.md: old stack, no Prisma schema/Features
+- backend/: empty src/ with stubs, no package.json
+- frontend/: React 18 + Supabase + @dnd-kit + Tailwind
+- docs/guide/structure.md: outdated tree (React files, missing backend config)
+- docs/setup/: npm.md + supabase.md (old guides)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- AGENTS.md: full new stack, Prisma schema reference, Architecture section
+- ai-commit skill: safety notes for generated/prisma/ and .env
+- README.md: new stack, Features, Prisma Schema, updated Quick Links
+- backend/: NestJS 11 scaffold, Prisma 7 with 6 models, Socket.IO, ioredis
+- frontend/: Vue 3 + Vite 8, Pinia, Vue Router 5, Three.js, TresJS, etc.
+- docs/: all setup guides and structure.md updated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

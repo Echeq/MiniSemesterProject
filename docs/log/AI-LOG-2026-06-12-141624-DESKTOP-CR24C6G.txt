@@ -1,0 +1,62 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-12
+Time:         14:16:24
+Git Branch:   Elbert_Frontend1.0
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. "Porque no puedo correr bien el proyecto, ya tenemos el login ya hecho en la computadora de otro coolaborador puedo verlo, pero en el mio no puedo verlo, que pasa alli"
+2. User provided Supabase credentials (URL + anon key)
+3. "Ok, ahora necesitamos documentar una guia de como utilizar el npm y que se debe hacer en supabase, sabes como hacerlo? quiero que escribas una guia."
+4. "Ahora haz todos los cambios que hablamos."
+5. "@ai-log"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Diagnosed missing `.env` file in `frontend/` — supabase client throws error if VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY are not set.
+2. Created `frontend/.env` with the user's Supabase credentials.
+3. Reviewed existing docs, identified issues (npm.md assumed project creation, supabase.md too basic). Proposed plan to rewrite both guides.
+4. After user approval, rewrote three files. Wrote plan to `.opencode/plans/` first due to permission restrictions, then executed after mode change.
+5. Generated this log via @ai-log.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/.env (created)
+AGENTS.md
+docs/setup/index.md
+docs/setup/npm.md
+docs/setup/supabase.md
+.opencode/plans/actualizar-docs-setup.md (created)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See git diff above. Key before-states:
+- AGENTS.md: stale scaffold claim, missing commands table, missing conventions
+- docs/setup/npm.md: assumed project creation (npm create vite), not cloning workflow
+- docs/setup/supabase.md: only new project creation, no env var table, no RLS note
+- docs/setup/index.md: English text, links to old guides
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See git diff above. Key changes:
+- AGENTS.md: accurate project state, added commands table, setup details, conventions (strict TS, no path aliases, single package, conventional commits)
+- docs/setup/npm.md: cloning workflow (npm install + npm run dev), commands table
+- docs/setup/supabase.md: Opción A (existing project) + Opción B (new project), env var table, RLS security note
+- docs/setup/index.md: Spanish text, updated links
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
