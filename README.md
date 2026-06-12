@@ -29,9 +29,11 @@ Works on desktop and mobile phones.
 
 | Guide | Description |
 |-------|-------------|
-| [Project Structure](docs/structure.md) | Full directory tree |
-| [Setup & Run](docs/setup.md) | Prerequisites, Supabase, dev server |
-| [AI Guide](docs/ai-guide.md) | OpenCode, @ai-log, @ai-commit, workflow |
+| [Project Structure](docs/guide/structure.md) | Full directory tree |
+| [Setup index](docs/setup/index.md) | Choose Supabase or npm setup guide |
+| [Supabase setup](docs/setup/supabase.md) | Create project, get API keys, .env |
+| [npm setup](docs/setup/npm.md) | Scaffold Vite, install deps, run dev server |
+| [AI Guide](docs/guide/ai.md) | OpenCode, @ai-log, @ai-commit, workflow |
 
 ## AI Skills
 
