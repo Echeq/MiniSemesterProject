@@ -1,0 +1,240 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-12
+Time:         16:41:02
+Git Branch:   supabase-backend
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+What did we do so far?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Provided a summary of the session goal (test Supabase TaskFlow API),
+progress so far (21 integration tests passing), and key decisions
+(tests against real API, float8 positioning scheme, backend/ as
+obsolete).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Recuerda hacerlo todo en ingles.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Acknowledged. All future communication will be in English.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@ai-commit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ran git diff, staged intentional files (avoided backend/node_modules),
+and committed as ba1e563 "docs: update AGENTS.md with verified project
+state and add integration tests" (7 files, +1051/-28).
+
+Files committed:
+- AGENTS.md (modified)
+- frontend/package.json (modified)
+- frontend/package-lock.json (modified)
+- frontend/tests/api.test.js (new)
+- frontend/vitest.config.js (new)
+- docs/log/AI-LOG-2026-06-12-162837-DESKTOP-CR24C6G.txt (new)
+- docs/thunder-collection_TaskFlow-API.json (new)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 4
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Puedes quitar archivos que sean irregulares o hacerles .gitignore
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE 4
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Added `backend/` to .gitignore. The directory had 36,905 stale build
+artifact files (node_modules, dist, generated) and was the only
+untracked irregular directory.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Puedes arreglar los errores que aparecen cuando hago npm install y
+npm run dev en /frontennd?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE 5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Diagnosed and fixed multiple issues:
+
+1. `@vitejs/plugin-react` and `@tailwindcss/vite` missing from
+   package.json but used in vite.config.js — installed as devDeps.
+2. `react`, `react-dom`, `@supabase/supabase-js`, `@dnd-kit/*`
+   missing — installed (package.json had Vue deps instead of React).
+3. Unused Vue packages removed: vue, vue-router, pinia,
+   vue-draggable-plus, @tresjs/core, three, @vitejs/plugin-vue,
+   vue-tsc, @vue/tsconfig.
+4. `build` script referenced `vue-tsc -b && vite build` → changed
+   to just `vite build`.
+5. `tsconfig.app.json` extended `@vue/tsconfig/tsconfig.dom.json`
+   which was uninstalled — rewritten as standalone React tsconfig.
+6. `tsconfig.node.json` referenced `vite.config.ts` (wrong extension)
+   → fixed to `vite.config.js`.
+7. Test scripts re-added (lost during npm uninstall) —
+   `test`/`test:watch`, reinstalled vitest + dotenv.
+
+Verification:
+- `npm run dev` → starts cleanly on http://localhost:5173
+- `npm run build` → builds in 222ms (71 modules)
+- `npm run test` → 21/21 tests pass
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.gitignore
+frontend/package.json
+frontend/package-lock.json
+frontend/tsconfig.app.json
+frontend/tsconfig.node.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE (git diff)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.gitignore (before):
+  supabase/.temp/
+
+.gitignore (after):
+  supabase/.temp/
+  backend/
+
+frontend/package.json (before):
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tresjs/core": "^5.8.1",
+    "jspdf": "^4.2.1",
+    "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.3",
+    "three": "^0.184.0",
+    "vue": "^3.5.34",
+    "vue-draggable-plus": "^0.6.1",
+    "vue-router": "^5.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vue-tsc": "^3.2.8"
+  }
+
+frontend/package.json (after):
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/supabase-js": "^2.108.1",
+    "jspdf": "^4.2.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "socket.io-client": "^4.8.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^24.12.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "dotenv": "^17.4.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12",
+    "vitest": "^4.1.8"
+  }
+
+frontend/tsconfig.app.json (before):
+  {
+    "extends": "@vue/tsconfig/tsconfig.dom.json",
+    "compilerOptions": {
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+      "types": ["vite/client"],
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "erasableSyntaxOnly": true,
+      "noFallthroughCasesInSwitch": true
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  }
+
+frontend/tsconfig.app.json (after):
+  {
+    "compilerOptions": {
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+      "target": "ES2023",
+      "jsx": "react-jsx",
+      "lib": ["ES2023", "DOM", "DOM.Iterable"],
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "verbatimModuleSyntax": true,
+      "moduleDetection": "force",
+      "noEmit": true,
+      "strict": true,
+      "skipLibCheck": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noFallthroughCasesInSwitch": true
+    },
+    "include": ["src"]
+  }
+
+frontend/tsconfig.node.json (before):
+  {
+    ...
+    "include": ["vite.config.ts"]
+  }
+
+frontend/tsconfig.node.json (after):
+  {
+    ...
+    "include": ["vite.config.js"]
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See CODE BEFORE section — diff shown above; all changes are
+the "after" state shown there.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
