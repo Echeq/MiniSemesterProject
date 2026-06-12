@@ -35,7 +35,7 @@ Two tables: `profiles` (one per auth user) and `tasks` (Kanban cards with status
 
 | Guide | Description |
 |-------|-------------|
-| [API Reference](docs/api.md) | Supabase auth, tasks CRUD, realtime subscriptions |
+| [API Reference](docs/api.md) | Supabase auth, tasks CRUD, realtime — tested via Thunder Client |
 | [Project Structure](docs/guide/structure.md) | Full directory tree |
 | [Frontend setup](docs/setup/frontend.md) | React 19, Vite, dependencies |
 | [Backend setup](docs/setup/backend.md) | NestJS, Prisma, PostgreSQL, Redis |

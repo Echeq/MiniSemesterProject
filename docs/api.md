@@ -2,11 +2,134 @@
 
 TaskFlow uses **Supabase** as its primary backend. All data access goes through the Supabase JavaScript client (`@supabase/supabase-js`), which wraps Supabase Auth, PostgREST (RESTful PostgreSQL), and Realtime WebSocket channels.
 
+We use **Thunder Client** (VS Code extension) for manual API testing — a pre-built collection is included.
+
 There is also a legacy NestJS scaffold (`backend/`) with no running services — ignore it.
 
 ---
 
-## Setup
+## Activity: Test the API with Thunder Client (Free Tier)
+
+This walkthrough uses only the Supabase **Free Tier** — no custom SMTP, no paid add-ons.
+
+### 1. Install Thunder Client
+
+Open VS Code, go to the Extensions panel (`Ctrl+Shift+X`), search for **Thunder Client** and install it.
+
+### 2. Import the collection
+
+1. Open Thunder Client
+2. Click the **Collections** tab (folder icon)
+3. Click the **Import** button → **Import from File**
+4. Select `docs/thunder-collection_TaskFlow-API.json`
+
+You will see three folders: **Auth**, **Tasks**, and **Profiles**.
+
+### 3. Set environment variables
+
+1. In Thunder Client, click the **Env** tab (gear icon)
+2. Click **+ New Env**, name it `TaskFlow`
+3. Add these variables:
+
+| Variable | Value |
+|---|---|
+| `supabaseUrl` | Your Supabase project URL (e.g. `https://abc.supabase.co`) |
+| `supabaseAnonKey` | Your anon/public key (starts with `sb_publishable_`) |
+| `accessToken` | _(leave empty — filled automatically on sign in)_ |
+| `userId` | _(leave empty — filled automatically on sign in)_ |
+| `taskId` | _(leave empty — filled after creating a task)_ |
+
+4. Select the **TaskFlow** environment from the dropdown at the top of Thunder Client.
+
+### 4. Sign in (dev account)
+
+Since the Supabase Free Tier requires email confirmation for signup, use a pre-created dev account:
+
+| | |
+|---|---|
+| **Method** | `POST` |
+| **URL** | `{{supabaseUrl}}/auth/v1/token?grant_type=password` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Content-Type: application/json` |
+| **Body** | `{ "email": "dev@taskflow.local", "password": "devpass123" }` |
+
+1. Open the **Auth** folder and select **Sign In (dev account)**
+2. Click **Send**
+3. On success, the test script automatically sets `accessToken` and `userId` in your environment
+4. You can verify by running **Get Current User**
+
+> **Need a different account?** Sign up through the app at `http://localhost:5173`, confirm the email (check Supabase Auth > Users in the dashboard to manually confirm), then use those credentials in the Sign In request.
+
+### 5. Browse tasks
+
+| | |
+|---|---|
+| **Method** | `GET` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks?select=*&order=position.asc` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
+
+1. Open the **Tasks** folder
+2. Run **List Tasks with Assignee Profile** to see all tasks joined with the assignee's display name
+3. Run **List All Tasks** for a simpler response
+
+### 6. Create a task
+
+| | |
+|---|---|
+| **Method** | `POST` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}`, `Content-Type: application/json`, `Prefer: return=representation` |
+| **Body** | `{ "title": "Thunder Client test", "description": "Created from Thunder Client", "status": "todo", "position": 1024, "created_by": "{{userId}}" }` |
+
+1. Select **Create Task (To Do)**
+2. Click **Send**
+3. On success, the test script automatically stores the new task's `id` in the `taskId` env var
+
+### 7. Update a task
+
+| | |
+|---|---|
+| **Method** | `PATCH` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}`, `Content-Type: application/json`, `Prefer: return=representation` |
+| **Body** | `{ "title": "Updated title via PATCH", "status": "doing" }` |
+
+1. Select **Update Task Title** — changes the title and moves it to `"doing"`
+2. Click **Send**
+3. Then run **Update Task Position (Drag & Drop)** to change position and move to `"done"`
+
+### 8. Get a single task
+
+| | |
+|---|---|
+| **Method** | `GET` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}&select=*` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
+
+Run **Get Task by ID** — it uses `{{taskId}}` from the env to fetch the specific task you created.
+
+### 9. Delete a task
+
+| | |
+|---|---|
+| **Method** | `DELETE` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}` |
+| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
+
+Run **Delete Task** — removes the task you created earlier.
+
+### 10. Anonymous access
+
+| | |
+|---|---|
+| **Method** | `GET` |
+| **URL** | `{{supabaseUrl}}/rest/v1/tasks?select=*` |
+| **Headers** | `apikey: {{supabaseAnonKey}}` (no `Authorization` header) |
+
+Run **Anonymous: List Tasks (should be empty)** — notice it has no `Bearer` token. The RLS policy blocks anonymous requests, confirming auth is required.
+
+---
+
+## Supabase Client SDK
 
 The client is initialized once in `frontend/src/api/supabaseClient.js`:
 
@@ -45,7 +168,7 @@ const { error } = await supabase.auth.signUp({
 ```
 
 - On success, Supabase sends a confirmation email and creates a row in `public.profiles` via the `handle_new_user` trigger.
-- Local development: create a user with the Supabase CLI (`supabase auth users create ...`).
+- **Free Tier note:** Custom SMTP is not available. You can manually confirm users in the Supabase Dashboard under **Auth > Users**.
 
 ### Sign in
 
@@ -272,7 +395,26 @@ supabase db push
 
 ## Thunder Client collection
 
-A Thunder Client collection for manual API testing is available at `docs/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, and Profiles endpoints against the Supabase REST API (`/rest/v1/`).
+A Thunder Client collection for manual API testing is available at `docs/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, and Profiles endpoints against the Supabase REST API (`/rest/v1/`). Follow the [Activity guide](#activity-test-the-api-with-thunder-client-free-tier) above for step-by-step usage.
+
+---
+
+## Endpoint quick reference
+
+| Method | URL | Description |
+|---|---|---|
+| `POST` | `/auth/v1/token?grant_type=password` | Sign in with email + password |
+| `GET` | `/auth/v1/user` | Get current authenticated user |
+| `POST` | `/auth/v1/logout` | Sign out current session |
+| `GET` | `/rest/v1/tasks?select=*&order=position.asc` | List all tasks (sorted by position) |
+| `GET` | `/rest/v1/tasks?select=*,assignee:profiles!tasks_assignee_fkey(display_name,avatar_url)&order=position.asc` | List tasks with assignee profile join |
+| `GET` | `/rest/v1/tasks?id=eq.{id}&select=*` | Get a single task by ID |
+| `POST` | `/rest/v1/tasks` | Create a new task |
+| `PATCH` | `/rest/v1/tasks?id=eq.{id}` | Update task fields |
+| `DELETE` | `/rest/v1/tasks?id=eq.{id}` | Delete a task |
+| `GET` | `/rest/v1/profiles?select=*` | List all user profiles |
+
+All endpoints require headers: `apikey` (anon key) and `Authorization: Bearer {token}` (except anonymous test). URL prefix is `https://{project}.supabase.co`.
 
 ---
 
