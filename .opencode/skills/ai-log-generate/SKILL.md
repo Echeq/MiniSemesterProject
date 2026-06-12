@@ -1,91 +1,89 @@
-# Skill: ai-log-generate
-
-## Description
-
-Creates a timestamped log file for every AI interaction. Each interaction produces one log file in `docs/log/`.
-
-## Trigger
-
-User says: `@ai-log`
+---
+name: ai-log-generate
+description: Log every AI interaction — prompt, response, affected file, code before/after, and metadata. Triggers on "@ai-log".
+---
 
 ## Workflow
 
+When user says `@ai-log`, generate a log file by reading the conversation.
+
 ### 1. Auto-detect
 
-Collect these without asking:
+Collect these automatically via bash:
 
-| Field | Command |
-|---|---|
-| PC Name | `hostname` (or `$env:COMPUTERNAME` on Windows) |
-| Date | `Get-Date -Format "yyyy-MM-dd"` / `date +%F` |
-| Time | `Get-Date -Format "HHmmss"` / `date +%H%M%S` |
-| Git Branch | `git branch --show-current` |
+| Field | Command (Windows) | Command (Mac/Linux) |
+|---|---|---|
+| PC Name | `$env:COMPUTERNAME` | `hostname` |
+| Date | `Get-Date -Format "yyyy-MM-dd"` | `date +%F` |
+| Time | `Get-Date -Format "HHmmss"` | `date +%H%M%S` |
+| Git Branch | `git branch --show-current` | `git branch --show-current` |
 
-### 2. Ask the user
+### 2. Read from conversation history
 
-Prompt for each field one at a time:
+Extract these from the chat, do NOT ask the user:
 
-- **Prompt** — What did you ask the AI?
-- **AI Response** — What did the AI reply?
-- **File Path** — Which file(s) were changed? (relative to project root)
-- **Code Before** — What did the code look like before?
-- **Code After** — What did it look like after?
-- **AI Tool** — Which tool was used? (e.g. OpenCode, ChatGPT, Claude, Copilot)
+- **Prompt** — What the user asked (their messages)
+- **AI Response** — What you replied (your messages)
+- **File Path** — Files you created or edited
+- **Code Before** — Previous content of edited files (use `git diff`)
+- **Code After** — New content after your changes
+- **AI Tool** — Always `OpenCode`
 
-### 3. Generate the log filename
+Run `git diff --name-only` to list changed files and `git diff` for full before/after.
 
-Format:
+If git diff is empty (new files not yet staged), compare file contents before/after via `read`.
 
-```
-AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt
-```
+### 3. Generate filename
 
-Example: `AI-LOG-2025-06-12-091503-DESKTOP-ABC.txt`
+Format: `AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt`
 
-### 4. Write the log file
+Example: `AI-LOG-2026-06-12-093931-DESKTOP-CR24C6G.txt`
 
-Save to `docs/log/<filename>` with this exact template:
+### 4. Write the log
+
+Save to `docs/log/<filename>` with the template below. Replace placeholders with real values.
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║                    AI INTERACTION LOG                        ║
 ╚══════════════════════════════════════════════════════════════╝
 
-PC Name:      <hostname>
-Date:         <yyyy-MM-dd>
-Time:         <HH:mm:ss>
-Git Branch:   <branch>
-AI Tool:      <tool>
+PC Name:      DESKTOP-ABC123
+Date:         2026-06-12
+Time:         09:39:31
+Git Branch:   main
+AI Tool:      OpenCode
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROMPT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<prompt text>
+What the user asked
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AI RESPONSE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<ai response text>
+What the AI replied
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FILE AFFECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<file path>
+relative/path/to/file.js
+relative/path/to/another.css
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE BEFORE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<code before>
+code before changes
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE AFTER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<code after>
+code after changes
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -94,4 +92,4 @@ CODE AFTER
 
 Tell the user:
 
-> ✅ Log saved to `docs/log/AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt`
+> ✅ Log saved to `docs/log/AI-LOG-2026-06-12-093931-DESKTOP-CR24C6G.txt`

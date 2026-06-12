@@ -1,10 +1,11 @@
 # AGENTS.md — TaskFlow
 
-Project state: **scaffold** (directories exist, no source code or package.json yet).
+Project state: **scaffold** (no source code or package.json yet).
 
 ## Logging
 
-After every AI interaction, type `@ai-log` to log it. Logs go to `docs/log/`.
+After every AI interaction, type `@ai-log` to log it.  
+Logs go to `docs/log/`. Skill in `.opencode/skills/ai-log-generate/SKILL.md`.
 
 ## Stack
 
@@ -13,7 +14,6 @@ After every AI interaction, type `@ai-log` to log it. Logs go to `docs/log/`.
 | Frontend | React + Vite, Tailwind CSS, @dnd-kit/core |
 | Backend | Supabase (PostgreSQL + Auth + Realtime) |
 | Auth | Supabase Auth |
-| Styling | Tailwind (responsive/mobile-first) |
 
 ## Team
 
@@ -21,24 +21,18 @@ After every AI interaction, type `@ai-log` to log it. Logs go to `docs/log/`.
 - **Backend** (Supabase) — @MemerZxZ
 - **PM/QA** — @Echeq
 
-## Setup (pending)
+## Setup
 
-```
+```bash
 cd frontend
 npm create vite@latest . -- --template react
 npm install supabase @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 ```
 
-Create `frontend/.env`:
-```
-VITE_SUPABASE_URL=<from Supabase project settings>
-VITE_SUPABASE_ANON_KEY=<from Supabase project settings>
-```
+Create `frontend/.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 
-Backend is pure Supabase — no server code. Database schema and Edge Functions go in `supabase/`.
+**Gotcha:** Backend is pure Supabase — no server code. The `backend/src/` subdirectories (controllers, routes, services) exist only for Edge Functions. Schema goes in `supabase/`.
 
 ## Conventions
 
-- `.env` files are not committed (Supabase keys stay local)
-- Frontend dirs: `api/`, `components/` (with `ui/`, `kanban/`, `forms/`), `contexts/`, `hooks/`, `pages/`, `styles/`, `utils/`
-- Backend dirs: `controllers/`, `middleware/`, `routes/`, `services/`, `utils/`
+- `.env` files are never committed.

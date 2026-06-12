@@ -35,12 +35,13 @@ A simple task management system with a Kanban board for small teams.
 
 ```
 TaskFlow/
-├── ai-skills/                    # AI assistant skills & scripts
+├── .opencode/
 │   ├── scripts/
 │   │   ├── new-ai-log.sh         # Bash script for AI logging (Mac/Linux)
 │   │   └── new-ai-log.ps1        # PowerShell script for AI logging (Windows)
 │   └── skills/
-│       └── ai-log-generate.md    # @ai-log skill definition
+│       └── ai-log-generate/
+│           └── SKILL.md          # @ai-log skill definition
 ├── backend/
 │   └── src/
 │       ├── controllers/          # API route handlers
@@ -75,52 +76,132 @@ TaskFlow/
 - npm (comes with Node)
 - Supabase account (free)
 
-### Setup Supabase
+### Supabase setup
 
 1. Create a free account at https://supabase.com
 2. Create a new project
 3. Copy your `URL` and `anon key` from Project Settings > API
-4. Create a `.env` file in the frontend folder:
+4. Create `frontend/.env`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### Install & Run
+> **Note:** Backend is pure Supabase — no server code to run. Database schema and Edge Functions go in `supabase/`.
+
+### Initialize project (first time only)
 
 ```bash
 cd frontend
-npm install
+npm create vite@latest . -- --template react
+npm install supabase @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+```
+
+### Run dev server
+
+```bash
+cd frontend
 npm run dev
 ```
 
-## AI Logging System
+## Using OpenCode
 
-Every AI interaction is logged to `docs/log/` for team traceability.
+This project uses **OpenCode** as the AI-powered CLI assistant. All collaborators use it to generate, review, and refactor code consistently.
 
-### How It Works
+### Installation
 
-1. After using AI to generate or modify code, type `@ai-log` in the chat
-2. The skill auto-detects your PC name, date, time, and git branch
-3. You provide: prompt, AI response, file path, code before/after, AI tool
-4. A log file is created at `docs/log/AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt`
+**Windows (PowerShell):**
+```powershell
+winget install opencode
+```
 
-### Log Format
+**Mac (Homebrew):**
+```bash
+brew install opencode
+```
 
-Each log file contains auto-detected metadata plus the prompt, AI response, affected file, and code diff in a clear, structured layout.
+**Linux (curl):**
+```bash
+curl -fsSL https://opencode.ai/install.sh | sh
+```
 
-### Standalone Scripts
+### Daily Workflow (step by step)
 
-If you are not using OpenCode, run the scripts directly:
+**Step 1 — Start OpenCode**
+
+Open a terminal in the project folder:
+
+```bash
+# Windows / Mac / Linux — all the same
+opencode
+```
+
+**Step 2 — Load project context**
+
+At the start of every session, type:
+
+```
+/init
+```
+
+This loads `AGENTS.md` and discovers the `@ai-log` skill in `.opencode/skills/`.
+
+**Step 3 — Ask the AI for what you need**
+
+Chat naturally. Example prompts:
+
+- "Create a Kanban board component"
+- "Fix the drag-and-drop bug in TaskCard"
+- "Add a login page with Supabase Auth"
+
+**Step 4 — Log the interaction**
+
+After the AI finishes its response, type:
+
+```
+@ai-log
+```
+
+The AI will:
+- Auto-detect your PC name, date, time, and git branch
+- Read the conversation to extract the prompt, response, and file changes
+- Create a log file at `docs/log/AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt`
+- Confirm once done
+
+**Step 5 — Repeat**
+
+Go back to Step 3 for your next task.
+
+### Example session
+
+```
+$ opencode
+/init
+> Create a Kanban column component in frontend/src/components/kanban/
+[AI writes the component]
+
+@ai-log
+✅ Log saved to docs/log/AI-LOG-2026-06-12-094512-DESKTOP-ABC.txt
+
+> Now add drag-and-drop support
+[AI adds @dnd-kit logic]
+
+@ai-log
+✅ Log saved to docs/log/AI-LOG-2026-06-12-094823-DESKTOP-ABC.txt
+```
+
+### Without OpenCode (standalone scripts)
+
+If you are not using OpenCode, run these scripts instead:
 
 **Windows:**
 ```powershell
-.\ai-skills\scripts\new-ai-log.ps1
+.\.opencode\scripts\new-ai-log.ps1
 ```
 
 **Mac/Linux:**
 ```bash
-chmod +x ai-skills/scripts/new-ai-log.sh
-./ai-skills/scripts/new-ai-log.sh
+chmod +x .opencode/scripts/new-ai-log.sh
+./.opencode/scripts/new-ai-log.sh
 ```
