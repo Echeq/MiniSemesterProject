@@ -14,8 +14,10 @@
 | `frontend/` | `npm test` | Run vitest (requires `frontend/.env`) |
 | `frontend/` | `npm run test:watch` | Vitest watch mode |
 | `backend/` | `npm run start:dev` | NestJS dev server (--watch) |
+| `backend/` | `npm run build` | Compile NestJS to `dist/` |
+| `backend/` | `npm run format` | Prettier (singleQuote, trailingComma: all) |
 | `backend/` | `npm run lint` | ESLint --fix (flat config in `eslint.config.mjs`) |
-| `backend/` | `npm test` | Jest unit tests (`*.spec.ts`) |
+| `backend/` | `npm test` | Jest unit tests (`*.spec.ts` in `src/`) |
 | `backend/` | `npm run test:e2e` | Jest e2e tests (`*.e2e-spec.ts`) |
 | `backend/` | `npx prisma generate` | Regenerate Prisma client to `backend/generated/prisma/` |
 | `backend/` | `npx prisma migrate dev` | Run pending Prisma migrations |
@@ -32,6 +34,7 @@
 - **Supabase** is the *actual* current backend (auth, DB, realtime).  
   Migrations in `supabase/migrations/`. Tasks use `task_status` enum: `todo | doing | done`.  
   Drag-and-drop ordering uses a custom `positionBetween()` scheme (see `frontend/tests/api.test.js:234` and `supabase/README.md`).
+  Supabase client returns `null` when `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` missing — app renders a setup hint instead of crashing.
 - **NestJS backend** (`backend/`) is scaffolded only (`GET /` → "Hello World!").  
   No Prisma migrations directory exists yet. Feature modules (Prisma service, Socket.IO gateway) not built.  
   Prisma 6 uses `backend/prisma.config.ts` for config (not auto-detected).

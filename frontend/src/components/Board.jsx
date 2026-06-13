@@ -55,7 +55,7 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
 
   if (isMobile) {
     return (
-      <div className="flex flex-col items-center gap-4 py-3">
+      <div className="flex flex-col gap-5 px-4 py-5 overflow-y-auto">
         {STATUSES.map((status) => (
           <Column
             key={status}
@@ -80,7 +80,7 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-1 gap-3 overflow-x-auto overscroll-x-contain p-3 sm:gap-4 sm:p-6">
+      <div className="flex flex-1 gap-5 overflow-x-auto overscroll-x-contain p-3 sm:p-6 sm:px-8">
         {STATUSES.map((status) => (
           <Column
             key={status}

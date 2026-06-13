@@ -12,16 +12,16 @@ import TaskActionSheet from './components/TaskActionSheet'
 
 function MissingEnv() {
   return (
-    <div className="flex min-h-full items-center justify-center bg-slate-100 px-4">
-      <div className="max-w-md rounded-xl bg-white p-8 shadow-md">
+    <div className="flex min-h-full items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 px-4">
+      <div className="max-w-md rounded-2xl bg-white p-8 shadow-lg sm:rounded-xl sm:shadow-md">
         <h1 className="mb-2 text-xl font-bold text-slate-800">
           Supabase not configured
         </h1>
-        <p className="text-sm text-slate-600">
-          Create <code className="rounded bg-slate-100 px-1">frontend/.env</code>{' '}
-          with <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_URL</code>{' '}
+        <p className="text-sm text-slate-600 leading-relaxed">
+          Create <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-mono">frontend/.env</code>{' '}
+          with <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-mono">VITE_SUPABASE_URL</code>{' '}
           and{' '}
-          <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_ANON_KEY</code>,
+          <code className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-mono">VITE_SUPABASE_ANON_KEY</code>,
           then restart the dev server.
         </p>
       </div>
@@ -36,16 +36,16 @@ function ProfileMenu({ displayName, avatarUrl, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full bg-white pl-1 pr-3 py-1 shadow-md hover:shadow-lg transition-shadow active:scale-95"
+      className="fixed bottom-4 left-4 z-40 flex items-center gap-2 rounded-full bg-white pl-1 pr-3 py-1 shadow-lg hover:shadow-xl transition-all active:scale-90"
     >
       {avatarUrl ? (
         <img
           src={avatarUrl}
           alt=""
-          className="h-9 w-9 rounded-full object-cover"
+          className="h-10 w-10 rounded-full object-cover ring-2 ring-white"
         />
       ) : (
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 text-sm font-bold text-white ring-2 ring-white">
           {initial}
         </span>
       )}
@@ -73,14 +73,17 @@ function BoardPage({ session }) {
   const displayAvatar = profile?.avatar_url || null
 
   return (
-    <div className="flex h-full flex-col bg-slate-100 pb-20 sm:pb-16">
+    <div className="flex h-full flex-col bg-gradient-to-b from-slate-50 to-white sm:bg-gradient-to-br sm:from-slate-50 sm:to-slate-100/50 sm:pb-16">
       <Header displayName={displayName} onNewTask={() => setTaskModal('new')} />
       {error && (
         <p className="px-6 py-2 text-sm text-red-600">Error: {error}</p>
       )}
       <div className="relative flex min-h-0 flex-1">
         {loading ? (
-          <p className="p-6 text-sm text-slate-500">Loading board…</p>
+          <div className="flex w-full items-center justify-center gap-2 p-6">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            <p className="text-sm text-slate-500">Loading board…</p>
+          </div>
         ) : (
           <Board
             tasks={tasks}
@@ -136,8 +139,11 @@ function AuthGate() {
   const { session, loading } = useAuth()
   if (loading) {
     return (
-      <div className="flex min-h-full items-center justify-center bg-slate-100">
-        <p className="text-sm text-slate-500">Loading…</p>
+      <div className="flex min-h-full items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <p className="text-sm text-slate-500">Loading…</p>
+        </div>
       </div>
     )
   }

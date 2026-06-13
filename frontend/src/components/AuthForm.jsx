@@ -39,19 +39,21 @@ export default function AuthForm() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-slate-100 px-4">
+    <div className="flex min-h-full items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-xl bg-white p-8 shadow-md"
+        className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg sm:rounded-xl sm:shadow-md"
       >
-        <h1 className="mb-1 text-2xl font-bold text-slate-800">TaskFlow</h1>
-        <p className="mb-6 text-sm text-slate-500">
-          {mode === 'signin' ? 'Sign in to your board' : 'Create an account'}
-        </p>
+        <div className="mb-6 text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-slate-800 sm:text-2xl">TaskFlow</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            {mode === 'signin' ? 'Sign in to your board' : 'Create an account'}
+          </p>
+        </div>
 
         {mode === 'signup' && (
-          <label className="mb-3 block">
-            <span className="mb-1 block text-sm font-medium text-slate-600">
+          <label className="mb-4 block sm:mb-3">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
               Display name
             </span>
             <input
@@ -60,13 +62,13 @@ export default function AuthForm() {
               maxLength={100}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:rounded-lg sm:px-3 sm:py-2"
             />
           </label>
         )}
 
-        <label className="mb-3 block">
-          <span className="mb-1 block text-sm font-medium text-slate-600">
+        <label className="mb-4 block sm:mb-3">
+          <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
             Email
           </span>
           <input
@@ -74,12 +76,12 @@ export default function AuthForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:rounded-lg sm:px-3 sm:py-2"
           />
         </label>
 
-        <label className="mb-5 block">
-          <span className="mb-1 block text-sm font-medium text-slate-600">
+        <label className="mb-6 block sm:mb-5">
+          <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
             Password
           </span>
           <input
@@ -88,17 +90,17 @@ export default function AuthForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:rounded-lg sm:px-3 sm:py-2"
           />
         </label>
 
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-        {message && <p className="mb-3 text-sm text-green-700">{message}</p>}
+        {error && <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 sm:rounded-lg sm:px-3 sm:py-2">{error}</p>}
+        {message && <p className="mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700 sm:rounded-lg sm:px-3 sm:py-2">{message}</p>}
 
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 sm:rounded-lg sm:py-2.5 transition-colors"
         >
           {mode === 'signin' ? 'Sign in' : 'Sign up'}
         </button>
@@ -110,7 +112,7 @@ export default function AuthForm() {
             setError(null)
             setMessage(null)
           }}
-          className="mt-4 w-full text-center text-sm text-indigo-600 hover:underline"
+          className="mt-4 w-full text-center text-sm text-indigo-600 hover:underline py-2"
         >
           {mode === 'signin'
             ? "Don't have an account? Sign up"
