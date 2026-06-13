@@ -1,0 +1,410 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-13
+Time:         09:40:40
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rework the profile to be a middle pop up that covers the screen until closed/clicked outside of the pop up, it must contain, photo, name, user ID(label is enought for now), email, and the ability to change password, but needs to be verfied by putting in the old password first
+
+When i refresh, I can see the old name for 0.01s, It doesnt change the authentication/user online on profile for supabase
+
+I need the display name change to be everywhere, and something to update the profile picture (keep it 2mb or less)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created/updated 5 files:
+
+1. supabase/migrations/20260612140000_avatars_storage.sql (NEW)
+   - Creates 'avatars' storage bucket (public, 2MB limit, image MIME types)
+   - RLS policies for authenticated users to manage their own avatars
+
+2. frontend/src/hooks/useProfile.js (REWRITTEN)
+   - Accepts session object instead of bare userId
+   - updateProfile now syncs display_name to auth metadata via supabase.auth.updateUser()
+     (fixes the 0.01s flash — metadata is available immediately on refresh)
+   - New uploadAvatar(file): validates 2MB limit, uploads to Supabase Storage,
+     gets public URL, updates profile.avatar_url
+   - New changePassword(oldPassword, newPassword): verifies old password via
+     signInWithPassword before updating
+
+3. frontend/src/components/ProfileSettings.jsx (REWRITTEN)
+   - Centered modal overlay with backdrop click-to-close and X button
+   - Photo section: avatar display + file picker (PNG/JPG/GIF/WebP, 2MB max)
+   - Display name: editable text input
+   - User ID: monospace selectable label
+   - Email: read-only label
+   - Change password: old password → new password → confirm, with validation
+   - Error/success toasts, loading states on buttons
+
+4. frontend/src/App.jsx (UPDATED)
+   - Passes session to useProfile instead of session.user.id
+   - Passes email, userId, onUploadAvatar, onChangePassword to ProfileSettings
+
+5. AGENTS.md (UPDATED)
+   - Added commands, constraints, test prereqs, architecture notes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+supabase/migrations/20260612140000_avatars_storage.sql  (new)
+frontend/src/hooks/useProfile.js                        (modified)
+frontend/src/components/ProfileSettings.jsx              (modified)
+frontend/src/App.jsx                                    (modified)
+AGENTS.md                                               (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- supabase/migrations/20260612140000_avatars_storage.sql (new file, no before state)
+
+--- frontend/src/hooks/useProfile.js (before)
+import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '../api/supabaseClient'
+
+export function useProfile(userId) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) return
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setProfile(data)
+        setLoading(false)
+      })
+  }, [userId])
+
+  const updateProfile = useCallback(
+    async (fields) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update(fields)
+        .eq('id', userId)
+      if (error) throw error
+      setProfile((prev) => ({ ...prev, ...fields }))
+    },
+    [userId],
+  )
+
+  return { profile, loading, updateProfile }
+}
+
+--- frontend/src/components/ProfileSettings.jsx (before)
+import { useState } from 'react'
+
+export default function ProfileSettings({ profile, onUpdate, onClose }) {
+  const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '')
+  const [error, setError] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError(null)
+    setBusy(true)
+    try {
+      await onUpdate({
+        display_name: displayName,
+        avatar_url: avatarUrl || null,
+      })
+      onClose()
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={handleSubmit}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+      >
+        <h2 className="mb-4 text-lg font-bold text-slate-800">Profile</h2>
+
+        <label className="mb-3 block">
+          <span className="mb-1 block text-sm font-medium text-slate-600">
+            Display name
+          </span>
+          <input
+            type="text"
+            required
+            maxLength={100}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        <label className="mb-5 block">
+          <span className="mb-1 block text-sm font-medium text-slate-600">
+            Avatar URL
+          </span>
+          <input
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://example.com/avatar.jpg"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={busy}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+--- frontend/src/App.jsx (before, relevant section)
+function BoardPage({ session }) {
+  const { tasks, loading, error, createTask, updateTask, deleteTask } =
+    useBoard()
+  const { profile, updateProfile } = useProfile(session.user.id)
+  const [taskModal, setTaskModal] = useState(null)
+  const [profileModal, setProfileModal] = useState(false)
+
+  const displayName =
+    profile?.display_name ||
+    session.user.user_metadata?.display_name ||
+    session.user.email
+
+  return (
+    ...
+      <ProfileMenu
+        displayName={displayName}
+        avatarUrl={profile?.avatar_url}
+        onClick={() => setProfileModal(true)}
+      />
+      {profileModal && (
+        <ProfileSettings
+          profile={profile}
+          onUpdate={updateProfile}
+          onClose={() => setProfileModal(false)}
+        />
+      )}
+    ...
+  )
+}
+
+--- AGENTS.md (before)
+See git diff output above — general improvements: added test prereqs, 
+constraints, architecture notes, and command table clarifications.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- supabase/migrations/20260612140000_avatars_storage.sql
+-- Avatars storage bucket for profile pictures
+-- Public bucket so images are accessible without auth tokens.
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  2097152,
+  array['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+)
+on conflict (id) do nothing;
+
+-- Allow authenticated users to upload their own avatar
+create policy "Users can upload their own avatar"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Allow authenticated users to update their own avatar
+create policy "Users can update their own avatar"
+  on storage.objects for update
+  to authenticated
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Allow public read access (bucket is public)
+create policy "Anyone can view avatars"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'avatars');
+
+-- Allow users to delete their own avatar
+create policy "Users can delete their own avatar"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+--- frontend/src/hooks/useProfile.js (after)
+import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '../api/supabaseClient'
+
+export function useProfile(session) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const userId = session?.user?.id
+
+  useEffect(() => {
+    if (!userId) return
+    setLoading(true)
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setProfile(data)
+        setLoading(false)
+      })
+  }, [userId])
+
+  const updateProfile = useCallback(
+    async (fields) => {
+      if (!userId) return
+      const { error } = await supabase
+        .from('profiles')
+        .update(fields)
+        .eq('id', userId)
+      if (error) throw error
+      setProfile((prev) => ({ ...prev, ...fields }))
+      if (fields.display_name) {
+        const { error: metaError } = await supabase.auth.updateUser({
+          data: { display_name: fields.display_name },
+        })
+        if (metaError) throw metaError
+      }
+    },
+    [userId],
+  )
+
+  const uploadAvatar = useCallback(
+    async (file) => {
+      if (!userId) return
+      if (file.size > 2 * 1024 * 1024) throw new Error('File must be 2MB or less')
+      const ext = file.name.split('.').pop() ?? 'jpg'
+      const path = `${userId}/avatar.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(path)
+      await updateProfile({ avatar_url: publicUrl })
+      return publicUrl
+    },
+    [userId, updateProfile],
+  )
+
+  const changePassword = useCallback(
+    async (oldPassword, newPassword) => {
+      const email = session?.user?.email
+      if (!email) throw new Error('No user email found')
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: oldPassword,
+      })
+      if (signInError) throw new Error('Current password is incorrect')
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      if (updateError) throw updateError
+    },
+    [session],
+  )
+
+  return { profile, loading, updateProfile, uploadAvatar, changePassword }
+}
+
+--- frontend/src/components/ProfileSettings.jsx (after)
+[See full content in file — 243 lines. Key sections:]
+- Modal overlay with backdrop click + X close button
+- Avatar display + file upload (2MB limit, image types)
+- Display name input (maxLength 100)
+- User ID label (monospace, select-all)
+- Email label
+- Save button (handles avatar upload + display name update)
+- Password change section: old password → new password → confirm, with validation
+
+--- frontend/src/App.jsx (after, relevant section)
+function BoardPage({ session }) {
+  const { tasks, loading, error, createTask, updateTask, deleteTask } =
+    useBoard()
+  const { profile, updateProfile, uploadAvatar, changePassword } =
+    useProfile(session)
+  const [taskModal, setTaskModal] = useState(null)
+  const [profileModal, setProfileModal] = useState(false)
+
+  const displayName =
+    profile?.display_name ||
+    session.user.user_metadata?.display_name ||
+    session.user.email
+
+  const displayAvatar = profile?.avatar_url || null
+
+  return (
+    ...
+      <ProfileMenu
+        displayName={displayName}
+        avatarUrl={displayAvatar}
+        onClick={() => setProfileModal(true)}
+      />
+      {profileModal && (
+        <ProfileSettings
+          profile={profile}
+          email={session.user.email}
+          userId={session.user.id}
+          onUpdate={updateProfile}
+          onUploadAvatar={uploadAvatar}
+          onChangePassword={changePassword}
+          onClose={() => setProfileModal(false)}
+        />
+      )}
+    ...
+  )
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

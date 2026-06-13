@@ -105,7 +105,6 @@ function BoardPage({ session }) {
         <ProfileSettings
           profile={profile}
           email={session.user.email}
-          userId={session.user.id}
           onUpdate={updateProfile}
           onUploadAvatar={uploadAvatar}
           onChangePassword={changePassword}

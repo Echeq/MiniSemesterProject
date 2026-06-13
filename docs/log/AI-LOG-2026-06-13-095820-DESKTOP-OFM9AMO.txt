@@ -1,0 +1,114 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-13
+Time:         09:58:20
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kindly
+
+Kindly 1)remove the "ID" part from the profile; 2)When user enter the wrong previous password, I would like the alert to be below(where it is easily spotted)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two targeted changes:
+
+1. Removed User ID section from ProfileSettings and its userId prop from App.jsx
+2. Split error/success state into separate passwordError/passwordSuccess that renders right after the confirm-password field and before the "Change password" button, so wrong-password alerts appear in the user's immediate line of sight
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/src/components/ProfileSettings.jsx  (modified)
+frontend/src/App.jsx                        (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- frontend/src/components/ProfileSettings.jsx (before)
+  const [success, setSuccess] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordBusy, setPasswordBusy] = useState(false)
+
+  async function handlePasswordChange(e) {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    ...
+
+  ...User ID section (lines 157-162):
+          <div className="mb-4">
+            <span className="mb-1 block text-sm font-medium text-slate-600">User ID</span>
+            <p className="select-all rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500 font-mono">
+              {userId}
+            </p>
+          </div>
+
+  ...password submit area (before):
+            <div className="flex justify-end">
+              <button ...>
+
+--- frontend/src/App.jsx (before)
+  {profileModal && (
+    <ProfileSettings
+      profile={profile}
+      email={session.user.email}
+      userId={session.user.id}
+      ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- frontend/src/components/ProfileSettings.jsx (after)
+  const [passwordError, setPasswordError] = useState(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(null)
+  const [oldPassword, setOldPassword] = useState('')
+  ...
+
+  async function handlePasswordChange(e) {
+    e.preventDefault()
+    setPasswordError(null)
+    setPasswordSuccess(null)
+    ...
+
+  // User ID section removed entirely
+
+  ...password submit area (after):
+            {passwordError && (
+              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                {passwordError}
+              </p>
+            )}
+            {passwordSuccess && (
+              <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+                {passwordSuccess}
+              </p>
+            )}
+            <div className="flex justify-end">
+              <button ...>
+
+--- frontend/src/App.jsx (after)
+  {profileModal && (
+    <ProfileSettings
+      profile={profile}
+      email={session.user.email}
+      onUpdate={updateProfile}
+      ...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

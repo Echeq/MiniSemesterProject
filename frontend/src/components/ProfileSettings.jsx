@@ -3,7 +3,6 @@ import { useRef, useState } from 'react'
 export default function ProfileSettings({
   profile,
   email,
-  userId,
   onUpdate,
   onUploadAvatar,
   onChangePassword,
@@ -18,6 +17,8 @@ export default function ProfileSettings({
   const [success, setSuccess] = useState(null)
   const [busy, setBusy] = useState(false)
 
+  const [passwordError, setPasswordError] = useState(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(null)
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -57,14 +58,14 @@ export default function ProfileSettings({
 
   async function handlePasswordChange(e) {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    setPasswordError(null)
+    setPasswordSuccess(null)
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match')
+      setPasswordError('New passwords do not match')
       return
     }
     if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters')
+      setPasswordError('New password must be at least 6 characters')
       return
     }
     setPasswordBusy(true)
@@ -73,9 +74,9 @@ export default function ProfileSettings({
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      setSuccess('Password changed')
+      setPasswordSuccess('Password changed')
     } catch (err) {
-      setError(err.message)
+      setPasswordError(err.message)
     } finally {
       setPasswordBusy(false)
     }
@@ -154,13 +155,6 @@ export default function ProfileSettings({
             />
           </label>
 
-          <div className="mb-4">
-            <span className="mb-1 block text-sm font-medium text-slate-600">User ID</span>
-            <p className="select-all rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500 font-mono">
-              {userId}
-            </p>
-          </div>
-
           <div className="mb-6">
             <span className="mb-1 block text-sm font-medium text-slate-600">Email</span>
             <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
@@ -226,6 +220,12 @@ export default function ProfileSettings({
               />
             </label>
 
+            {passwordError && (
+              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{passwordError}</p>
+            )}
+            {passwordSuccess && (
+              <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{passwordSuccess}</p>
+            )}
             <div className="flex justify-end">
               <button
                 type="submit"
