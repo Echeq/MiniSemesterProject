@@ -1,6 +1,6 @@
 import { STATUSES } from '../hooks/useBoard'
 
-const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
+const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
 
 export default function TaskActionSheet({ task, onEdit, onMove, onDelete, onClose }) {
   const otherStatuses = STATUSES.filter((s) => s !== task.status)

@@ -5,7 +5,7 @@ import {
 } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard'
 
-const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
+const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
 const ACCENTS = {
   todo: 'border-t-slate-400',
   doing: 'border-t-amber-400',

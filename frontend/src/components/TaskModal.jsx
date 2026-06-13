@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { STATUSES } from '../hooks/useBoard'
 
-const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
+const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
 
 export default function TaskModal({ task, onCreate, onUpdate, onDelete, onClose }) {
   const editing = Boolean(task)
