@@ -7,17 +7,18 @@ import TaskCard from './TaskCard'
 
 const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
 const ACCENTS = {
-  todo: 'border-t-slate-400 bg-slate-50',
-  doing: 'border-t-amber-400 bg-amber-50',
-  done: 'border-t-green-500 bg-green-50',
+  todo: 'border-t-slate-400',
+  doing: 'border-t-amber-400',
+  done: 'border-t-green-500',
 }
+const COLUMN_BG = 'bg-[#adadad]'
 
 export default function Column({ status, tasks, onTaskClick, onMobileAction, mobile }) {
   const { setNodeRef } = useDroppable({ id: status })
 
   if (mobile) {
     return (
-      <div className={`w-full rounded-xl border-t-4 ${ACCENTS[status]}`}>
+      <div className={`w-full rounded-xl border-t-4 ${COLUMN_BG} ${ACCENTS[status]}`}>
         <div className="flex items-center justify-between px-3 py-2">
           <h2 className="text-sm font-semibold text-slate-700">
             {LABELS[status]}
@@ -47,7 +48,7 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
 
   return (
     <div
-      className={`flex min-w-[260px] flex-1 flex-col rounded-xl border-t-4 sm:min-w-72 sm:flex-none sm:w-80 ${ACCENTS[status]}`}
+      className={`flex min-w-0 flex-1 flex-col rounded-xl border-t-4 ${COLUMN_BG} ${ACCENTS[status]}`}
     >
       <div className="flex items-center justify-between px-3 py-2">
         <h2 className="text-sm font-semibold text-slate-700">
