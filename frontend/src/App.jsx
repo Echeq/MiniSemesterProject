@@ -58,7 +58,8 @@ function ProfileMenu({ displayName, avatarUrl, onClick }) {
 function BoardPage({ session }) {
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useBoard()
-  const { profile, updateProfile } = useProfile(session.user.id)
+  const { profile, updateProfile, uploadAvatar, changePassword } =
+    useProfile(session)
   const [taskModal, setTaskModal] = useState(null)
   const [profileModal, setProfileModal] = useState(false)
 
@@ -66,6 +67,8 @@ function BoardPage({ session }) {
     profile?.display_name ||
     session.user.user_metadata?.display_name ||
     session.user.email
+
+  const displayAvatar = profile?.avatar_url || null
 
   return (
     <div className="flex h-full flex-col bg-slate-100 pb-20 sm:pb-16">
@@ -95,13 +98,17 @@ function BoardPage({ session }) {
       )}
       <ProfileMenu
         displayName={displayName}
-        avatarUrl={profile?.avatar_url}
+        avatarUrl={displayAvatar}
         onClick={() => setProfileModal(true)}
       />
       {profileModal && (
         <ProfileSettings
           profile={profile}
+          email={session.user.email}
+          userId={session.user.id}
           onUpdate={updateProfile}
+          onUploadAvatar={uploadAvatar}
+          onChangePassword={changePassword}
           onClose={() => setProfileModal(false)}
         />
       )}
