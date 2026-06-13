@@ -1,0 +1,56 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-13
+Time:         11:09:04
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+just a small change, help change the "doing" label to "In progress",
+and for mobile it's already good vertical scroll, but can make them
+align in the middle
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two changes:
+1. Changed "Doing" → "In progress" in Column.jsx, TaskActionSheet.jsx,
+   and TaskModal.jsx label maps.
+2. Added `items-center` to the mobile vertical flex container in
+   Board.jsx so columns are centered horizontally.
+
+Build passes clean.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/src/components/Column.jsx          (modified)
+frontend/src/components/TaskActionSheet.jsx  (modified)
+frontend/src/components/TaskModal.jsx        (modified)
+frontend/src/components/Board.jsx            (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- Column.jsx:            `const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }`
+--- TaskActionSheet.jsx:   `const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }`
+--- TaskModal.jsx:         `const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }`
+--- Board.jsx (mobile):    `<div className="flex flex-col gap-4 p-3 sm:p-6">`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- All three label maps:  `const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }`
+--- Board.jsx (mobile):    `<div className="flex flex-col items-center gap-4 p-3 sm:p-6">`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

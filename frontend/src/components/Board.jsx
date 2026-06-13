@@ -9,14 +9,14 @@ import {
   closestCorners,
 } from '@dnd-kit/core'
 import { STATUSES, positionBetween } from '../hooks/useBoard'
+import { useIsMobile } from '../hooks/useIsMobile'
 import Column from './Column'
 import TaskCard from './TaskCard'
 
-export default function Board({ tasks, updateTask, onTaskClick }) {
+export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }) {
   const [activeTask, setActiveTask] = useState(null)
+  const isMobile = useIsMobile()
 
-  // Distance/delay activation keeps plain clicks (open modal) and touch
-  // scrolling working alongside drag.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -35,7 +35,6 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
 
-    // over.id is either a column status (empty area) or another task's id
     const overTask = tasks.find((t) => t.id === over.id)
     const targetStatus = overTask ? overTask.status : over.id
     if (!STATUSES.includes(targetStatus)) return
@@ -54,6 +53,23 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }
 
+  if (isMobile) {
+    return (
+      <div className="flex w-full flex-col gap-4 px-2 py-4 overflow-y-auto overflow-x-hidden">
+        {STATUSES.map((status) => (
+          <Column
+            key={status}
+            status={status}
+            tasks={byStatus[status]}
+            onTaskClick={onTaskClick}
+            onMobileAction={onMobileAction}
+            mobile
+          />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -64,7 +80,7 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+      <div className="flex flex-1 gap-5 overflow-x-auto overscroll-x-contain p-3 sm:p-6 sm:px-8">
         {STATUSES.map((status) => (
           <Column
             key={status}

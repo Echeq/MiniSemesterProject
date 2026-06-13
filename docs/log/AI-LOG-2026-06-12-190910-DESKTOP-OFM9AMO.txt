@@ -1,0 +1,333 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-12
+Time:         19:09:10
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create or update AGENTS.md for this repository. The goal is a compact instruction file that helps future OpenCode sessions avoid mistakes and ramp up quickly.
+
+Then: make a profile settings page at the dashboard edge (lower left), make the website accessible both in desktop and mobile (dynamic sizes).
+
+Then: user provided Supabase URL and anon key, requested writing frontend/.env.
+
+Then: "@ai-log"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. AGENTS.md - Investigated the full repo including README, package.json files, source code, Supabase migrations, and existing AGENTS.md. Fixed stale claims (Vue→React, wrong build command, speculative future directories), added Supabase architecture, constraints, correct commands.
+
+2. Profile settings - Created useProfile.js hook (fetches/updates profiles table), ProfileSettings.jsx modal (display name + avatar URL), updated App.jsx with fixed bottom-left ProfileMenu button, updated Header to accept displayName prop, added responsive improvements (overscroll containment, flexible column widths, mobile padding, touch feedback).
+
+3. .env file - Wrote frontend/.env with the user-provided Supabase credentials. Noted Node.js 18 is too old for Vite 8 (needs 20.19+).
+
+4. AI Log - Generated this log file.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md (updated)
+frontend/.env (created)
+frontend/src/hooks/useProfile.js (created)
+frontend/src/components/ProfileSettings.jsx (created)
+frontend/src/App.jsx (edited)
+frontend/src/components/Header.jsx (edited)
+frontend/src/components/Board.jsx (edited)
+frontend/src/components/Column.jsx (edited)
+frontend/src/index.css (edited)
+frontend/package-lock.json (modified by npm install)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+=== frontend/src/App.jsx (before) ===
+import { useState } from 'react'
+import { supabase } from './api/supabaseClient'
+import { useAuth } from './hooks/useAuth'
+import { useBoard } from './hooks/useBoard'
+import AuthForm from './components/AuthForm'
+import Header from './components/Header'
+import Board from './components/Board'
+import TaskModal from './components/TaskModal'
+
+function MissingEnv() {
+  return (
+    <div className="flex min-h-full items-center justify-center bg-slate-100 px-4">
+      <div className="max-w-md rounded-xl bg-white p-8 shadow-md">
+        <h1 className="mb-2 text-xl font-bold text-slate-800">
+          Supabase not configured
+        </h1>
+        <p className="text-sm text-slate-600">
+          Create <code className="rounded bg-slate-100 px-1">frontend/.env</code>{' '}
+          with <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_URL</code>{' '}
+          and{' '}
+          <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_ANON_KEY</code>,
+          then restart the dev server.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function BoardPage({ session }) {
+  const { tasks, loading, error, createTask, updateTask, deleteTask } =
+    useBoard()
+  const [modal, setModal] = useState(null)
+
+  return (
+    <div className="flex h-full flex-col bg-slate-100">
+      <Header session={session} onNewTask={() => setModal('new')} />
+      {error && (
+        <p className="px-6 py-2 text-sm text-red-600">Error: {error}</p>
+      )}
+      {loading ? (
+        <p className="p-6 text-sm text-slate-500">Loading board…</p>
+      ) : (
+        <Board
+          tasks={tasks}
+          updateTask={updateTask}
+          onTaskClick={(task) => setModal(task)}
+        />
+      )}
+      {modal && (
+        <TaskModal
+          task={modal === 'new' ? null : modal}
+          onCreate={createTask}
+          onUpdate={updateTask}
+          onDelete={deleteTask}
+          onClose={() => setModal(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default function App() {
+  if (!supabase) return <MissingEnv />
+  return <AuthGate />
+}
+
+function AuthGate() {
+  const { session, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="flex min-h-full items-center justify-center bg-slate-100">
+        <p className="text-sm text-slate-500">Loading…</p>
+      </div>
+    )
+  }
+  if (!session) return <AuthForm />
+  return <BoardPage session={session} />
+}
+
+=== frontend/src/components/Header.jsx (before) ===
+import { supabase } from '../api/supabaseClient'
+
+export default function Header({ session, onNewTask }) {
+  const name =
+    session.user.user_metadata?.display_name || session.user.email
+
+  return (
+    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+      <h1 className="text-lg font-bold text-slate-800">TaskFlow</h1>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onNewTask}
+          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
+        >
+          + New task
+        </button>
+        <span className="hidden text-sm text-slate-500 sm:inline">{name}</span>
+        <button
+          type="button"
+          onClick={() => supabase.auth.signOut()}
+          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+        >
+          Sign out
+        </button>
+      </div>
+    </header>
+  )
+}
+
+=== frontend/src/components/Board.jsx (before) ===
+- Line 67: <div className="flex flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+
+=== frontend/src/components/Column.jsx (before) ===
+- Line 20: className={`flex w-72 flex-shrink-0 flex-col rounded-xl border-t-4 bg-slate-50 sm:w-80 ${ACCENTS[status]}`}
+
+=== frontend/src/index.css (before) ===
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+=== frontend/.env (created) ===
+VITE_SUPABASE_URL=https://iudqysuvrgxeaxyllfiw.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_PNf2JjyVPSoz-_zZ9kH_8A_WMB8lhZn
+
+=== frontend/src/hooks/useProfile.js (created) ===
+import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '../api/supabaseClient'
+
+export function useProfile(userId) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) return
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+      .then(({ data, error }) => {
+        if (!error) setProfile(data)
+        setLoading(false)
+      })
+  }, [userId])
+
+  const updateProfile = useCallback(
+    async (fields) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update(fields)
+        .eq('id', userId)
+      if (error) throw error
+      setProfile((prev) => ({ ...prev, ...fields }))
+    },
+    [userId],
+  )
+
+  return { profile, loading, updateProfile }
+}
+
+=== frontend/src/components/ProfileSettings.jsx (created) ===
+import { useState } from 'react'
+
+export default function ProfileSettings({ profile, onUpdate, onClose }) {
+  const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '')
+  const [error, setError] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError(null)
+    setBusy(true)
+    try {
+      await onUpdate({
+        display_name: displayName,
+        avatar_url: avatarUrl || null,
+      })
+      onClose()
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={handleSubmit}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+      >
+        <h2 className="mb-4 text-lg font-bold text-slate-800">Profile</h2>
+
+        <label className="mb-3 block">
+          <span className="mb-1 block text-sm font-medium text-slate-600">
+            Display name
+          </span>
+          <input
+            type="text"
+            required
+            maxLength={100}
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        <label className="mb-5 block">
+          <span className="mb-1 block text-sm font-medium text-slate-600">
+            Avatar URL
+          </span>
+          <input
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://example.com/avatar.jpg"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={busy}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+=== frontend/src/App.jsx (after) ===
+[Full file as shown in the diff above — imports useProfile/ProfileSettings, ProfileMenu component, dual modal state, profile wiring, pb-20 spacing]
+
+=== frontend/src/components/Header.jsx (after) ===
+[displayName prop instead of session, max-w-32 truncate, active:bg-slate-100]
+
+=== frontend/src/components/Board.jsx (after) ===
+- Line 67: overscroll-x-contain, gap-3/p-3 on mobile, sm:gap-4/sm:p-6 on desktop
+
+=== frontend/src/components/Column.jsx (after) ===
+- Line 20: min-w-[260px] flex-1 on mobile, sm:min-w-72 sm:flex-none sm:w-80 on desktop
+
+=== frontend/src/index.css (after) ===
+@import "tailwindcss";
+
+html, body, #root { height: 100%; }
+
+body {
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,27 +1,34 @@
 import { supabase } from '../api/supabaseClient'
 
-export default function Header({ session, onNewTask }) {
-  const name =
-    session.user.user_metadata?.display_name || session.user.email
-
+export default function Header({ displayName, onNewTask }) {
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-      <h1 className="text-lg font-bold text-slate-800">TaskFlow</h1>
-      <div className="flex items-center gap-3">
+    <header className="safe-top flex items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-sm px-4 py-3 sm:px-8 sm:shadow-sm">
+      <h1 className="text-lg font-bold text-slate-800 sm:text-xl">TaskFlow</h1>
+      <div className="flex items-center gap-1.5 sm:gap-3">
         <button
           type="button"
           onClick={onNewTask}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 active:scale-95 transition-all"
         >
-          + New task
+          <svg className="h-4 w-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="hidden sm:inline">+ New task</span>
+          <span className="sm:hidden">New</span>
         </button>
-        <span className="hidden text-sm text-slate-500 sm:inline">{name}</span>
+        <span className="hidden max-w-28 truncate text-sm text-slate-500 sm:inline">
+          {displayName}
+        </span>
         <button
           type="button"
           onClick={() => supabase.auth.signOut()}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all"
+          title="Sign out"
         >
-          Sign out
+          <svg className="h-4 w-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span className="hidden sm:inline">Sign out</span>
         </button>
       </div>
     </header>

@@ -1,77 +1,61 @@
-# AGENTS.md — MiniSemesterProject (TaskFlow)
-
-## Current state
-
-**This project is mid-migration.** The live app runs React 19 + Supabase. Vue 3 files (`*.vue`, `main.ts`, `stores/`, `pages/`, `composables/`) and the NestJS backend scaffold (`backend/`) are dead code — do not extend them.
+# AGENTS.md — MiniSemesterProject
 
 ## AI Commands
 
 - `@ai-log` — Log the last interaction to `docs/log/`
-- `@ai-commit` — Stage all changes, create a conventional commit
-
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, Vite 8, Tailwind CSS v4, TypeScript 6 |
-| State/API | Supabase (auth, Realtime, Postgres via supabase-js) |
-| DnD | @dnd-kit/core + @dnd-kit/sortable |
-| Export | xlsx, jsPDF |
-| Test | Vitest 4 with `@vitejs/plugin-react` + `@tailwindcss/vite` |
-| Backend (stale) | NestJS 11 scaffold (empty AppModule, no Prisma service) |
-| AI Assistant | OpenCode |
-
-## Team
-
-- **Frontend** (`frontend/src/`) — @MemerZxZ
-- **Backend/API** — Supabase (managed by @goanarbolkong)
-- **PM/QA** — @Echeq
+- `@ai-commit` — Stage all changes and create a conventional commit
 
 ## Commands
 
 | Directory | Command | Action |
 |---|---|---|
-| `frontend/` | `npm run dev` | Start Vite dev server |
-| `frontend/` | `npm run build` | Vite production build (no typecheck step) |
-| `frontend/` | `npm run test` | Vitest (globals: true, 15s timeout) |
+| `frontend/` | `npm run dev` | Vite dev server (needs `frontend/.env`) |
+| `frontend/` | `npm run build` | Production build (no typecheck) |
+| `frontend/` | `npm test` | Run vitest (requires `frontend/.env`) |
 | `frontend/` | `npm run test:watch` | Vitest watch mode |
-| `backend/` | `npm run start:dev` | NestJS watch mode (empty module) |
+| `backend/` | `npm run start:dev` | NestJS dev server (--watch) |
+| `backend/` | `npm run build` | Compile NestJS to `dist/` |
+| `backend/` | `npm run format` | Prettier (singleQuote, trailingComma: all) |
+| `backend/` | `npm run lint` | ESLint --fix (flat config in `eslint.config.mjs`) |
+| `backend/` | `npm test` | Jest unit tests (`*.spec.ts` in `src/`) |
+| `backend/` | `npm run test:e2e` | Jest e2e tests (`*.e2e-spec.ts`) |
+| `backend/` | `npx prisma generate` | Regenerate Prisma client to `backend/generated/prisma/` |
 | `backend/` | `npx prisma migrate dev` | Run pending Prisma migrations |
-| `backend/` | `npx prisma generate` | Regenerate Prisma client |
-| `backend/` | `npm run test` | Jest (spec files) |
+| `backend/` | `npx prisma studio` | Open Prisma DB browser |
+| `supabase/` | `supabase start` | Start local Supabase |
+| `supabase/` | `supabase db reset` | Run all migrations + seed |
 
 ## Architecture
 
-### Frontend (`frontend/`)
-- Entry: `index.html` → `src/main.jsx` → `App.jsx`
-- Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` in `frontend/.env`
-- Auth via `useAuth` hook → `supabase.auth`
-- Kanban data via `useBoard` hook → `supabase.from('tasks')` with `postgres_changes` Realtime subscription
-- Drag & drop: `@dnd-kit/core` (DndContext, DragOverlay), `@dnd-kit/sortable` (useSortable, SortableContext)
-- Routing: no react-router; single-page Board rendered conditionally on auth state
-- Stale code (do not touch): `src/main.ts`, `src/App.vue`, `src/style.css`, `src/stores/`, `src/pages/`, `src/composables/`, `src/assets/`
+- **Frontend** is **React 19 + Vite 8 + Tailwind 4 + @dnd-kit + Supabase**.  
+  Entry: `frontend/src/main.jsx` → `App.jsx`.  
+  **Vue 3 scaffolding** (`App.vue`, `main.ts`, `pages/`, `stores/`) exists but is **dead code** — do not edit.  
+  Two vite configs: `vite.config.js` (React) is active; `vite.config.ts` (Vue) is dead.
+- **Supabase** is the *actual* current backend (auth, DB, realtime).  
+  Migrations in `supabase/migrations/`. Tasks use `task_status` enum: `todo | doing | done`.  
+  Drag-and-drop ordering uses a custom `positionBetween()` scheme (see `frontend/tests/api.test.js:234` and `supabase/README.md`).
+  Supabase client returns `null` when `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` missing — app renders a setup hint instead of crashing.
+- **NestJS backend** (`backend/`) is scaffolded only (`GET /` → "Hello World!").  
+  No Prisma migrations directory exists yet. Feature modules (Prisma service, Socket.IO gateway) not built.  
+  Prisma 6 uses `backend/prisma.config.ts` for config (not auto-detected).
+- **Two DB schemas** coexist: the **active Supabase schema** (`supabase/migrations/`) and the **future Prisma schema** (`backend/prisma/schema.prisma`). They are separate systems — do not reconcile.
+- **No CI/CD** configured.
+- OpenCode config is in `.opencode/` (no `opencode.json` at root).
+- AI workflow reference: `docs/guide/ai.md`.
 
-### Supabase (`supabase/`)
-- **Migrations** in `supabase/migrations/` are the DB source of truth (3 migrations applied)
-- Tables: `public.profiles` (one row per auth user), `public.tasks` (Kanban cards)
-- Task columns: `todo` / `doing` / `done` (enum `public.task_status`)
-- Sort order: `position` uses fractional indexing (double precision, midpoint on reorder)
-- RLS: authenticated users can read all, insert as self, update/delete any task
-- `created_by` and timestamps are immutable via column-level `REVOKE UPDATE`
-- Realtime: `alter publication supabase_realtime add table public.tasks`
-- Seed: `supabase/seed.sql` (run after at least one auth user exists)
+## Supabase constraints
 
-### Backend (`backend/`) — stale scaffold
-- NestJS 11 with Prisma 6 (client output: `generated/prisma/`)
-- `AppModule` is empty — no controllers, no Prisma service, no gateways
-- Schema in `backend/prisma/schema.prisma` mirrors the original design but is **not** the active schema
-- Prisma `generated/` dir is gitignored
+| Field | Limit |
+|---|---|
+| `tasks.title` | 1–200 characters |
+| `tasks.description` | ≤ 5000 characters |
+| `profiles.display_name` | ≤ 100 characters |
+| Tasks table | RLS enforced, single shared board |
 
 ## Conventions
 
-- `.env` files are never committed
-- `backend/generated/prisma/` is never committed
-- Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
-- No CI pipeline configured (no `.github/` dir)
-- TypeScript check runs via `tsc --noEmit` — no dedicated npm script, use `npx tsc -p tsconfig.app.json`
-- Lint: ESLint flat config (`eslint.config.js`) with `react-hooks` + `react-refresh` plugins for `*.{js,jsx}` files
+- `.env` files and `backend/generated/prisma/` are never committed.
+- Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+- Frontend `src/` is **JSX** (not TypeScript). `tsconfig.json` is for config/build tooling only.
+- Frontend tests hit the real Supabase API. Before running: create `frontend/.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, and ensure the dev account `dev@taskflow.local` / `devpass123` exists in the target project.
+- `supabase/seed.sql` requires at least one auth user before seeding. See `frontend/tests/api.test.js:28` for test credentials.
