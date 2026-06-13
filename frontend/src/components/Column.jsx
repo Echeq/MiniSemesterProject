@@ -44,9 +44,9 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
 
   if (mobile) {
     return (
-      <div className={`w-full rounded-2xl border-t-4 ${MOBILE_BG[status]} ${ACCENTS[status]} shadow-sm`}>
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
+      <div className={`flex w-full flex-col rounded-2xl border-t-4 ${MOBILE_BG[status]} ${ACCENTS[status]} shadow-sm overflow-hidden`}>
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <div className="flex items-center gap-1.5">
             {ICONS[status]}
             <h2 className="text-sm font-bold text-slate-700">
               {LABELS[status]}
@@ -56,7 +56,7 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
             {tasks.length}
           </span>
         </div>
-        <div className="flex flex-col gap-2.5 px-4 pb-4">
+        <div className="flex flex-col gap-2.5 px-3 pb-3 overflow-y-auto max-h-[50vh] min-h-0">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -66,7 +66,7 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
             />
           ))}
           {tasks.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white/50 p-5 text-center text-xs text-slate-400">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white/50 py-4 text-center text-xs text-slate-400">
               No tasks yet
             </div>
           )}
@@ -77,7 +77,7 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
 
   return (
     <div
-      className={`flex min-w-0 flex-1 flex-col rounded-2xl border-t-4 shadow-sm ${DESKTOP_BG[status]} ${ACCENTS[status]}`}
+      className={`flex min-w-0 flex-1 flex-col rounded-2xl border-t-4 shadow-sm overflow-hidden ${DESKTOP_BG[status]} ${ACCENTS[status]}`}
     >
       <div className="flex items-center justify-between px-5 py-3.5">
         <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
         items={tasks.map((t) => t.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div ref={setNodeRef} className="flex flex-1 flex-col gap-2.5 px-4 pb-4">
+        <div ref={setNodeRef} className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-4 pb-4">
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task} onClick={() => onTaskClick?.(task)} />
           ))}

@@ -1,0 +1,88 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-13
+Time:         15:39:00
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Multiple prompts across the session:
+1. Add example URLs and HTTP methods to the API docs Thunder Client activity
+2. "Where is the dashboard stored?" — asked about the Supabase Dashboard location
+3. How to access localhost from phone — needed host: true in Vite config
+4. White gap on right at <636px on mobile — wanted columns to stretch wider
+5. Tasks overflow column cards — add internal scroll per column
+6. Tasks still overflow on mobile — clarify containment
+7. "I meant the desktop version" — tasks overflow desktop columns
+8. @ai-log — log the interaction
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Added Method/URL/Headers/Body tables to each step in the Activity section, plus a final Endpoint Quick Reference table at the bottom of docs/api.md
+2. Explained Supabase Dashboard is at https://supabase.com/dashboard under Auth → Users
+3. Added host: true to vite.config.js (server section), instructed user to find local IP via ipconfig and connect from phone on same WiFi
+4. Board mobile: added w-full, reduced px-4→px-2, added overflow-x-hidden to prevent horizontal scroll gap. Column mobile: reduced px-4→px-3, flex-col + overflow-hidden on wrapper
+5. Column mobile card list: added max-h-[50vh] overflow-y-auto with min-h-0
+6. Column mobile wrapper: added flex flex-col overflow-hidden — clips children at rounded corners
+7. Column desktop: added overflow-hidden on wrapper, overflow-y-auto + min-h-0 on card list (the SortableContext ref container)
+8. Generated this log
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/vite.config.js
+frontend/src/components/Board.jsx
+frontend/src/components/Column.jsx
+docs/api.md  (already committed in previous turn)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/vite.config.js — bare defineConfig with just plugins; no server section.
+
+frontend/src/components/Board.jsx — mobile return:
+  <div className="flex flex-col gap-5 px-4 py-5 overflow-y-auto">
+
+frontend/src/components/Column.jsx — mobile return:
+  <div className="w-full rounded-2xl ..."> (no flex-col, no overflow-hidden)
+  Header: px-4 py-3, gap-2
+  Card list: flex flex-col gap-2.5 px-4 pb-4 (no overflow-y-auto, no max-h)
+
+frontend/src/components/Column.jsx — desktop return:
+  <div className="flex min-w-0 flex-1 flex-col rounded-2xl ..."> (no overflow-hidden)
+  Card list: flex flex-1 flex-col gap-2.5 px-4 pb-4 (no overflow-y-auto, no min-h-0)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/vite.config.js:
+  Added server: { host: true } to allow LAN/phone access.
+
+frontend/src/components/Board.jsx — mobile:
+  <div className="flex w-full flex-col gap-4 px-2 py-4 overflow-y-auto overflow-x-hidden">
+  (added w-full, overflow-x-hidden; reduced padding from p-4/p-5 to p-2/p-4)
+
+frontend/src/components/Column.jsx — mobile:
+  <div className="flex w-full flex-col rounded-2xl ... overflow-hidden">
+  (added flex flex-col overflow-hidden to clip children at rounded corners)
+  Header: px-3 py-2.5, gap-1.5 (reduced padding)
+  Card list: flex flex-col gap-2.5 px-3 pb-3 overflow-y-auto max-h-[50vh] min-h-0
+  (added max-h-[50vh] overflow-y-auto min-h-0 for internal scroll)
+
+frontend/src/components/Column.jsx — desktop:
+  Column wrapper: added overflow-hidden
+  Card list: added overflow-y-auto + min-h-0
+  (tasks scroll within column; content stays inside rounded boundaries)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

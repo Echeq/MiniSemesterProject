@@ -55,7 +55,7 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
 
   if (isMobile) {
     return (
-      <div className="flex flex-col gap-5 px-4 py-5 overflow-y-auto">
+      <div className="flex w-full flex-col gap-4 px-2 py-4 overflow-y-auto overflow-x-hidden">
         {STATUSES.map((status) => (
           <Column
             key={status}
