@@ -1,0 +1,71 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-13
+Time:         11:32:21
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ok, how about this, if vertical scrolling, make the collumn as wide
+as the phone, like stretch it to the edge, and still make it vert
+scrolling, for mobile
+
+and keep the color consistent for each table and it's background,
+the "done" one has a different shade of white
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Mobile columns edge-to-edge: changed Board.jsx mobile container
+   from `p-3 sm:p-6` to `py-3` (removed horizontal padding).
+
+2. Column backgrounds: replaced the shared `bg-slate-50` with per-
+   column tints matching each accent color:
+   - To Do:   bg-slate-50 (light gray)
+   - In Progress: bg-amber-50 (warm tint)
+   - Done:   bg-green-50  (green tint)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/src/components/Board.jsx   (modified)
+frontend/src/components/Column.jsx  (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- Board.jsx mobile container:
+    <div className="flex flex-col items-center gap-4 p-3 sm:p-6">
+
+--- Column.jsx ACCENTS:
+    todo:  'border-t-slate-400'
+    doing: 'border-t-amber-400'
+    done:  'border-t-green-500'
+
+--- Column wrappers had hardcoded `bg-slate-50` in className.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- Board.jsx mobile container:
+    <div className="flex flex-col items-center gap-4 py-3">
+
+--- Column.jsx ACCENTS:
+    todo:  'border-t-slate-400 bg-slate-50'
+    doing: 'border-t-amber-400 bg-amber-50'
+    done:  'border-t-green-500 bg-green-50'
+
+--- Hardcoded `bg-slate-50` removed from both mobile/desktop
+    column wrappers (background comes from ACCENTS now).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
