@@ -16,7 +16,31 @@ function dueBadge(due_date, status) {
   )
 }
 
-export default function TaskCard({ task, onClick, overlay = false }) {
+export default function TaskCard({ task, onClick, overlay = false, mobile = false }) {
+  if (mobile) {
+    return (
+      <div
+        onClick={onClick}
+        className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:border-indigo-300"
+      >
+        <p className="text-sm font-medium text-slate-800">{task.title}</p>
+        {task.description && (
+          <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+            {task.description}
+          </p>
+        )}
+        <div className="mt-2 flex items-center justify-between">
+          {dueBadge(task.due_date, task.status)}
+          {task.assignee?.display_name && (
+            <span className="ml-auto text-xs text-slate-400">
+              {task.assignee.display_name}
+            </span>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: task.id, disabled: overlay })
 

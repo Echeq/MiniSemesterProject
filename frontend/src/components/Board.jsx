@@ -9,14 +9,14 @@ import {
   closestCorners,
 } from '@dnd-kit/core'
 import { STATUSES, positionBetween } from '../hooks/useBoard'
+import { useIsMobile } from '../hooks/useIsMobile'
 import Column from './Column'
 import TaskCard from './TaskCard'
 
-export default function Board({ tasks, updateTask, onTaskClick }) {
+export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }) {
   const [activeTask, setActiveTask] = useState(null)
+  const isMobile = useIsMobile()
 
-  // Distance/delay activation keeps plain clicks (open modal) and touch
-  // scrolling working alongside drag.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -35,7 +35,6 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
 
-    // over.id is either a column status (empty area) or another task's id
     const overTask = tasks.find((t) => t.id === over.id)
     const targetStatus = overTask ? overTask.status : over.id
     if (!STATUSES.includes(targetStatus)) return
@@ -52,6 +51,23 @@ export default function Board({ tasks, updateTask, onTaskClick }) {
 
     if (targetStatus === task.status && position === task.position) return
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
+  }
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-4 p-3 sm:p-6">
+        {STATUSES.map((status) => (
+          <Column
+            key={status}
+            status={status}
+            tasks={byStatus[status]}
+            onTaskClick={onTaskClick}
+            onMobileAction={onMobileAction}
+            mobile
+          />
+        ))}
+      </div>
+    )
   }
 
   return (

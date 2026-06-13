@@ -8,6 +8,7 @@ import Header from './components/Header'
 import Board from './components/Board'
 import TaskModal from './components/TaskModal'
 import ProfileSettings from './components/ProfileSettings'
+import TaskActionSheet from './components/TaskActionSheet'
 
 function MissingEnv() {
   return (
@@ -62,6 +63,7 @@ function BoardPage({ session }) {
     useProfile(session)
   const [taskModal, setTaskModal] = useState(null)
   const [profileModal, setProfileModal] = useState(false)
+  const [actionTask, setActionTask] = useState(null)
 
   const displayName =
     profile?.display_name ||
@@ -84,9 +86,19 @@ function BoardPage({ session }) {
             tasks={tasks}
             updateTask={updateTask}
             onTaskClick={(task) => setTaskModal(task)}
+            onMobileAction={setActionTask}
           />
         )}
       </div>
+      {actionTask && (
+        <TaskActionSheet
+          task={actionTask}
+          onEdit={(task) => setTaskModal(task)}
+          onMove={updateTask}
+          onDelete={deleteTask}
+          onClose={() => setActionTask(null)}
+        />
+      )}
       {taskModal && (
         <TaskModal
           task={taskModal === 'new' ? null : taskModal}

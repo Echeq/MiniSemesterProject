@@ -1,0 +1,128 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-13
+Time:         10:46:04
+Git Branch:   Elbert_Frontend-1.1.1
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User proposed making the Kanban board vertical-scrolling on mobile with
+click-to-move instead of drag & drop. After discussion, agreed on:
+- Option B: Stacked columns vertically on mobile
+- Click a card → bottom action sheet with Edit / Move / Delete
+- Desktop keeps existing drag & drop unchanged
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implemented mobile-responsive board with two rendering paths:
+
+Mobile (<= 639px):
+- Columns stack vertically (flex-col), full-width
+- Cards are plain tap targets (no useSortable, no droppable)
+- Tapping a card opens a bottom drawer action sheet
+- Action sheet has: Edit (opens TaskModal), Move to [other columns],
+  Delete
+
+Desktop (> 639px):
+- Unchanged: horizontal columns with drag & drop via @dnd-kit
+
+New files:
+- hooks/useIsMobile.js — matchMedia('(max-width: 639px)') listener
+- components/TaskActionSheet.jsx — bottom drawer with actions
+
+Modified files:
+- Board.jsx — branch on isMobile: vertical layout or DndContext
+- Column.jsx — mobile: full-width, no sortable/droppable
+- TaskCard.jsx — mobile: plain div, no useSortable
+- App.jsx — added actionTask state, renders TaskActionSheet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/src/hooks/useIsMobile.js              (new)
+frontend/src/components/TaskActionSheet.jsx     (new)
+frontend/src/components/Board.jsx               (modified)
+frontend/src/components/Column.jsx              (modified)
+frontend/src/components/TaskCard.jsx            (modified)
+frontend/src/App.jsx                            (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+(New files have no before state.)
+
+--- Board.jsx — previously had a single DndContext-wrapped layout
+    with horizontal scrolling for all screen sizes. No branching on
+    mobile. No isMobile detection.
+
+--- Column.jsx — previously always used useDroppable + SortableContext.
+    No mobile prop or conditional rendering.
+
+--- TaskCard.jsx — previously always used useSortable. No mobile prop
+    or conditional rendering.
+
+--- App.jsx — previously had no actionTask state and no
+    TaskActionSheet import or render. Board received onTaskClick
+    only, no onMobileAction.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- hooks/useIsMobile.js (new)
+import { useEffect, useState } from 'react'
+
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    setIsMobile(mq.matches)
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
+
+--- components/TaskActionSheet.jsx (new)
+Bottom drawer with drag handle bar, task title, and action buttons:
+- Edit (pencil icon) → onEdit(task)
+- Move to [other statuses] (chevron icon) → onMove(task.id, { status })
+- Delete (trash icon, red) → onDelete(task.id)
+Dark overlay behind, tap to close. Stop propagation on drawer content.
+
+--- Board.jsx — key changes:
+- Imports useIsMobile
+- Branches at top of render: if isMobile, renders vertical flex-col
+  of Columns with mobile prop and onMobileAction callback
+- Desktop path: unchanged DndContext
+
+--- Column.jsx — key changes:
+- Accepts mobile + onMobileAction props
+- If mobile: renders full-width card list with onMobileAction,
+  no useDroppable/SortableContext
+- Desktop: unchanged
+
+--- TaskCard.jsx — key changes:
+- Accepts mobile prop
+- If mobile: plain div with onClick, no useSortable dependency
+- Desktop: unchanged
+
+--- App.jsx — key changes:
+- Imports TaskActionSheet
+- Adds actionTask state
+- Passes onMobileAction={setActionTask} to Board
+- Renders TaskActionSheet when actionTask is set
+- onEdit in action sheet opens TaskModal with the same task
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

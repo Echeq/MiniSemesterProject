@@ -12,8 +12,38 @@ const ACCENTS = {
   done: 'border-t-green-500',
 }
 
-export default function Column({ status, tasks, onTaskClick }) {
+export default function Column({ status, tasks, onTaskClick, onMobileAction, mobile }) {
   const { setNodeRef } = useDroppable({ id: status })
+
+  if (mobile) {
+    return (
+      <div className={`rounded-xl border-t-4 bg-slate-50 ${ACCENTS[status]}`}>
+        <div className="flex items-center justify-between px-3 py-2">
+          <h2 className="text-sm font-semibold text-slate-700">
+            {LABELS[status]}
+          </h2>
+          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">
+            {tasks.length}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2 p-2 pt-0">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onClick={() => onMobileAction?.(task)}
+              mobile
+            />
+          ))}
+          {tasks.length === 0 && (
+            <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400">
+              No tasks
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -33,7 +63,7 @@ export default function Column({ status, tasks, onTaskClick }) {
       >
         <div ref={setNodeRef} className="flex flex-1 flex-col gap-2 p-2 pt-0">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+            <TaskCard key={task.id} task={task} onClick={() => onTaskClick?.(task)} />
           ))}
           {tasks.length === 0 && (
             <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400">
