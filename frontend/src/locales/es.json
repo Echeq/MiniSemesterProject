@@ -1,0 +1,101 @@
+{
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "signOut": "Cerrar sesión",
+    "displayName": "Nombre para mostrar",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "signInToBoard": "Inicia sesión en tu tablero",
+    "createAccount": "Crear una cuenta",
+    "noAccount": "¿No tienes cuenta? Regístrate",
+    "hasAccount": "¿Ya tienes cuenta? Inicia sesión",
+    "checkEmail": "Revisa tu correo para confirmar tu cuenta y luego inicia sesión."
+  },
+  "header": {
+    "invite": "Invitar",
+    "newTask": "+ Nueva tarea",
+    "newTaskShort": "Nueva",
+    "member": "Miembro",
+    "guest": "Invitado"
+  },
+  "board": {
+    "todo": "Por hacer",
+    "inProgress": "En progreso",
+    "done": "Hecho",
+    "noTasks": "Sin tareas aún",
+    "tasksHidden": "Tareas ocultas",
+    "tapRequest": "Toca para solicitar acceso",
+    "clickRequest": "Haz clic para solicitar acceso",
+    "loading": "Cargando tablero…"
+  },
+  "task": {
+    "details": "Detalles de la tarea",
+    "edit": "Editar tarea",
+    "new": "Nueva tarea",
+    "title": "Título",
+    "description": "Descripción",
+    "dueDate": "Fecha de vencimiento",
+    "status": "Estado",
+    "assignee": "Asignado a",
+    "unassigned": "— Sin asignar —",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar esta tarea?",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "create": "Crear",
+    "close": "Cerrar",
+    "editAction": "Editar",
+    "moveTo": "Mover a",
+    "deleteTask": "Eliminar tarea",
+    "readOnly": "Esta tarea es solo de lectura. Contacta a tu administrador para cambios."
+  },
+  "profile": {
+    "title": "Configuración de perfil",
+    "displayName": "Nombre para mostrar",
+    "email": "Correo electrónico",
+    "role": "Rol",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "uploadPhoto": "Subir foto",
+    "changePhoto": "Cambiar foto",
+    "photoHint": "PNG, JPG, GIF o WebP • Máx 2 MB",
+    "fileTooBig": "El archivo debe ser de 2 MB o menos",
+    "profileUpdated": "Perfil actualizado",
+    "changePassword": "Cambiar contraseña",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "passwordsNoMatch": "Las contraseñas nuevas no coinciden",
+    "passwordTooShort": "La nueva contraseña debe tener al menos 6 caracteres",
+    "passwordChanged": "Contraseña cambiada",
+    "updating": "Actualizando…"
+  },
+  "invite": {
+    "title": "Invitar miembro",
+    "emailAddress": "Correo electrónico",
+    "emailPlaceholder": "colega@ejemplo.com",
+    "invite": "Invitar",
+    "inviting": "Invitando…",
+    "done": "Listo",
+    "success": "Se ha invitado a {{email}}. Se convertirá en miembro al registrarse."
+  },
+  "invitation": {
+    "title": "Acceso requerido",
+    "description": "Necesitas una invitación para ver las tareas de este tablero. Si no tienes una, ingresa el correo de tu administrador para solicitar acceso.",
+    "adminEmail": "Correo del administrador",
+    "adminPlaceholder": "admin@ejemplo.com",
+    "requestAccess": "Solicitar acceso",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "sent": "Tu solicitud ha sido enviada. El administrador la revisará y te enviará una invitación.",
+    "gotIt": "Entendido"
+  },
+  "lang": {
+    "en": "English",
+    "es": "Español",
+    "zh": "中文",
+    "id": "Bahasa Indonesia"
+  }
+}

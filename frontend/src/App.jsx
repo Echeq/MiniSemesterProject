@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
@@ -59,6 +60,7 @@ function ProfileMenu({ displayName, avatarUrl, onClick }) {
 }
 
 function BoardPage({ session }) {
+  const { t } = useTranslation()
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useBoard()
   const { profile, updateProfile, uploadAvatar, changePassword } =
@@ -99,7 +101,7 @@ function BoardPage({ session }) {
         {loading ? (
           <div className="flex w-full items-center justify-center gap-2 p-6">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-            <p className="text-sm text-slate-500">Loading board…</p>
+            <p className="text-sm text-slate-500">{t('board.loading')}</p>
           </div>
         ) : (
           <Board
@@ -170,13 +172,14 @@ export default function App() {
 }
 
 function AuthGate() {
+  const { t } = useTranslation()
   const { session, loading } = useAuth()
   if (loading) {
     return (
       <div className="flex min-h-full items-center justify-center bg-gradient-to-b from-slate-100 to-slate-200">
         <div className="flex items-center gap-3">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-slate-500">Loading…</p>
+          <p className="text-sm text-slate-500">{t('board.loading')}</p>
         </div>
       </div>
     )

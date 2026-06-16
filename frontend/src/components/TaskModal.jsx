@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 import { STATUSES } from '../hooks/useBoard'
 
-const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
+const LABELS = { todo: 'board.todo', doing: 'board.inProgress', done: 'board.done' }
 
 export default function TaskModal({ task, role, session, onCreate, onUpdate, onDelete, onClose }) {
+  const { t } = useTranslation()
   const editing = Boolean(task)
   const isAdmin = role === 'admin'
   const [title, setTitle] = useState(task?.title ?? '')
@@ -57,7 +59,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
   }
 
   async function handleDelete() {
-    if (!window.confirm('Delete this task?')) return
+    if (!window.confirm(t('task.deleteConfirm'))) return
     setBusy(true)
     try {
       await onDelete(task.id)
@@ -72,7 +74,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
     return (
       <div className="flex h-full flex-col sm:block">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:border-none sm:px-0 sm:mb-4">
-          <h2 className="text-lg font-bold text-slate-800">Task details</h2>
+          <h2 className="text-lg font-bold text-slate-800">{t('task.details')}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -85,32 +87,32 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-0 sm:py-0">
           <div className="mb-4">
-            <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</span>
+            <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('task.title')}</span>
             <p className="text-sm font-semibold text-slate-800">{task.title}</p>
           </div>
           {task.description && (
             <div className="mb-4">
-              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</span>
+              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('task.description')}</span>
               <p className="text-sm text-slate-600 whitespace-pre-wrap">{task.description}</p>
             </div>
           )}
           <div className="mb-4 flex gap-4">
             <div>
-              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</span>
+              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('task.status')}</span>
               <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {LABELS[task.status]}
+                {t(LABELS[task.status])}
               </span>
             </div>
             {task.due_date && (
               <div>
-                <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Due date</span>
+                <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('task.dueDate')}</span>
                 <p className="text-sm text-slate-600">{task.due_date}</p>
               </div>
             )}
           </div>
           {task.assignee?.display_name && (
             <div>
-              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Assignee</span>
+              <span className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('task.assignee')}</span>
               <p className="text-sm text-slate-600">{task.assignee.display_name}</p>
             </div>
           )}
@@ -121,7 +123,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
             onClick={onClose}
             className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors sm:rounded-lg sm:py-2.5"
           >
-            Close
+            {t('task.close')}
           </button>
         </div>
       </div>
@@ -159,7 +161,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:border-none sm:px-0 sm:py-0 sm:mb-4">
             <h2 className="text-lg font-bold text-slate-800">
-              {editing ? 'Edit task' : 'New task'}
+              {editing ? t('task.edit') : t('task.new')}
             </h2>
             <button
               type="button"
@@ -175,7 +177,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
           <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-0 sm:py-0">
             <label className="mb-4 block sm:mb-3">
               <span className="mb-1.5 block text-sm font-semibold text-slate-600">
-                Title
+                {t('task.title')}
               </span>
               <input
                 type="text"
@@ -190,7 +192,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
 
             <label className="mb-4 block sm:mb-3">
               <span className="mb-1.5 block text-sm font-semibold text-slate-600">
-                Description
+                {t('task.description')}
               </span>
               <textarea
                 rows={4}
@@ -203,7 +205,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:gap-3">
               <label className="flex-1">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-600">
-                  Due date
+                  {t('task.dueDate')}
                 </span>
                 <input
                   type="date"
@@ -214,7 +216,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
               </label>
               <label className="flex-1">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-600">
-                  Status
+                  {t('task.status')}
                 </span>
                 <select
                   value={status}
@@ -223,7 +225,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {LABELS[s]}
+                      {t(LABELS[s])}
                     </option>
                   ))}
                 </select>
@@ -233,14 +235,14 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
             {isAdmin && (
               <label className="mb-4 block">
                 <span className="mb-1.5 block text-sm font-semibold text-slate-600">
-                  Assign to
+                  {t('task.assignee')}
                 </span>
                 <select
                   value={assigneeId}
                   onChange={(e) => setAssigneeId(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 sm:rounded-lg sm:px-3 sm:py-2"
                 >
-                  <option value="">— Unassigned —</option>
+                  <option value="">{t('task.unassigned')}</option>
                   {profiles.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.display_name} ({p.role})
@@ -262,7 +264,7 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
                   disabled={busy}
                   className="rounded-xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 active:bg-red-100 disabled:opacity-50 sm:rounded-lg sm:px-3 sm:py-2 transition-colors"
                 >
-                  Delete
+                  {t('task.delete')}
                 </button>
               ) : (
                 <span />
@@ -273,14 +275,14 @@ export default function TaskModal({ task, role, session, onCreate, onUpdate, onD
                   onClick={onClose}
                   className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 active:bg-slate-100 sm:rounded-lg sm:px-4 sm:py-2 transition-colors"
                 >
-                  Cancel
+                  {t('task.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={busy}
                   className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 sm:rounded-lg sm:px-4 sm:py-2 transition-colors"
                 >
-                  {editing ? 'Save' : 'Create'}
+                  {editing ? t('task.save') : t('task.create')}
                 </button>
               </div>
             </div>

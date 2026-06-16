@@ -1,0 +1,101 @@
+{
+  "auth": {
+    "signIn": "登录",
+    "signUp": "注册",
+    "signOut": "退出登录",
+    "displayName": "显示名称",
+    "email": "邮箱",
+    "password": "密码",
+    "signInToBoard": "登录你的看板",
+    "createAccount": "创建账户",
+    "noAccount": "没有账户？立即注册",
+    "hasAccount": "已有账户？立即登录",
+    "checkEmail": "请查看邮箱确认账户，然后登录。"
+  },
+  "header": {
+    "invite": "邀请",
+    "newTask": "+ 新任务",
+    "newTaskShort": "新建",
+    "member": "成员",
+    "guest": "访客"
+  },
+  "board": {
+    "todo": "待办",
+    "inProgress": "进行中",
+    "done": "已完成",
+    "noTasks": "暂无任务",
+    "tasksHidden": "任务已隐藏",
+    "tapRequest": "点击请求访问权限",
+    "clickRequest": "点击请求访问权限",
+    "loading": "加载看板中…"
+  },
+  "task": {
+    "details": "任务详情",
+    "edit": "编辑任务",
+    "new": "新建任务",
+    "title": "标题",
+    "description": "描述",
+    "dueDate": "截止日期",
+    "status": "状态",
+    "assignee": "负责人",
+    "unassigned": "— 未分配 —",
+    "delete": "删除",
+    "deleteConfirm": "删除此任务？",
+    "cancel": "取消",
+    "save": "保存",
+    "create": "创建",
+    "close": "关闭",
+    "editAction": "编辑",
+    "moveTo": "移动到",
+    "deleteTask": "删除任务",
+    "readOnly": "此任务为只读。请联系管理员进行更改。"
+  },
+  "profile": {
+    "title": "个人设置",
+    "displayName": "显示名称",
+    "email": "邮箱",
+    "role": "角色",
+    "save": "保存",
+    "saving": "保存中…",
+    "cancel": "取消",
+    "uploadPhoto": "上传照片",
+    "changePhoto": "更换照片",
+    "photoHint": "PNG、JPG、GIF 或 WebP • 最大 2MB",
+    "fileTooBig": "文件大小不能超过 2MB",
+    "profileUpdated": "个人资料已更新",
+    "changePassword": "修改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "passwordsNoMatch": "两次输入的新密码不一致",
+    "passwordTooShort": "新密码至少需要 6 个字符",
+    "passwordChanged": "密码已更改",
+    "updating": "更新中…"
+  },
+  "invite": {
+    "title": "邀请成员",
+    "emailAddress": "邮箱地址",
+    "emailPlaceholder": "同事@example.com",
+    "invite": "邀请",
+    "inviting": "邀请中…",
+    "done": "完成",
+    "success": "已邀请 {{email}}。对方注册后将自动成为成员。"
+  },
+  "invitation": {
+    "title": "需要访问权限",
+    "description": "你需要邀请才能查看此看板的任务。如果没有邀请，请输入管理员邮箱以请求访问权限。",
+    "adminEmail": "管理员邮箱",
+    "adminPlaceholder": "admin@example.com",
+    "requestAccess": "请求访问",
+    "sending": "发送中…",
+    "cancel": "取消",
+    "sent": "你的请求已发送。管理员审核后会发送邀请给你。",
+    "gotIt": "知道了"
+  },
+  "lang": {
+    "en": "English",
+    "es": "Español",
+    "zh": "中文",
+    "id": "Bahasa Indonesia"
+  }
+}

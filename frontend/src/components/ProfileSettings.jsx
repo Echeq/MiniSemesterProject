@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function ProfileSettings({
   profile,
@@ -8,6 +9,7 @@ export default function ProfileSettings({
   onChangePassword,
   onClose,
 }) {
+  const { t } = useTranslation()
   const fileRef = useRef(null)
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '')
@@ -28,7 +30,7 @@ export default function ProfileSettings({
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 2 * 1024 * 1024) {
-      setError('File must be 2MB or less')
+      setError(t('profile.fileTooBig'))
       return
     }
     setError(null)
@@ -48,7 +50,7 @@ export default function ProfileSettings({
       if (displayName !== (profile?.display_name ?? '')) {
         await onUpdate({ display_name: displayName })
       }
-      setSuccess('Profile updated')
+      setSuccess(t('profile.profileUpdated'))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -61,11 +63,11 @@ export default function ProfileSettings({
     setPasswordError(null)
     setPasswordSuccess(null)
     if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match')
+      setPasswordError(t('profile.passwordsNoMatch'))
       return
     }
     if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters')
+      setPasswordError(t('profile.passwordTooShort'))
       return
     }
     setPasswordBusy(true)
@@ -74,7 +76,7 @@ export default function ProfileSettings({
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      setPasswordSuccess('Password changed')
+      setPasswordSuccess(t('profile.passwordChanged'))
     } catch (err) {
       setPasswordError(err.message)
     } finally {
@@ -92,7 +94,7 @@ export default function ProfileSettings({
         className="sheet-panel sm:sheet-panel-none flex h-full flex-col bg-white sm:max-h-[90vh] sm:w-full sm:max-w-md sm:rounded-xl sm:shadow-xl"
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
-          <h2 className="text-lg font-bold text-slate-800">Profile Settings</h2>
+          <h2 className="text-lg font-bold text-slate-800">{t('profile.title')}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -138,13 +140,13 @@ export default function ProfileSettings({
               onClick={() => fileRef.current?.click()}
               className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100 transition-colors"
             >
-              {avatarUrl || avatarPreview ? 'Change photo' : 'Upload photo'}
+              {avatarUrl || avatarPreview ? t('profile.changePhoto') : t('profile.uploadPhoto')}
             </button>
-            <p className="text-xs text-slate-400">PNG, JPG, GIF or WebP • 2MB max</p>
+            <p className="text-xs text-slate-400">{t('profile.photoHint')}</p>
           </div>
 
           <label className="mb-4 block">
-            <span className="mb-1.5 block text-sm font-semibold text-slate-600">Display name</span>
+            <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.displayName')}</span>
             <input
               type="text"
               required
@@ -156,14 +158,14 @@ export default function ProfileSettings({
           </label>
 
           <div className="mb-6">
-            <span className="mb-1.5 block text-sm font-semibold text-slate-600">Email</span>
+            <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.email')}</span>
             <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700 sm:rounded-lg sm:px-3 sm:py-2">
               {email}
             </p>
           </div>
 
           <div className="mb-6">
-            <span className="mb-1.5 block text-sm font-semibold text-slate-600">Role</span>
+            <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.role')}</span>
             <span className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-medium sm:rounded-lg sm:px-3 sm:py-2 ${
               profile?.role === 'admin'
                 ? 'bg-indigo-50 text-indigo-700'
@@ -196,7 +198,7 @@ export default function ProfileSettings({
               onClick={onClose}
               className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 active:bg-slate-100 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
             >
-              Cancel
+              {t('profile.cancel')}
             </button>
             <button
               type="button"
@@ -204,17 +206,17 @@ export default function ProfileSettings({
               disabled={busy}
               className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
             >
-              {busy ? 'Saving…' : 'Save'}
+              {busy ? t('profile.saving') : t('profile.save')}
             </button>
           </div>
 
           <hr className="my-6 border-slate-200" />
 
-          <h3 className="mb-4 text-sm font-bold text-slate-700">Change password</h3>
+          <h3 className="mb-4 text-sm font-bold text-slate-700">{t('profile.changePassword')}</h3>
 
           <form onSubmit={handlePasswordChange}>
             <label className="mb-4 block">
-              <span className="mb-1.5 block text-sm font-semibold text-slate-600">Current password</span>
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.currentPassword')}</span>
               <input
                 type="password"
                 required
@@ -225,7 +227,7 @@ export default function ProfileSettings({
             </label>
 
             <label className="mb-4 block">
-              <span className="mb-1.5 block text-sm font-semibold text-slate-600">New password</span>
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.newPassword')}</span>
               <input
                 type="password"
                 required
@@ -237,7 +239,7 @@ export default function ProfileSettings({
             </label>
 
             <label className="mb-5 block">
-              <span className="mb-1.5 block text-sm font-semibold text-slate-600">Confirm new password</span>
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.confirmPassword')}</span>
               <input
                 type="password"
                 required
@@ -260,7 +262,7 @@ export default function ProfileSettings({
                 disabled={passwordBusy}
                 className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
               >
-                {passwordBusy ? 'Updating…' : 'Change password'}
+                {passwordBusy ? t('profile.updating') : t('profile.changePassword')}
               </button>
             </div>
           </form>
