@@ -162,6 +162,34 @@ export default function ProfileSettings({
             </p>
           </div>
 
+          <div className="mb-6">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-600">Role</span>
+            <span className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-medium sm:rounded-lg sm:px-3 sm:py-2 ${
+              profile?.role === 'admin'
+                ? 'bg-indigo-50 text-indigo-700'
+                : profile?.role === 'member'
+                  ? 'bg-amber-50 text-amber-600'
+                  : 'bg-slate-50 text-slate-500'
+            }`}>
+              {profile?.role === 'admin' && (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              )}
+              {profile?.role === 'member' && (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
+              {profile?.role === 'unknown' && (
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              {profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : 'Unknown'}
+            </span>
+          </div>
+
           <div className="mb-4 flex justify-end gap-2">
             <button
               type="button"
