@@ -1,50 +1,56 @@
 # MiniSemesterProject
 
-A Kanban board built with React 19 + Supabase.
-
-## Team
-
-| Role | Name |
-|------|------|
-| Frontend Lead & UI Specialist | @MemerZxZ |
-| Backend Lead & API Architect | @goanarbolkong |
-| Project Manager & Fullstack QA | @Echeq |
+> A real-time Kanban board built with **React 19** and **Supabase** — drag-and-drop task management with live updates across all clients.
 
 ## Tech Stack
 
-- **Frontend:** React 19 + Vite 8, Tailwind CSS v4, TypeScript 6, @dnd-kit
-- **Backend:** Supabase (Auth, PostgREST, Realtime)
-- **Export:** xlsx, jsPDF
-- **AI Assistant:** OpenCode
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite 8, Tailwind CSS v4, TypeScript 6, @dnd-kit |
+| Backend | Supabase (Auth, PostgREST, Realtime, PostgreSQL) |
+| Testing | Vitest 4, Thunder Client |
+| AI Tooling | OpenCode (@ai-log, @ai-commit) |
+
+[Architecture →](docs/architecture.md)
 
 ## Features
 
-- Kanban board (drag & drop with @dnd-kit)
-- Real-time updates via Supabase Realtime
-- Task management with due dates and assignments
-- Export to XLSX and PDF
-- AI-powered development with auto-logging and auto-committing
+- **Drag-and-drop Kanban** — reorder cards and move between columns using @dnd-kit
+- **Real-time sync** — every change broadcasts instantly via Supabase Realtime
+- **User authentication** — sign up and sign in with Supabase Auth
+- **Task management** — titles, descriptions, due dates, and assignees
+- **Mobile responsive** — adaptive layout for phones and tablets
+- **Export** — download your board as XLSX or PDF
 
-## Database
+## Quick Start
 
-The database runs on **Supabase** (PostgreSQL). Migrations are in `supabase/migrations/`.
+```bash
+cd frontend
+npm install
+# Create frontend/.env with Supabase credentials
+cp .env.example .env    # or create manually
+npm run dev
+```
 
-Two tables: `profiles` (one per auth user) and `tasks` (Kanban cards with status `todo`/`doing`/`done`, fractional-position ordering, and RLS policies).
+> **Prerequisites:** Node.js 20+, Supabase project (free tier works).
 
-## Quick Links
+[Full setup guide →](docs/setup.md)
 
-| Guide | Description |
-|-------|-------------|
-| [API Reference](docs/api.md) | Supabase auth, tasks CRUD, realtime — tested via Thunder Client |
-| [Project Structure](docs/guide/structure.md) | Full directory tree |
-| [Frontend setup](docs/setup/frontend.md) | React 19, Vite, dependencies |
-| [Backend setup](docs/setup/backend.md) | NestJS, Prisma, PostgreSQL, Redis |
-| [Supabase setup](docs/setup/supabase.md) | Supabase project, credentials, RLS |
-| [AI Guide](docs/guide/ai.md) | OpenCode, @ai-log, @ai-commit, workflow |
+## Documentation
 
-## AI Skills
+| Page | What you'll find |
+|---|---|
+| [Setup Guide](docs/setup.md) | Install dependencies, configure Supabase, run the project |
+| [Architecture](docs/architecture.md) | How React, Supabase Auth, Realtime, and the database connect |
+| [API Reference](docs/api.md) | Auth endpoints, task CRUD, realtime subscriptions, Thunder Client walkthrough |
+| [Database](docs/database.md) | Tables, enums, RLS policies, migrations, and seed data |
+| [Project Structure](docs/guide/structure.md) | Directory tree and what each folder does |
+| [AI Guide](docs/guide/ai.md) | OpenCode workflow, @ai-log, @ai-commit |
 
-| Skill | Trigger | What it does |
-|-------|---------|-------------|
-| **ai-log-generate** | `@ai-log` | Logs the last AI interaction to `docs/log/` |
-| **ai-commit** | `@ai-commit` | Stages all changes and creates a conventional commit |
+## Team
+
+| Role | Member |
+|---|---|
+| Frontend Lead & UI Specialist | @MemerZxZ |
+| Backend Lead & API Architect | @goanarbolkong |
+| Project Manager & Fullstack QA | @Echeq |
