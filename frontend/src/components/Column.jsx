@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -5,7 +6,7 @@ import {
 } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard'
 
-const LABELS = { todo: 'To Do', doing: 'In progress', done: 'Done' }
+const LABELS = { todo: 'board.todo', doing: 'board.inProgress', done: 'board.done' }
 const ICONS = {
   todo: (
     <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -40,6 +41,7 @@ const DESKTOP_BG = {
 }
 
 export default function Column({ status, tasks, role, onTaskClick, onInvitationClick, onMobileAction, mobile }) {
+  const { t } = useTranslation()
   const { setNodeRef } = useDroppable({ id: status })
   const isUnknown = role === 'unknown'
 
@@ -55,7 +57,7 @@ export default function Column({ status, tasks, role, onTaskClick, onInvitationC
         <div className={`rounded-xl border border-dashed border-slate-300 bg-white/50 text-center text-slate-400 ${
           mobile ? 'py-4 text-xs' : 'p-5 text-sm'
         }`}>
-          No tasks yet
+          {t('board.noTasks')}
         </div>
       )}
       {tasks.map((task) => (
@@ -78,7 +80,7 @@ export default function Column({ status, tasks, role, onTaskClick, onInvitationC
           <div className="flex items-center gap-1.5">
             {ICONS[status]}
             <h2 className="text-sm font-bold text-slate-700">
-              {LABELS[status]}
+              {t(LABELS[status])}
             </h2>
           </div>
           <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-slate-500 shadow-xs">
@@ -91,8 +93,8 @@ export default function Column({ status, tasks, role, onTaskClick, onInvitationC
               onClick={handleClick}
               className="rounded-xl border border-dashed border-slate-300 bg-white/50 py-8 text-center cursor-pointer hover:bg-white/80 transition-colors"
             >
-              <p className="text-xs text-slate-400 mb-1">Tasks hidden</p>
-              <p className="text-xs text-indigo-500 font-medium">Tap to request access</p>
+              <p className="text-xs text-slate-400 mb-1">{t('board.tasksHidden')}</p>
+              <p className="text-xs text-indigo-500 font-medium">{t('board.tapRequest')}</p>
             </div>
           ) : cardList}
         </div>
@@ -107,9 +109,9 @@ export default function Column({ status, tasks, role, onTaskClick, onInvitationC
       <div className="flex items-center justify-between px-5 py-3.5">
         <div className="flex items-center gap-2">
           {ICONS[status]}
-          <h2 className="text-sm font-bold text-slate-700">
-            {LABELS[status]}
-          </h2>
+            <h2 className="text-sm font-bold text-slate-700">
+              {t(LABELS[status])}
+            </h2>
         </div>
         <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-slate-500 shadow-xs">
           {tasks.length}
@@ -125,8 +127,8 @@ export default function Column({ status, tasks, role, onTaskClick, onInvitationC
               onClick={handleClick}
               className="rounded-xl border border-dashed border-slate-300 bg-white/50 p-8 text-center cursor-pointer hover:bg-white/80 transition-colors"
             >
-              <p className="text-sm text-slate-400 mb-1">Tasks hidden</p>
-              <p className="text-xs text-indigo-500 font-medium">Click to request access</p>
+              <p className="text-sm text-slate-400 mb-1">{t('board.tasksHidden')}</p>
+              <p className="text-xs text-indigo-500 font-medium">{t('board.clickRequest')}</p>
             </div>
           ) : cardList}
         </div>

@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 
 export default function AuthForm() {
+  const { t } = useTranslation()
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,7 +25,7 @@ export default function AuthForm() {
           options: { data: { display_name: displayName } },
         })
         if (error) throw error
-        setMessage('Check your email to confirm your account, then sign in.')
+        setMessage(t('auth.checkEmail'))
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -47,14 +49,14 @@ export default function AuthForm() {
         <div className="mb-6 text-center sm:text-left">
           <h1 className="text-3xl font-bold text-slate-800 sm:text-2xl">TaskFlow</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {mode === 'signin' ? 'Sign in to your board' : 'Create an account'}
+            {mode === 'signin' ? t('auth.signInToBoard') : t('auth.createAccount')}
           </p>
         </div>
 
         {mode === 'signup' && (
           <label className="mb-4 block sm:mb-3">
             <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
-              Display name
+              {t('auth.displayName')}
             </span>
             <input
               type="text"
@@ -69,7 +71,7 @@ export default function AuthForm() {
 
         <label className="mb-4 block sm:mb-3">
           <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
-            Email
+            {t('auth.email')}
           </span>
           <input
             type="email"
@@ -82,7 +84,7 @@ export default function AuthForm() {
 
         <label className="mb-6 block sm:mb-5">
           <span className="mb-1.5 block text-sm font-semibold text-slate-600 sm:font-medium">
-            Password
+            {t('auth.password')}
           </span>
           <input
             type="password"
@@ -102,7 +104,7 @@ export default function AuthForm() {
           disabled={busy}
           className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 sm:rounded-lg sm:py-2.5 transition-colors"
         >
-          {mode === 'signin' ? 'Sign in' : 'Sign up'}
+          {mode === 'signin' ? t('auth.signIn') : t('auth.signUp')}
         </button>
 
         <button
@@ -114,9 +116,7 @@ export default function AuthForm() {
           }}
           className="mt-4 w-full text-center text-sm text-indigo-600 hover:underline py-2"
         >
-          {mode === 'signin'
-            ? "Don't have an account? Sign up"
-            : 'Already have an account? Sign in'}
+          {mode === 'signin' ? t('auth.noAccount') : t('auth.hasAccount')}
         </button>
       </form>
     </div>

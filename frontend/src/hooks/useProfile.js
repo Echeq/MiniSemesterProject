@@ -75,5 +75,38 @@ export function useProfile(session) {
     [session],
   )
 
-  return { profile, loading, updateProfile, uploadAvatar, changePassword }
+  const updateEmail = useCallback(
+    async (newEmail, password) => {
+      const email = session?.user?.email
+      if (!email) throw new Error('No user email found')
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) throw new Error('Current password is incorrect')
+      const { error: updateError } = await supabase.auth.updateUser({
+        email: newEmail,
+      })
+      if (updateError) throw updateError
+    },
+    [session],
+  )
+
+  const deleteAccount = useCallback(
+    async (password) => {
+      const email = session?.user?.email
+      if (!email) throw new Error('No user email found')
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) throw new Error('Current password is incorrect')
+      const { error: rpcError } = await supabase.rpc('delete_account')
+      if (rpcError) throw rpcError
+      await supabase.auth.signOut()
+    },
+    [session],
+  )
+
+  return { profile, loading, updateProfile, uploadAvatar, changePassword, updateEmail, deleteAccount }
 }

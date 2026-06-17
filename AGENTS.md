@@ -2,66 +2,68 @@
 
 ## AI Commands
 
-- `@ai-log` — Log the last interaction to `docs/log/`
-- `@ai-commit` — Stage all changes and create a conventional commit
+- `@ai-log` — Log last interaction to `docs/log/`
+- `@ai-commit` — Stage all + conventional commit
 
 ## Commands
 
 | Directory | Command | Action |
 |---|---|---|
-| `frontend/` | `npm run dev` | Vite dev server (needs `frontend/.env`) |
-| `frontend/` | `npm run build` | Production build (no typecheck) |
-| `frontend/` | `npm run preview` | Preview production build locally |
-| `frontend/` | `npm test` | Run vitest (requires `frontend/.env`) |
-| `frontend/` | `npm run test:watch` | Vitest watch mode |
+| `frontend/` | `npm run dev` | Vite dev server (needs `.env`) |
+| `frontend/` | `npm test` | Vitest run (needs `.env` — hits real Supabase) |
+| `frontend/` | `npm run test:watch` | Vitest watch |
+| `frontend/` | `npm run build` | Vite production build |
 | `backend/` | `npm run start:dev` | NestJS dev server (--watch) |
-| `backend/` | `npm run build` | Compile NestJS to `dist/` |
-| `backend/` | `npm run format` | Prettier (singleQuote, trailingComma: all) |
-| `backend/` | `npm run lint` | ESLint --fix (flat config in `eslint.config.mjs`) |
-| `backend/` | `npm test` | Jest unit tests (`*.spec.ts` in `src/`) |
-| `backend/` | `npm run test:e2e` | Jest e2e tests (`*.e2e-spec.ts`) |
-| `backend/` | `npx prisma generate` | Regenerate Prisma client to `backend/generated/prisma/` |
+| `backend/` | `npm run build` | Compile to `dist/` |
+| `backend/` | `npm run lint` | ESLint --fix (flat config) |
+| `backend/` | `npm run format` | Prettier `src/` + `test/` |
+| `backend/` | `npm test` | Jest (`*.spec.ts` in `src/`) |
+| `backend/` | `npm run test:e2e` | Jest e2e (`*.e2e-spec.ts`) |
+| `backend/` | `npx prisma generate` | Regenerate client to `generated/prisma/` |
 | `backend/` | `npx prisma migrate dev` | Run pending Prisma migrations |
-| `backend/` | `npx prisma studio` | Open Prisma DB browser |
 | `supabase/` | `supabase start` | Start local Supabase |
 | `supabase/` | `supabase db reset` | Run all migrations + seed |
 
+## Dead code — do NOT edit
+
+| Path | Why |
+|---|---|
+| `backend/` | NestJS scaffold with empty AppModule (hello world only). Prisma client deps installed but nothing wired. |
+| `frontend/src/main.ts`, `App.vue`, `style.css`, `stores/`, `pages/`, `composables/` | Vue 3 remnants after React migration |
+| `frontend/vite.config.ts` | Vue plugin config — use `vite.config.js` (React + Tailwind) instead |
+| `backend/prisma/schema.prisma` | Stale original design — NOT the active schema (see Supabase migrations) |
+| `frontend/src/api/client.ts` | Legacy NestJS fetch wrapper — unused (app uses `supabase-js` directly) |
+| `frontend/node_modules/socket.io-client` | Dep exists but unused — realtime is Supabase Realtime, not Socket.IO |
+
 ## Architecture
 
-- **Frontend** is **React 19 + Vite 8 + Tailwind 4 + @dnd-kit + Supabase**.  
-  Entry: `frontend/src/main.jsx` → `App.jsx`.  
-  **Vue 3 scaffolding** (`App.vue`, `main.ts`, `pages/`, `stores/`) exists but is **dead code** — do not edit.  
-  Two vite configs: `vite.config.js` (React) is active; `vite.config.ts` (Vue) is dead.
-- **Supabase** is the *actual* current backend (auth, DB, realtime, storage).  
-  Migrations in `supabase/migrations/` (5 files). Tasks use `task_status` enum: `todo | doing | done`.  
-  Drag-and-drop ordering uses a custom `positionBetween()` scheme (see `frontend/tests/api.test.js:234` and `supabase/README.md`).
-  Supabase client returns `null` when `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` missing — app renders a setup hint instead of crashing.
-  Avatar storage bucket (`avatars/`) — public read, authenticated upload at `avatars/{userId}/`, max 2 MB, PNG/JPEG/GIF/WebP only.
-  **Role system** (migration `20260616100000`): `profiles.role` = `admin | member | unknown`. Admins: full CRUD + assign tasks. Members: read-only, see only assigned tasks. Unknown: empty board + invitation popup. First signup becomes admin. Invited users (via `invitations` table) become members on signup.
-- **NestJS backend** (`backend/`) is scaffolded only (`GET /` → "Hello World!").  
-  No Prisma migrations directory exists yet. Feature modules (Prisma service, Socket.IO gateway) not built.  
-  Prisma 6 uses `backend/prisma.config.ts` for config (not auto-detected).
-- **Two DB schemas** coexist: the **active Supabase schema** (`supabase/migrations/`) and the **future Prisma schema** (`backend/prisma/schema.prisma`). They are separate systems — do not reconcile.
-- **No CI/CD** configured.
-- OpenCode config is in `.opencode/` (no `opencode.json` at root).
-- AI workflow reference: `docs/guide/ai.md`.
+- **Frontend** = React 19 + Vite 8 + Tailwind 4 + @dnd-kit + Supabase JS. Entry: `src/main.jsx` → `App.jsx`. Frontend `src/` is JSX (tsconfig is build-tooling only).
+- **Backend** = Supabase (auth, PostgREST, realtime, storage). NestJS (`backend/`) is an unbuilt scaffold — do not touch.
+- **DB** = two separate schemas: active Supabase migrations (`supabase/migrations/`), stale Prisma schema (`backend/prisma/schema.prisma`). Never reconcile them.
+- **i18n** = i18next + react-i18next. Locales at `src/locales/{en,es,id,zh}.json`.
+- **@dnd-kit versions**: core@6, sortable@10, utilities@3 (incompatible majors — be careful with imports).
+- **Position system**: float8 `position` column, midpoint on reorder (`positionBetween` at `frontend/tests/api.test.js:234`). No re-indexing.
+- **Role system** (`profiles.role`): `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite popup). First signup → admin. Invited signups → member.
+- **`created_by` is immutable** via column-level grants (migration `20260612120000`). Only `title, description, status, due_date, position, assignee` are updatable.
+- **DB constraints**: `title` 1–200 chars, `description` ≤5000 chars, `display_name` ≤100 chars. Trigger truncates to 100 on signup to prevent registration failures.
+- **Realtime**: `tasks` table in `supabase_realtime` publication with `replica identity full`. Frontend subscribes via `supabase.channel('board')` — no Socket.IO server.
 
-## Supabase constraints
+## Setup gotchas
 
-| Field | Limit |
-|---|---|
-| `tasks.title` | 1–200 characters |
-| `tasks.description` | ≤ 5000 characters |
-| `profiles.display_name` | ≤ 100 characters |
-| Tasks table | RLS enforced, single shared board |
-| Avatar storage | 2 MB, PNG/JPEG/GIF/WebP only, path `avatars/{userId}/` |
+- `frontend/.env` must contain `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. No `.env.example` exists — create manually.
+- `VITE_API_BASE_URL` (default `http://localhost:3000`) is for the legacy NestJS backend — unused. Do not rely on it.
+- Dev test account: `dev@taskflow.local` / `devpass123` (pre-confirmed in target Supabase project).
+- Tests call `dotenv.config()` directly (not Vite env), so they work without Vite.
+- `supabase/seed.sql` is idempotent but requires at least one auth user before running.
+- Prisma 6 in `backend/` requires `prisma.config.ts` (not auto-detected). Output goes to `backend/generated/prisma/` (gitignored).
+- `supabaseClient.js` exports `null` when env vars are missing — the app degrades gracefully instead of crashing.
 
 ## Conventions
 
-- `.env` files and `backend/generated/prisma/` are never committed.
-- Conventional commits: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
-- Frontend `src/` is **JSX** (not TypeScript). `tsconfig.json` is for config/build tooling only.
-- Frontend tests hit the real Supabase API. Before running: create `frontend/.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, and ensure the dev account `dev@taskflow.local` / `devpass123` exists in the target project.
-  Tests call `dotenv.config()` directly (not Vite env handling), so they work without Vite.
-- No `frontend/.env.example` exists despite `docs/setup.md` referencing one — create `.env` manually.
-- `supabase/seed.sql` requires at least one auth user before seeding. See `frontend/tests/api.test.js:28` for test credentials.
+- `.env` files and `backend/generated/prisma/` are gitignored — never commit.
+- Conventional commits: `feat|fix|docs|style|refactor|perf|test|chore`.
+- Tailwind v4 uses `@tailwindcss/vite` plugin (not PostCSS config file).
+- Avatar bucket: `avatars/`, public read, authenticated upload at `avatars/{userId}/`, max 2 MB, PNG/JPEG/GIF/WebP only.
+- RLS enforced on all tables — every Supabase query runs as the signed-in user.
+- Backend Prettier config (`.prettierrc`): `singleQuote: true, trailingComma: "all"`.
+- OpenCode config lives in `.opencode/` (no root opencode.json).
