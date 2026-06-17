@@ -1,5 +1,10 @@
 # MiniSemesterProject
 
+> **Current system:** the project now runs on **React + Vite (frontend)** and
+> **Supabase (backend)**. For up-to-date setup, features, and architecture, see
+> **[docs/CHANGES.md](docs/CHANGES.md)**. The notes below are kept for history and
+> may reference the earlier Vue 3 + NestJS approach.
+
 A full-stack project with Vue 3 frontend and NestJS backend.
 
 ## Team

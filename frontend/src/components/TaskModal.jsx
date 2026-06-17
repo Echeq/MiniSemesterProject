@@ -1,14 +1,26 @@
 import { useState } from 'react'
 import { STATUSES } from '../hooks/useBoard'
+import Modal from './Modal'
 
 const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 
-export default function TaskModal({ task, onCreate, onUpdate, onDelete, onClose }) {
+export default function TaskModal({
+  task,
+  members = [],
+  projects = [],
+  defaultProjectId = null,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onClose,
+}) {
   const editing = Boolean(task)
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
   const [status, setStatus] = useState(task?.status ?? 'todo')
+  const [assignee, setAssignee] = useState(task?.assignee ?? '')
+  const [projectId, setProjectId] = useState(task?.project_id ?? defaultProjectId ?? '')
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
@@ -17,16 +29,16 @@ export default function TaskModal({ task, onCreate, onUpdate, onDelete, onClose 
     setError(null)
     setBusy(true)
     try {
-      if (editing) {
-        await onUpdate(task.id, {
-          title,
-          description,
-          due_date: dueDate || null,
-          status,
-        })
-      } else {
-        await onCreate({ title, description, due_date: dueDate, status })
+      const fields = {
+        title,
+        description,
+        due_date: dueDate || null,
+        status,
+        assignee: assignee || null,
+        project_id: projectId || null,
       }
+      if (editing) await onUpdate(task.id, fields)
+      else await onCreate(fields)
       onClose()
     } catch (err) {
       setError(err.message)
@@ -46,110 +58,63 @@ export default function TaskModal({ task, onCreate, onUpdate, onDelete, onClose 
     }
   }
 
+  const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--fg)]'
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-      onClick={onClose}
-    >
-      <form
-        onSubmit={handleSubmit}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
-      >
-        <h2 className="mb-4 text-lg font-bold text-slate-800">
-          {editing ? 'Edit task' : 'New task'}
-        </h2>
-
+    <Modal title={editing ? 'Edit task' : 'New task'} onClose={onClose}>
+      <form onSubmit={handleSubmit}>
         <label className="mb-3 block">
-          <span className="mb-1 block text-sm font-medium text-slate-600">
-            Title
-          </span>
-          <input
-            type="text"
-            required
-            maxLength={200}
-            autoFocus
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
+          <span className={labelCls}>Title</span>
+          <input type="text" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder="What needs doing?" />
         </label>
 
         <label className="mb-3 block">
-          <span className="mb-1 block text-sm font-medium text-slate-600">
-            Description
-          </span>
-          <textarea
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
+          <span className={labelCls}>Description</span>
+          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder="Add more detail…" />
         </label>
 
-        <div className="mb-5 flex gap-3">
+        <div className="mb-3 flex gap-3">
           <label className="flex-1">
-            <span className="mb-1 block text-sm font-medium text-slate-600">
-              Due date
-            </span>
-            <input
-              type="date"
-              value={dueDate ?? ''}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            />
+            <span className={labelCls}>Due date</span>
+            <input type="date" value={dueDate ?? ''} onChange={(e) => setDueDate(e.target.value)} className="input" />
           </label>
           <label className="flex-1">
-            <span className="mb-1 block text-sm font-medium text-slate-600">
-              Status
-            </span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {LABELS[s]}
-                </option>
-              ))}
+            <span className={labelCls}>Status</span>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
+              {STATUSES.map((s) => <option key={s} value={s}>{LABELS[s]}</option>)}
             </select>
           </label>
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+        <div className="mb-5 flex gap-3">
+          <label className="flex-1">
+            <span className={labelCls}>Assignee</span>
+            <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="input">
+              <option value="">Unassigned</option>
+              {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
+            </select>
+          </label>
+          <label className="flex-1">
+            <span className={labelCls}>Project</span>
+            <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="input">
+              <option value="">Shared board</option>
+              {projects.filter((p) => p.status === 'active').map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </label>
+        </div>
+
+        {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
         <div className="flex items-center justify-between">
           {editing ? (
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={busy}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-            >
-              Delete
-            </button>
-          ) : (
-            <span />
-          )}
+            <button type="button" onClick={handleDelete} disabled={busy} className="btn btn-danger">Delete</button>
+          ) : <span />}
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={busy}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {editing ? 'Save' : 'Create'}
-            </button>
+            <button type="button" onClick={onClose} className="btn btn-default">Cancel</button>
+            <button type="submit" disabled={busy} className="btn btn-primary">{editing ? 'Save' : 'Create'}</button>
           </div>
         </div>
       </form>
-    </div>
+    </Modal>
   )
 }
