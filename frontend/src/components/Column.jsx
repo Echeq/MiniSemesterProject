@@ -39,8 +39,37 @@ const DESKTOP_BG = {
   done: 'bg-green-50/60',
 }
 
-export default function Column({ status, tasks, onTaskClick, onMobileAction, mobile }) {
+export default function Column({ status, tasks, role, onTaskClick, onInvitationClick, onMobileAction, mobile }) {
   const { setNodeRef } = useDroppable({ id: status })
+  const isUnknown = role === 'unknown'
+
+  function handleClick() {
+    if (isUnknown) {
+      onInvitationClick?.()
+    }
+  }
+
+  const cardList = (
+    <div className="flex flex-col gap-2.5 overflow-y-auto" style={{ minHeight: isUnknown ? '80px' : undefined }}>
+      {tasks.length === 0 && !isUnknown && (
+        <div className={`rounded-xl border border-dashed border-slate-300 bg-white/50 text-center text-slate-400 ${
+          mobile ? 'py-4 text-xs' : 'p-5 text-sm'
+        }`}>
+          No tasks yet
+        </div>
+      )}
+      {tasks.map((task) => (
+        <div key={task.id} onClick={isUnknown ? handleClick : undefined}>
+          <TaskCard
+            task={task}
+            role={role}
+            onClick={isUnknown ? undefined : () => onTaskClick?.(task)}
+            mobile={mobile}
+          />
+        </div>
+      ))}
+    </div>
+  )
 
   if (mobile) {
     return (
@@ -57,19 +86,15 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
           </span>
         </div>
         <div className="flex flex-col gap-2.5 px-3 pb-3 overflow-y-auto max-h-[50vh] min-h-0">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onClick={() => onMobileAction?.(task)}
-              mobile
-            />
-          ))}
-          {tasks.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white/50 py-4 text-center text-xs text-slate-400">
-              No tasks yet
+          {isUnknown ? (
+            <div
+              onClick={handleClick}
+              className="rounded-xl border border-dashed border-slate-300 bg-white/50 py-8 text-center cursor-pointer hover:bg-white/80 transition-colors"
+            >
+              <p className="text-xs text-slate-400 mb-1">Tasks hidden</p>
+              <p className="text-xs text-indigo-500 font-medium">Tap to request access</p>
             </div>
-          )}
+          ) : cardList}
         </div>
       </div>
     )
@@ -95,14 +120,15 @@ export default function Column({ status, tasks, onTaskClick, onMobileAction, mob
         strategy={verticalListSortingStrategy}
       >
         <div ref={setNodeRef} className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-4 pb-4">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={() => onTaskClick?.(task)} />
-          ))}
-          {tasks.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white/50 p-5 text-center text-sm text-slate-400">
-              No tasks yet
+          {isUnknown ? (
+            <div
+              onClick={handleClick}
+              className="rounded-xl border border-dashed border-slate-300 bg-white/50 p-8 text-center cursor-pointer hover:bg-white/80 transition-colors"
+            >
+              <p className="text-sm text-slate-400 mb-1">Tasks hidden</p>
+              <p className="text-xs text-indigo-500 font-medium">Click to request access</p>
             </div>
-          )}
+          ) : cardList}
         </div>
       </SortableContext>
     </div>

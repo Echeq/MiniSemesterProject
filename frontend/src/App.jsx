@@ -9,6 +9,8 @@ import Board from './components/Board'
 import TaskModal from './components/TaskModal'
 import ProfileSettings from './components/ProfileSettings'
 import TaskActionSheet from './components/TaskActionSheet'
+import InvitationPopup from './components/InvitationPopup'
+import InviteDialog from './components/InviteDialog'
 
 function MissingEnv() {
   return (
@@ -64,6 +66,10 @@ function BoardPage({ session }) {
   const [taskModal, setTaskModal] = useState(null)
   const [profileModal, setProfileModal] = useState(false)
   const [actionTask, setActionTask] = useState(null)
+  const [invitationPopup, setInvitationPopup] = useState(false)
+  const [inviteDialog, setInviteDialog] = useState(false)
+
+  const role = profile?.role ?? 'unknown'
 
   const displayName =
     profile?.display_name ||
@@ -72,9 +78,20 @@ function BoardPage({ session }) {
 
   const displayAvatar = profile?.avatar_url || null
 
+  const filteredTasks = role === 'member'
+    ? tasks.filter((t) => t.assignee_id === session.user.id)
+    : role === 'unknown'
+      ? []
+      : tasks
+
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-slate-50 to-white sm:bg-gradient-to-br sm:from-slate-50 sm:to-slate-100/50 sm:pb-16">
-      <Header displayName={displayName} onNewTask={() => setTaskModal('new')} />
+      <Header
+        displayName={displayName}
+        role={role}
+        onNewTask={() => setTaskModal('new')}
+        onInvite={() => setInviteDialog(true)}
+      />
       {error && (
         <p className="px-6 py-2 text-sm text-red-600">Error: {error}</p>
       )}
@@ -86,16 +103,19 @@ function BoardPage({ session }) {
           </div>
         ) : (
           <Board
-            tasks={tasks}
+            tasks={filteredTasks}
+            role={role}
             updateTask={updateTask}
             onTaskClick={(task) => setTaskModal(task)}
             onMobileAction={setActionTask}
+            onInvitationClick={() => setInvitationPopup(true)}
           />
         )}
       </div>
       {actionTask && (
         <TaskActionSheet
           task={actionTask}
+          role={role}
           onEdit={(task) => setTaskModal(task)}
           onMove={updateTask}
           onDelete={deleteTask}
@@ -105,10 +125,24 @@ function BoardPage({ session }) {
       {taskModal && (
         <TaskModal
           task={taskModal === 'new' ? null : taskModal}
+          role={role}
+          session={session}
           onCreate={createTask}
           onUpdate={updateTask}
           onDelete={deleteTask}
           onClose={() => setTaskModal(null)}
+        />
+      )}
+      {invitationPopup && (
+        <InvitationPopup
+          userId={session.user.id}
+          onClose={() => setInvitationPopup(false)}
+        />
+      )}
+      {inviteDialog && (
+        <InviteDialog
+          adminId={session.user.id}
+          onClose={() => setInviteDialog(false)}
         />
       )}
       <ProfileMenu

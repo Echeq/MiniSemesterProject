@@ -21,7 +21,9 @@ function dueBadge(due_date, status) {
   )
 }
 
-export default function TaskCard({ task, onClick, overlay = false, mobile = false }) {
+export default function TaskCard({ task, onClick, overlay = false, mobile = false, role }) {
+  const canDrag = role === 'admin' && !overlay
+
   if (mobile) {
     return (
       <div
@@ -51,22 +53,25 @@ export default function TaskCard({ task, onClick, overlay = false, mobile = fals
   }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: task.id, disabled: overlay })
+    useSortable({ id: task.id, disabled: !canDrag })
 
   const style = overlay
     ? undefined
     : { transform: CSS.Transform.toString(transform), transition }
 
+  const cursorClass = canDrag
+    ? 'cursor-grab active:cursor-grabbing'
+    : 'cursor-pointer'
+
   return (
     <div
       ref={overlay ? undefined : setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(canDrag ? { ...attributes, ...listeners } : {})}
       onClick={() => onClick?.(task)}
-      className={`cursor-grab rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-300 hover:shadow-md active:cursor-grabbing transition-all ${
+      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all ${
         isDragging ? 'opacity-40' : ''
-      } ${overlay ? 'rotate-2 shadow-lg' : ''}`}
+      } ${overlay ? 'rotate-2 shadow-lg' : ''} ${cursorClass}`}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-semibold text-slate-800 leading-snug">{task.title}</p>

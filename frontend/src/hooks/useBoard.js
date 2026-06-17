@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../api/supabaseClient'
 
 const TASK_SELECT =
-  '*, assignee:profiles!tasks_assignee_fkey(display_name, avatar_url)'
+  '*, assignee_id:assignee, assignee:profiles!tasks_assignee_fkey(display_name, avatar_url)'
 
 export const STATUSES = ['todo', 'doing', 'done']
 
@@ -63,20 +63,22 @@ export function useBoard() {
   }, [refetch])
 
   const createTask = useCallback(
-    async ({ title, description, due_date, status = 'todo' }) => {
+    async ({ title, description, due_date, status = 'todo', assignee }) => {
       const { data: { user } } = await supabase.auth.getUser()
       const inColumn = tasks.filter((t) => t.status === status)
       const maxPosition = inColumn.length
         ? Math.max(...inColumn.map((t) => t.position))
         : 0
-      const { error } = await supabase.from('tasks').insert({
+      const payload = {
         title,
         description,
         due_date: due_date || null,
         status,
         position: maxPosition + 1024,
         created_by: user.id,
-      })
+      }
+      if (assignee) payload.assignee = assignee
+      const { error } = await supabase.from('tasks').insert(payload)
       if (error) throw error
     },
     [tasks],

@@ -13,9 +13,17 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import Column from './Column'
 import TaskCard from './TaskCard'
 
-export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }) {
+export default function Board({
+  tasks,
+  role,
+  updateTask,
+  onTaskClick,
+  onMobileAction,
+  onInvitationClick,
+}) {
   const [activeTask, setActiveTask] = useState(null)
   const isMobile = useIsMobile()
+  const isAdmin = role === 'admin'
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -28,9 +36,14 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
     STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)]),
   )
 
+  function handleDragStart({ active }) {
+    if (!isAdmin) return
+    setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
+  }
+
   function handleDragEnd({ active, over }) {
     setActiveTask(null)
-    if (!over) return
+    if (!over || !isAdmin) return
 
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
@@ -61,7 +74,9 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
             key={status}
             status={status}
             tasks={byStatus[status]}
+            role={role}
             onTaskClick={onTaskClick}
+            onInvitationClick={onInvitationClick}
             onMobileAction={onMobileAction}
             mobile
           />
@@ -74,9 +89,7 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={({ active }) =>
-        setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
-      }
+      onDragStart={handleDragStart}
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >
@@ -86,12 +99,14 @@ export default function Board({ tasks, updateTask, onTaskClick, onMobileAction }
             key={status}
             status={status}
             tasks={byStatus[status]}
+            role={role}
             onTaskClick={onTaskClick}
+            onInvitationClick={onInvitationClick}
           />
         ))}
       </div>
       <DragOverlay>
-        {activeTask && <TaskCard task={activeTask} overlay />}
+        {activeTask && <TaskCard task={activeTask} overlay role={role} />}
       </DragOverlay>
     </DndContext>
   )
