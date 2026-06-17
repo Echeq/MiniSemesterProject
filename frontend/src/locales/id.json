@@ -70,7 +70,16 @@
     "passwordsNoMatch": "Kata sandi baru tidak cocok",
     "passwordTooShort": "Kata sandi baru minimal 6 karakter",
     "passwordChanged": "Kata sandi diubah",
-    "updating": "Memperbarui…"
+    "updating": "Memperbarui…",
+    "updateEmail": "Perbarui email",
+    "newEmail": "Email baru",
+    "emailUpdated": "Email verifikasi dikirim ke alamat email Anda saat ini dan baru",
+    "emailMismatch": "Email baru sama dengan email Anda saat ini",
+    "deleteAccount": "Hapus akun",
+    "deleteWarning": "Ini akan menghapus akun Anda dan semua data terkait secara permanen. Tindakan ini tidak dapat dibatalkan.",
+    "deleteConfirmLabel": "Saya mengerti, hapus akun saya",
+    "deleteConfirmAction": "Hapus akun saya",
+    "deleting": "Menghapus…"
   },
   "invite": {
     "title": "Undang anggota",

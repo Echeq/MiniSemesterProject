@@ -7,6 +7,8 @@ export default function ProfileSettings({
   onUpdate,
   onUploadAvatar,
   onChangePassword,
+  onUpdateEmail,
+  onDeleteAccount,
   onClose,
 }) {
   const { t } = useTranslation()
@@ -25,6 +27,17 @@ export default function ProfileSettings({
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordBusy, setPasswordBusy] = useState(false)
+
+  const [emailPassword, setEmailPassword] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [emailError, setEmailError] = useState(null)
+  const [emailSuccess, setEmailSuccess] = useState(null)
+  const [emailBusy, setEmailBusy] = useState(false)
+
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   function handleFileSelect(e) {
     const file = e.target.files?.[0]
@@ -81,6 +94,40 @@ export default function ProfileSettings({
       setPasswordError(err.message)
     } finally {
       setPasswordBusy(false)
+    }
+  }
+
+  async function handleEmailUpdate(e) {
+    e.preventDefault()
+    setEmailError(null)
+    setEmailSuccess(null)
+    if (newEmail === email) {
+      setEmailError(t('profile.emailMismatch'))
+      return
+    }
+    setEmailBusy(true)
+    try {
+      await onUpdateEmail(newEmail, emailPassword)
+      setEmailPassword('')
+      setNewEmail('')
+      setEmailSuccess(t('profile.emailUpdated'))
+    } catch (err) {
+      setEmailError(err.message)
+    } finally {
+      setEmailBusy(false)
+    }
+  }
+
+  async function handleDeleteAccount(e) {
+    e.preventDefault()
+    setDeleteError(null)
+    if (!deleteConfirm) return
+    setDeleteBusy(true)
+    try {
+      await onDeleteAccount(deletePassword)
+    } catch (err) {
+      setDeleteError(err.message)
+      setDeleteBusy(false)
     }
   }
 
@@ -263,6 +310,94 @@ export default function ProfileSettings({
                 className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
               >
                 {passwordBusy ? t('profile.updating') : t('profile.changePassword')}
+              </button>
+            </div>
+          </form>
+
+          <hr className="my-6 border-slate-200" />
+
+          <h3 className="mb-4 text-sm font-bold text-slate-700">{t('profile.updateEmail')}</h3>
+
+          <form onSubmit={handleEmailUpdate}>
+            <label className="mb-4 block">
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.currentPassword')}</span>
+              <input
+                type="password"
+                required
+                value={emailPassword}
+                onChange={(e) => setEmailPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all sm:rounded-lg sm:px-3 sm:py-2"
+              />
+            </label>
+
+            <label className="mb-5 block">
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.newEmail')}</span>
+              <input
+                type="email"
+                required
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all sm:rounded-lg sm:px-3 sm:py-2"
+              />
+            </label>
+
+            {emailError && (
+              <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 sm:rounded-lg sm:px-3 sm:py-2">{emailError}</p>
+            )}
+            {emailSuccess && (
+              <p className="mb-3 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700 sm:rounded-lg sm:px-3 sm:py-2">{emailSuccess}</p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={emailBusy}
+                className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
+              >
+                {emailBusy ? t('profile.saving') : t('profile.updateEmail')}
+              </button>
+            </div>
+          </form>
+
+          <hr className="my-6 border-slate-200" />
+
+          <h3 className="mb-4 text-sm font-bold text-red-600">{t('profile.deleteAccount')}</h3>
+
+          <p className="mb-4 text-sm text-slate-600 leading-relaxed">
+            {t('profile.deleteWarning')}
+          </p>
+
+          <form onSubmit={handleDeleteAccount}>
+            <label className="mb-4 block">
+              <span className="mb-1.5 block text-sm font-semibold text-slate-600">{t('profile.currentPassword')}</span>
+              <input
+                type="password"
+                required
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all sm:rounded-lg sm:px-3 sm:py-2"
+              />
+            </label>
+
+            <label className="mb-5 flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+              />
+              <span className="text-sm text-slate-600">{t('profile.deleteConfirmLabel')}</span>
+            </label>
+
+            {deleteError && (
+              <p className="mb-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 sm:rounded-lg sm:px-3 sm:py-2">{deleteError}</p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={deleteBusy || !deleteConfirm}
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 active:bg-red-800 disabled:opacity-50 transition-colors sm:rounded-lg sm:px-4 sm:py-2"
+              >
+                {deleteBusy ? t('profile.deleting') : t('profile.deleteConfirmAction')}
               </button>
             </div>
           </form>

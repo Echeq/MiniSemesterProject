@@ -63,7 +63,7 @@ function BoardPage({ session }) {
   const { t } = useTranslation()
   const { tasks, loading, error, createTask, updateTask, deleteTask } =
     useBoard()
-  const { profile, updateProfile, uploadAvatar, changePassword } =
+  const { profile, updateProfile, uploadAvatar, changePassword, updateEmail, deleteAccount } =
     useProfile(session)
   const [taskModal, setTaskModal] = useState(null)
   const [profileModal, setProfileModal] = useState(false)
@@ -159,6 +159,8 @@ function BoardPage({ session }) {
           onUpdate={updateProfile}
           onUploadAvatar={uploadAvatar}
           onChangePassword={changePassword}
+          onUpdateEmail={updateEmail}
+          onDeleteAccount={deleteAccount}
           onClose={() => setProfileModal(false)}
         />
       )}

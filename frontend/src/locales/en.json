@@ -70,7 +70,16 @@
     "passwordsNoMatch": "New passwords do not match",
     "passwordTooShort": "New password must be at least 6 characters",
     "passwordChanged": "Password changed",
-    "updating": "Updating…"
+    "updating": "Updating…",
+    "updateEmail": "Update email",
+    "newEmail": "New email",
+    "emailUpdated": "Verification emails sent to your current and new email addresses",
+    "emailMismatch": "New email is the same as your current email",
+    "deleteAccount": "Delete account",
+    "deleteWarning": "This will permanently delete your account and all associated data. This cannot be undone.",
+    "deleteConfirmLabel": "I understand, delete my account",
+    "deleteConfirmAction": "Delete my account",
+    "deleting": "Deleting…"
   },
   "invite": {
     "title": "Invite member",

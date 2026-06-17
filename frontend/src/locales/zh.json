@@ -70,7 +70,16 @@
     "passwordsNoMatch": "两次输入的新密码不一致",
     "passwordTooShort": "新密码至少需要 6 个字符",
     "passwordChanged": "密码已更改",
-    "updating": "更新中…"
+    "updating": "更新中…",
+    "updateEmail": "更新邮箱",
+    "newEmail": "新邮箱",
+    "emailUpdated": "验证邮件已发送到您当前和新的邮箱地址",
+    "emailMismatch": "新邮箱与当前邮箱相同",
+    "deleteAccount": "删除账号",
+    "deleteWarning": "这将永久删除您的账号及所有相关数据，此操作不可撤销。",
+    "deleteConfirmLabel": "我了解，删除我的账号",
+    "deleteConfirmAction": "删除我的账号",
+    "deleting": "删除中…"
   },
   "invite": {
     "title": "邀请成员",

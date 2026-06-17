@@ -70,7 +70,16 @@
     "passwordsNoMatch": "Las contraseñas nuevas no coinciden",
     "passwordTooShort": "La nueva contraseña debe tener al menos 6 caracteres",
     "passwordChanged": "Contraseña cambiada",
-    "updating": "Actualizando…"
+    "updating": "Actualizando…",
+    "updateEmail": "Actualizar correo",
+    "newEmail": "Nuevo correo",
+    "emailUpdated": "Correos de verificación enviados a tu correo actual y nuevo",
+    "emailMismatch": "El nuevo correo es igual al actual",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteWarning": "Esto eliminará permanentemente tu cuenta y todos los datos asociados. No se puede deshacer.",
+    "deleteConfirmLabel": "Entiendo, eliminar mi cuenta",
+    "deleteConfirmAction": "Eliminar mi cuenta",
+    "deleting": "Eliminando…"
   },
   "invite": {
     "title": "Invitar miembro",
