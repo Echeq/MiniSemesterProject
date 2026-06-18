@@ -1,0 +1,142 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-OFM9AMO
+Date:         2026-06-18
+Time:         15:50:46
+Git Branch:   Elbert_FE1.1.4
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User asked for backend changes:
+1. Create project_members junction table with RLS
+2. Add updateProject API function (edit name, description)
+3. Add color and icon columns to projects table
+4. Reduce input lag
+
+Then asked for Thunder Client testing guidance (free version).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Migration: added color/icon columns to projects, created project_members
+   table with RLS and auto-membership trigger for project creators.
+2. Frontend: added updateProject(id, fields) to useProjects.js hook.
+   Optimized useBoard.js: only sort on position/status changes, cached
+   max positions per column, ordered insert in realtime handler.
+3. Provided step-by-step Thunder Client guide for testing all features
+   with free version (no env variables — paste values directly).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+supabase/migrations/20260618120000_project_members_and_colors.sql
+frontend/src/hooks/useProjects.js
+frontend/src/hooks/useBoard.js
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+supabase/migrations/ — new file, no before state.
+
+--- frontend/src/hooks/useProjects.js (before)
+  const createProject = useCallback(async ({ name, description = '' }) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { error } = await supabase
+      .from('projects')
+      .insert({ name, description, created_by: user.id })
+    if (error) throw error
+    await refetch()
+  }, [refetch])
+
+  ...
+
+  return { projects, loading, error, refetch, createProject, setStatus, deleteProject }
+
+--- frontend/src/hooks/useBoard.js (before)
+import { useCallback, useEffect, useState } from 'react'
+
+...
+
+export function useBoard(projectId = 'all') {
+  const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  ...
+
+  const refetch = useCallback(() => {
+    ...
+    query
+      .order('position', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) setError(error.message)
+        else setTasks(data)
+        setLoading(false)
+      })
+  }, [projectId])
+
+  ...
+
+              setTasks((prev) => {
+                const rest = prev.filter((t) => t.id !== data.id)
+                if (!matchesScope(data)) return rest
+                return [...rest, data].sort((a, b) => a.position - b.position)
+              })
+
+  ...
+
+  const createTask = useCallback(
+    async ({ title, description, due_date, status = 'todo', assignee = null, project_id = null }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      const inColumn = tasks.filter((t) => t.status === status)
+      const maxPosition = inColumn.length
+        ? Math.max(...inColumn.map((t) => t.position))
+        : 0
+      const { error } = await supabase.from('tasks').insert({
+        ...
+        position: maxPosition + 1024,
+        ...
+      })
+    },
+    [tasks],
+  )
+
+  const updateTask = useCallback(async (id, fields) => {
+    setTasks((prev) =>
+      prev
+        .map((t) => (t.id === id ? { ...t, ...fields } : t))
+        .sort((a, b) => a.position - b.position),
+    )
+    ...
+  }, [])
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+--- supabase/migrations/20260618120000_project_members_and_colors.sql (new)
+Migration adds: color/text columns to projects with grants,
+project_members table with RLS, auto-membership trigger.
+
+--- frontend/src/hooks/useProjects.js
+- createProject now accepts optional color/icon params
+- new updateProject(id, fields) function added
+- exported in return object
+
+--- frontend/src/hooks/useBoard.js
+- import useRef added
+- insertTask() helper for ordered merge (avoids filter+sort)
+- maxPositions useRef cache seeds on fetch, used in createTask
+- realtime handler uses insertTask instead of sort
+- updateTask only sorts when position/status in fields
+- createTask no longer depends on [tasks] (decoupled from full array)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
