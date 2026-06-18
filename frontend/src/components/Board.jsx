@@ -9,22 +9,14 @@ import {
   closestCorners,
 } from '@dnd-kit/core'
 import { STATUSES, positionBetween } from '../hooks/useBoard'
-import { useIsMobile } from '../hooks/useIsMobile'
 import Column from './Column'
 import TaskCard from './TaskCard'
 
-export default function Board({
-  tasks,
-  role,
-  updateTask,
-  onTaskClick,
-  onMobileAction,
-  onInvitationClick,
-}) {
+export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null }) {
   const [activeTask, setActiveTask] = useState(null)
-  const isMobile = useIsMobile()
-  const isAdmin = role === 'admin'
 
+  // Distance/delay activation keeps plain clicks (open modal) and touch
+  // scrolling working alongside drag.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -36,18 +28,19 @@ export default function Board({
     STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)]),
   )
 
-  function handleDragStart({ active }) {
-    if (!isAdmin) return
-    setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
-  }
+  // Smart views only render columns that actually contain matching tasks.
+  const visibleStatuses = hideEmptyColumns
+    ? STATUSES.filter((s) => byStatus[s].length > 0)
+    : STATUSES
 
   function handleDragEnd({ active, over }) {
     setActiveTask(null)
-    if (!over || !isAdmin) return
+    if (!over) return
 
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
 
+    // over.id is either a column status (empty area) or another task's id
     const overTask = tasks.find((t) => t.id === over.id)
     const targetStatus = overTask ? overTask.status : over.id
     if (!STATUSES.includes(targetStatus)) return
@@ -66,47 +59,50 @@ export default function Board({
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }
 
-  if (isMobile) {
-    return (
-      <div className="flex w-full flex-col gap-4 px-2 py-4 overflow-y-auto overflow-x-hidden">
-        {STATUSES.map((status) => (
-          <Column
-            key={status}
-            status={status}
-            tasks={byStatus[status]}
-            role={role}
-            onTaskClick={onTaskClick}
-            onInvitationClick={onInvitationClick}
-            onMobileAction={onMobileAction}
-            mobile
-          />
-        ))}
-      </div>
-    )
-  }
-
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
+      onDragStart={({ active }) =>
+        setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
+      }
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-1 gap-5 overflow-x-auto overscroll-x-contain p-3 sm:p-6 sm:px-8">
-        {STATUSES.map((status) => (
-          <Column
-            key={status}
-            status={status}
-            tasks={byStatus[status]}
-            role={role}
-            onTaskClick={onTaskClick}
-            onInvitationClick={onInvitationClick}
-          />
-        ))}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {visibleStatuses.length === 0 ? (
+          banner ? (
+            // Due soon / Overdue with no matches: the message replaces the board.
+            <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+              <div className="w-full max-w-lg">{banner}</div>
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--card)] text-[var(--fg-subtle)]">
+                <svg className="h-6 w-6" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" /></svg>
+              </div>
+              <p className="text-sm font-medium">Nothing here</p>
+              <p className="mt-1 text-sm text-[var(--fg-muted)]">No tasks match this view.</p>
+            </div>
+          )
+        ) : (
+          <>
+            {banner}
+            <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+              {visibleStatuses.map((status) => (
+                <Column
+                  key={status}
+                  status={status}
+                  tasks={byStatus[status]}
+                  onTaskClick={onTaskClick}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <DragOverlay>
-        {activeTask && <TaskCard task={activeTask} overlay role={role} />}
+        {activeTask && <TaskCard task={activeTask} overlay />}
       </DragOverlay>
     </DndContext>
   )
