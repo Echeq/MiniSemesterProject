@@ -1,112 +1,26 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../api/supabaseClient'
 
+// Loads the signed-in user's own profile row (display name, avatar, role).
 export function useProfile(session) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const userId = session?.user?.id
 
-  useEffect(() => {
+  const refetch = useCallback(async () => {
+    const userId = session?.user?.id
     if (!userId) return
-    setLoading(true)
-    supabase
+    const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, display_name, avatar_url, role')
       .eq('id', userId)
       .single()
-      .then(({ data, error }) => {
-        if (!error) setProfile(data)
-        setLoading(false)
-      })
-  }, [userId])
+    setProfile(data)
+    setLoading(false)
+  }, [session?.user?.id])
 
-  const updateProfile = useCallback(
-    async (fields) => {
-      if (!userId) return
-      const { error } = await supabase
-        .from('profiles')
-        .update(fields)
-        .eq('id', userId)
-      if (error) throw error
-      setProfile((prev) => ({ ...prev, ...fields }))
-      if (fields.display_name) {
-        const { error: metaError } = await supabase.auth.updateUser({
-          data: { display_name: fields.display_name },
-        })
-        if (metaError) throw metaError
-      }
-    },
-    [userId],
-  )
+  useEffect(() => {
+    refetch()
+  }, [refetch])
 
-  const uploadAvatar = useCallback(
-    async (file) => {
-      if (!userId) return
-      if (file.size > 2 * 1024 * 1024) throw new Error('File must be 2MB or less')
-      const ext = file.name.split('.').pop() ?? 'jpg'
-      const path = `${userId}/avatar.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true })
-      if (uploadError) throw uploadError
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path)
-      await updateProfile({ avatar_url: publicUrl })
-      return publicUrl
-    },
-    [userId, updateProfile],
-  )
-
-  const changePassword = useCallback(
-    async (oldPassword, newPassword) => {
-      const email = session?.user?.email
-      if (!email) throw new Error('No user email found')
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password: oldPassword,
-      })
-      if (signInError) throw new Error('Current password is incorrect')
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      })
-      if (updateError) throw updateError
-    },
-    [session],
-  )
-
-  const updateEmail = useCallback(
-    async (newEmail, password) => {
-      const email = session?.user?.email
-      if (!email) throw new Error('No user email found')
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (signInError) throw new Error('Current password is incorrect')
-      const { error: updateError } = await supabase.auth.updateUser({
-        email: newEmail,
-      })
-      if (updateError) throw updateError
-    },
-    [session],
-  )
-
-  const deleteAccount = useCallback(
-    async (password) => {
-      const email = session?.user?.email
-      if (!email) throw new Error('No user email found')
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (signInError) throw new Error('Current password is incorrect')
-      const { error: rpcError } = await supabase.rpc('delete_account')
-      if (rpcError) throw rpcError
-      await supabase.auth.signOut()
-    },
-    [session],
-  )
-
-  return { profile, loading, updateProfile, uploadAvatar, changePassword, updateEmail, deleteAccount }
+  return { profile, loading, refetch, isAdmin: profile?.role === 'admin' }
 }

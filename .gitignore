@@ -9,8 +9,9 @@ dist/
 .env.local
 .env.*.local
 
-# Temporary plans
-.opencode/plans/
+# Supabase CLI local state
+supabase/.temp/
+.branches/
 
 # Supabase local dev temp files
 supabase/.temp/
