@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../api/supabaseClient'
 
 // `*` keeps the raw `assignee` uuid column (used for the "My tasks" filter);
@@ -15,12 +15,24 @@ export function positionBetween(above, below) {
   return 1024
 }
 
+// Ordered insert into a sorted array (avoids filter+sort on every merge).
+function insertTask(tasks, task) {
+  for (let i = 0; i < tasks.length; i++) {
+    if (task.position < tasks[i].position) {
+      return [...tasks.slice(0, i), task, ...tasks.slice(i)]
+    }
+  }
+  return [...tasks, task]
+}
+
 // projectId: a project's id to scope the board to it, or null for the shared
 // board (tasks with no project_id), or 'all' to show every task.
 export function useBoard(projectId = 'all') {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  // Cache max position per status column so createTask avoids a full filter+map.
+  const maxPositions = useRef({ todo: 0, doing: 0, done: 0 })
 
   const matchesScope = useCallback(
     (task) => {
@@ -40,7 +52,14 @@ export function useBoard(projectId = 'all') {
       .order('position', { ascending: true })
       .then(({ data, error }) => {
         if (error) setError(error.message)
-        else setTasks(data)
+        else {
+          setTasks(data)
+          // Seed the max-position cache from the fetched data.
+          for (const s of STATUSES) {
+            const col = data.filter((t) => t.status === s)
+            maxPositions.current[s] = col.length ? col[col.length - 1].position : 0
+          }
+        }
         setLoading(false)
       })
   }, [projectId])
@@ -71,8 +90,16 @@ export function useBoard(projectId = 'all') {
                 // Respect the active project scope so cards don't leak across
                 // boards when their project_id changes via realtime.
                 if (!matchesScope(data)) return rest
-                return [...rest, data].sort((a, b) => a.position - b.position)
+                // Ordered insert instead of filter+sort.
+                return insertTask(rest, data)
               })
+              // Update max-position cache for newly inserted tasks.
+              if (payload.eventType === 'INSERT') {
+                const s = data.status
+                if (data.position > maxPositions.current[s]) {
+                  maxPositions.current[s] = data.position
+                }
+              }
             })
         },
       )
@@ -83,31 +110,31 @@ export function useBoard(projectId = 'all') {
   const createTask = useCallback(
     async ({ title, description, due_date, status = 'todo', assignee = null, project_id = null }) => {
       const { data: { user } } = await supabase.auth.getUser()
-      const inColumn = tasks.filter((t) => t.status === status)
-      const maxPosition = inColumn.length
-        ? Math.max(...inColumn.map((t) => t.position))
-        : 0
+      // Use cached max position per column instead of filtering the full array.
+      const position = maxPositions.current[status] + 1024
       const { error } = await supabase.from('tasks').insert({
         title,
         description,
         due_date: due_date || null,
         status,
-        position: maxPosition + 1024,
+        position,
         created_by: user.id,
         assignee: assignee || null,
         project_id: project_id || null,
       })
       if (error) throw error
     },
-    [tasks],
+    [],
   )
 
   const updateTask = useCallback(async (id, fields) => {
-    setTasks((prev) =>
-      prev
-        .map((t) => (t.id === id ? { ...t, ...fields } : t))
-        .sort((a, b) => a.position - b.position),
-    )
+    setTasks((prev) => {
+      // Only sort when position or status changed — editing title/description
+      // doesn't affect ordering, so skip the O(n log n) sort.
+      const needsSort = 'position' in fields || 'status' in fields
+      const next = prev.map((t) => (t.id === id ? { ...t, ...fields } : t))
+      return needsSort ? next.sort((a, b) => a.position - b.position) : next
+    })
     const { error } = await supabase.from('tasks').update(fields).eq('id', id)
     if (error) throw error
   }, [])

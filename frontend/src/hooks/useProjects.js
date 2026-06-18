@@ -22,11 +22,20 @@ export function useProjects() {
     refetch()
   }, [refetch])
 
-  const createProject = useCallback(async ({ name, description = '' }) => {
+  const createProject = useCallback(async ({ name, description = '', color, icon }) => {
     const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase
       .from('projects')
-      .insert({ name, description, created_by: user.id })
+      .insert({ name, description, color, icon, created_by: user.id })
+    if (error) throw error
+    await refetch()
+  }, [refetch])
+
+  const updateProject = useCallback(async (id, fields) => {
+    const { error } = await supabase
+      .from('projects')
+      .update(fields)
+      .eq('id', id)
     if (error) throw error
     await refetch()
   }, [refetch])
@@ -46,5 +55,5 @@ export function useProjects() {
     await refetch()
   }, [refetch])
 
-  return { projects, loading, error, refetch, createProject, setStatus, deleteProject }
+  return { projects, loading, error, refetch, createProject, updateProject, setStatus, deleteProject }
 }
