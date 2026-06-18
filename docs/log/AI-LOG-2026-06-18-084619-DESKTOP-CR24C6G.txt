@@ -1,0 +1,96 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-18
+Time:         08:46:19
+Git Branch:   db
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User asked in Spanish about working with Supabase MCP via OpenCode. Provided Supabase credentials (URL + anon key). Asked to set up everything needed to work with Supabase online and gitignore sensitive data. Then asked if they can push without leaking credentials and what their team members need to do. After setup, user said "ok, ahora actualiza la documentacion, recuerda todo en ingles" (update documentation, all in English). Finally triggered @ai-log.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Created opencode.json with Supabase MCP remote server config (project_ref + OAuth)
+2. Created frontend/.env with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+3. Verified .gitignore already covers .env files — no changes needed
+4. Ran `opencode mcp auth supabase` — authentication successful
+5. Created frontend/.env.example with placeholder values for team onboarding
+6. Updated AGENTS.md: replaced "No .env.example" with copy-from-template flow + MCP OAuth note for each team member
+7. Updated docs/setup.md: replaced manual .env creation with .env.example flow, added MCP setup section, added team onboarding checklist, added MCP troubleshooting
+8. Updated README.md: added "Supabase MCP" to AI Tooling tech stack row
+9. Updated docs/guide/ai.md: added Supabase MCP section with auth instructions
+10. Generated AI interaction log
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILES AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+opencode.json (new)
+frontend/.env.example (new)
+frontend/.env (new, gitignored)
+AGENTS.md (modified)
+README.md (modified)
+docs/setup.md (modified)
+docs/guide/ai.md (modified)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE (modified files)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md — Original had stale references: "No .env.example exists", Prisma 6 prisma.config.ts gotcha, backend Prettier details, position referenced at tests file, OpenCode config only in .opencode/. Updated to reflect .env.example flow, removed stale Prisma/NestJS details, position now references useBoard.js, added i18n localStorage detail, added vitest timeout, added account deletion RPC.
+
+README.md — Changed AI Tooling line from "OpenCode (@ai-log, @ai-commit)" to "OpenCode (@ai-log, @ai-commit, Supabase MCP)"
+
+docs/setup.md — Replaced inline "create .env manually" instructions with cp .env.example flow for both Option A and B. Added section "4. Set up Supabase MCP" with OAuth instructions. Replaced "Available commands" table with "Team onboarding checklist". Added MCP troubleshooting entry.
+
+docs/guide/ai.md — Added "Supabase MCP" section between Commands and Daily workflow explaining opencode mcp auth supabase and what the MCP enables.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER (modified files)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See full diffs above. Key changes:
+
+AGENTS.md:
+- Commands: added single-test command, removed Prisma commands, added test account creation note
+- Dead code: simplified descriptions
+- Architecture: condensed bullet format, added i18n localStorage, updated positionBetween ref to useBoard.js, added invite/join-request to role
+- Setup gotchas: replaced Prisma 6 gotcha with root lockfile orphan, vitest timeout, account deletion RPC; updated .env.example reference; added MCP OAuth note
+- Conventions: removed backend Prettier detail, updated OpenCode config line
+
+README.md: +", Supabase MCP" to AI Tooling
+
+docs/setup.md: .env.example flow, MCP section, onboarding checklist, MCP troubleshooting
+
+docs/guide/ai.md: +Supabase MCP section with auth + capabilities
+
+New files:
+
+opencode.json:
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=iudqysuvrgxeaxyllfiw",
+      "oauth": {}
+    }
+  }
+}
+
+frontend/.env.example:
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
+
+frontend/.env (gitignored):
+VITE_SUPABASE_URL=https://iudqysuvrgxeaxyllfiw.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_PNf2JjyVPSoz-_zZ9kH_8A_WMB8lhZn
+
