@@ -35,29 +35,31 @@ You will see three folders: **Auth**, **Tasks**, and **Profiles**.
 |---|---|
 | `supabaseUrl` | Your Supabase project URL (e.g. `https://abc.supabase.co`) |
 | `supabaseAnonKey` | Your anon/public key (starts with `sb_publishable_`) |
+| `testUserEmail` | Email of a pre-existing Supabase auth user |
+| `testUserPassword` | Password of that user |
 | `accessToken` | _(leave empty — filled automatically on sign in)_ |
 | `userId` | _(leave empty — filled automatically on sign in)_ |
 | `taskId` | _(leave empty — filled after creating a task)_ |
 
 4. Select the **TaskFlow** environment from the dropdown at the top of Thunder Client.
 
-### 4. Sign in (dev account)
+### 4. Sign in
 
-Since the Supabase Free Tier requires email confirmation for signup, use a pre-created dev account:
+Add two variables in your **TaskFlow** Thunder Client environment: `testUserEmail` and `testUserPassword`. Then use the **Sign In** request:
 
 | | |
 |---|---|
 | **Method** | `POST` |
 | **URL** | `{{supabaseUrl}}/auth/v1/token?grant_type=password` |
 | **Headers** | `apikey: {{supabaseAnonKey}}`, `Content-Type: application/json` |
-| **Body** | `{ "email": "dev@taskflow.local", "password": "devpass123" }` |
+| **Body** | `{ "email": "{{testUserEmail}}", "password": "{{testUserPassword}}" }` |
 
-1. Open the **Auth** folder and select **Sign In (dev account)**
+1. Open the **Auth** folder and select **Sign In**
 2. Click **Send**
 3. On success, the test script automatically sets `accessToken` and `userId` in your environment
 4. You can verify by running **Get Current User**
 
-> **Need a different account?** Sign up through the app at `http://localhost:5173`, confirm the email (check Supabase Auth > Users in the dashboard to manually confirm), then use those credentials in the Sign In request.
+> **Need an account?** Sign up through the app at `http://localhost:5173`, confirm the email (check Supabase Auth > Users in the dashboard to manually confirm), then use those credentials in the Sign In request.
 
 ### 5. Browse tasks
 
@@ -149,6 +151,8 @@ Required env vars:
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase project URL (e.g. `https://abc.supabase.co`) |
 | `VITE_SUPABASE_ANON_KEY` | Anon/public key (starts with `sb_publishable_`) |
+| `VITE_TEST_USER_EMAIL` | Auth user email for integration tests |
+| `VITE_TEST_USER_PASSWORD` | Auth user password for integration tests |
 | `VITE_API_BASE_URL` | Optional, for NestJS backend (default `http://localhost:3000`) |
 
 ---
@@ -368,7 +372,7 @@ supabase db seed
 Requires at least one auth user. Create one locally:
 
 ```bash
-supabase auth users create dev@taskflow.local --password devpass123
+supabase auth users create your-test-user@example.com --password your-password
 ```
 
 The seed is idempotent — it skips if any tasks already exist.

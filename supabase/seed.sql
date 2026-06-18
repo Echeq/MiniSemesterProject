@@ -1,8 +1,6 @@
 -- TaskFlow seed data (local development only)
 -- Run after the initial migration. Requires at least one auth user;
--- locally you can create one with:
---   supabase auth users create dev@taskflow.local --password devpass123
--- or sign up once through the app, then run: supabase db seed
+-- create one via Supabase CLI or sign up once through the app, then run: supabase db seed
 
 -- Seed tasks for the first user found (dev convenience).
 -- Idempotent: skips entirely if the board already has any tasks.

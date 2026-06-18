@@ -24,7 +24,7 @@
   ],
   "requests": [
     {
-      "name": "Sign In (dev account)",
+      "name": "Sign In",
       "containerId": "Auth",
       "method": "POST",
       "sortNum": 10,
@@ -36,7 +36,7 @@
       "params": [],
       "body": {
         "type": "json",
-        "raw": "{\n  \"email\": \"dev@taskflow.local\",\n  \"password\": \"devpass123\"\n}"
+        "raw": "{\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"{{testUserPassword}}\"\n}"
       },
       "preScript": "",
       "testScript": "const json = JSON.parse(req.body);\r\nconst res = JSON.parse(res.text);\r\nif (res.access_token) {\r\n  thunder.setEnvVar('accessToken', res.access_token);\r\n  thunder.setEnvVar('userId', res.user.id);\r\n  thunder.setEnvVar('userEmail', res.user.email);\r\n}"

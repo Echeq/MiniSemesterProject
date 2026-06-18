@@ -2,7 +2,7 @@
  * API Integration Tests — TaskFlow Supabase API
  *
  * These tests hit the real Supabase PostgREST API using the anon key.
- * The dev account (dev@taskflow.local / devpass123) is pre-confirmed.
+ * Set VITE_TEST_USER_EMAIL and VITE_TEST_USER_PASSWORD in frontend/.env.
  *
  * To run:  npm test          (from frontend/)
  * Single:  npx vitest run --reporter=verbose
@@ -11,6 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
+import { positionBetween } from '../src/hooks/useBoard'
 
 // Load .env manually so tests work regardless of Vite env handling
 dotenv.config()
@@ -24,8 +25,11 @@ if (!URL || !KEY) {
 
 const supabase = createClient(URL, KEY)
 
-// ─── Dev account credentials ────────────────────────────────────────────────
-const TEST_USER = { email: 'dev@taskflow.local', password: 'devpass123' }
+// ─── Test account credentials from .env ──────────────────────────────────────
+if (!process.env.VITE_TEST_USER_EMAIL || !process.env.VITE_TEST_USER_PASSWORD) {
+  throw new Error('Missing VITE_TEST_USER_EMAIL or VITE_TEST_USER_PASSWORD in frontend/.env')
+}
+const TEST_USER = { email: process.env.VITE_TEST_USER_EMAIL, password: process.env.VITE_TEST_USER_PASSWORD }
 const TASK_COLUMNS = ['todo', 'doing', 'done']
 
 // ─── Auth API ────────────────────────────────────────────────────────────────
@@ -231,12 +235,6 @@ describe('Profiles API (GET /rest/v1/profiles)', () => {
 })
 
 // ─── Positioning logic (unit tests for the helper) ──────────────────────────
-function positionBetween(above, below) {
-  if (above != null && below != null) return (above + below) / 2
-  if (above != null) return above + 1024
-  if (below != null) return below - 1024
-  return 1024
-}
 
 describe('positionBetween helper (drag & drop positioning)', () => {
   it('midpoint between two values', () => {

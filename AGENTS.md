@@ -22,8 +22,7 @@
 | `supabase/` | `supabase start` | Start local Supabase |
 | `supabase/` | `supabase db reset` | Run all migrations + seed |
 
-Tests require a pre-confirmed test account. Create via Supabase CLI:
-`supabase auth users create dev@taskflow.local --password devpass123` then confirm in dashboard.
+Tests read test credentials from `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` in `.env`.
 
 ## Dead code — do NOT edit
 
@@ -55,6 +54,7 @@ Tests require a pre-confirmed test account. Create via Supabase CLI:
 - Supabase MCP (`opencode.json`) usa OAuth individual — cada miembro ejecuta `opencode mcp auth supabase` con su propia cuenta.
 - `VITE_API_BASE_URL` (default `http://localhost:3000`) is for legacy NestJS — unused. Do not rely on it.
 - Tests load `.env` via `dotenv.config()` directly (not Vite env), so they work without Vite dev server.
+- Tests read test credentials from `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` in `.env`.
 - `supabase/seed.sql` is idempotent but requires at least one auth user before running.
 - `supabaseClient.js` exports `null` when env vars are missing — the app degrades gracefully.
 - Install dependencies from `frontend/`. Root `package-lock.json` is an orphaned artifact (gitignored).

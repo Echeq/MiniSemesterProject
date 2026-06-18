@@ -82,12 +82,7 @@ cd frontend
 npm test
 ```
 
-Tests hit the real Supabase API, so `.env` must have valid credentials and a test account must exist:
-
-```bash
-# Create the dev test account via Supabase Auth
-# Email: dev@taskflow.local  Password: devpass123
-```
+Tests hit the real Supabase API. Set `VITE_TEST_USER_EMAIL` and `VITE_TEST_USER_PASSWORD` in `.env` pointing to a real Supabase auth user.
 
 ---
 
@@ -124,6 +119,8 @@ For each new team member:
 |---|---|---|---|
 | `VITE_SUPABASE_URL` | Yes | — | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Yes | — | Supabase anon/public key |
+| `VITE_TEST_USER_EMAIL` | For tests | — | Auth user email for integration tests |
+| `VITE_TEST_USER_PASSWORD` | For tests | — | Auth user password for integration tests |
 | `VITE_API_BASE_URL` | No | `http://localhost:3000` | Legacy NestJS backend (unused) |
 
 ---

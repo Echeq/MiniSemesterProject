@@ -185,11 +185,7 @@ supabase db push
 supabase db seed
 ```
 
-The seed is **idempotent** — it skips if any tasks already exist. It requires at least one auth user:
-
-```bash
-supabase auth users create dev@taskflow.local --password devpass123
-```
+The seed is **idempotent** — it skips if any tasks already exist. It requires at least one auth user (create via Supabase CLI or dashboard).
 
 ### Seed tasks
 

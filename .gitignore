@@ -12,6 +12,9 @@ dist/
 # Temporary plans
 .opencode/plans/
 
+# Supabase local dev temp files
+supabase/.temp/
+
 # Orphaned root artifact
 /package-lock.json
 
