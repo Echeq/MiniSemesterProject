@@ -8,26 +8,26 @@ TaskFlow uses **Supabase PostgreSQL**. The schema is maintained as SQL migration
 
 ### `public.profiles`
 
-One row per authenticated user, created automatically on sign up via a database trigger.
+One row per authenticated user, created automatically on sign up via `handle_new_user()` trigger.
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PK, references `auth.users.id` on delete cascade |
-| `display_name` | `text` | Default `''`, max 100 chars |
+| `display_name` | `text` | Default `''`, max 100 chars (trigger truncates) |
 | `avatar_url` | `text?` | Nullable |
 | `role` | `text` | `'admin'` \| `'member'` \| `'unknown'`, default `'unknown'` |
 | `created_at` | `timestamptz` | Default `now()` |
 
 **RLS:**
 - SELECT: all authenticated users
-- UPDATE: own row only (`id = auth.uid()`), but role cannot be changed (checked in `with check`)
-- UPDATE (admin): any profile, any column — admins can promote/demote users
+- UPDATE: own row only (`id = auth.uid()`), role self-change blocked
+- UPDATE (admin): any profile, any column
 
 ---
 
 ### `public.tasks`
 
-Kanban cards. The `status` enum determines which column a card appears in.
+Kanban cards. The `status` enum determines which column a card belongs to.
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -36,52 +36,107 @@ Kanban cards. The `status` enum determines which column a card appears in.
 | `description` | `text` | Default `''`, max 5000 chars |
 | `status` | `public.task_status` | `'todo'` \| `'doing'` \| `'done'`, default `'todo'` |
 | `due_date` | `date?` | Nullable |
-| `position` | `double precision` | Default `0`, fractional indexing |
+| `position` | `double precision` | Default `0`, fractional indexing for ordering |
 | `created_by` | `uuid` | FK → `profiles.id`, immutable after insert |
 | `assignee` | `uuid?` | FK → `profiles.id`, on delete set null |
+| `project_id` | `uuid?` | FK → `projects.id`, nullable (null = shared board) |
 | `created_at` | `timestamptz` | Default `now()`, immutable |
 | `updated_at` | `timestamptz` | Default `now()`, auto-updated by trigger |
 
-**RLS:**
+**RLS (role-based):**
 - SELECT (admin): all tasks
 - SELECT (member): only tasks where `assignee = auth.uid()`
+- SELECT (unknown): no tasks
 - INSERT: admins only
 - UPDATE: admins only
 - DELETE: admins only
 
-**Indexes:**
-- `(status, position)` — efficient column queries ordered by position
-- `(due_date)` where not null — due date filtering
-- `(assignee)` — user filtering
-- `(created_by)` — FK performance
+**Column-level permissions:** `created_by`, `created_at`, `updated_at` are immutable even for admins (migration `20260612120000`). Updatable only: `title, description, status, due_date, position, assignee, project_id`.
+
+**Indexes:** `(status, position)`, `(due_date)` where not null, `(assignee)`, `(created_by)`, `(project_id)`
+
+**Realtime:** Published to `supabase_realtime` with `replica identity full`.
+
+---
+
+### `public.projects`
+
+Multi-project board support. Tasks can belong to a project or be shared (null `project_id`).
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `uuid` | PK, default `gen_random_uuid()` |
+| `name` | `text` | Required |
+| `description` | `text?` | Nullable |
+| `status` | `text` | `'active'` \| `'archived'`, default `'active'` |
+| `color` | `text` | Hex color, default `'#6366f1'` |
+| `icon` | `text` | Icon key, default `'project'` |
+| `created_by` | `uuid` | FK → `profiles.id` |
+| `created_at` | `timestamptz` | Default `now()` |
+
+**RLS:**
+- SELECT: all authenticated users
+- INSERT: any authenticated user (with `created_by = auth.uid()`)
+- UPDATE: admins only, status changes via `set_project_status()` RPC
+- DELETE: admins only
+
+**Column grants:** `authenticated` can update `(name, description, color, icon)` on projects.
+
+---
+
+### `public.project_members`
+
+Junction table for per-project membership and roles.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | `uuid` | PK, default `gen_random_uuid()` |
+| `project_id` | `uuid` | FK → `projects.id` on delete cascade |
+| `user_id` | `uuid` | FK → `profiles.id` on delete cascade |
+| `role` | `text` | `'admin'` \| `'member'`, default `'member'` |
+| `created_at` | `timestamptz` | Default `now()` |
+| `unique` | — | `(project_id, user_id)` |
+
+**Auto-add trigger:** `handle_new_project_member()` adds the project creator as an admin member on insert.
+
+**RLS:**
+- SELECT: all authenticated users
+- INSERT/UPDATE/DELETE: admins only (via `is_admin()`)
+
+Indexes: `(project_id)`, `(user_id)`
 
 ---
 
 ### `public.invitations`
 
-Pre-issued invitations. When a user signs up with a matching `invited_email`, the `handle_new_user` trigger sets their role to `member`.
+Pre-issued invitations. When a user signs up with a matching email, their role is set accordingly.
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PK, default `gen_random_uuid()` |
-| `admin_id` | `uuid` | FK → `profiles.id`, who sent the invite |
-| `invited_email` | `text` | Unique — the invited user's email |
+| `invited_email` | `text` | Unique |
+| `role` | `text` | `'admin'` \| `'member'` |
 | `status` | `text` | `'pending'` \| `'accepted'` \| `'declined'`, default `'pending'` |
+| `invited_by` | `uuid` | FK → `profiles.id` |
 | `created_at` | `timestamptz` | Default `now()` |
+
+**RLS:** INSERT/UPDATE/DELETE admins only. SELECT admins see all, users see their own by email.
 
 ---
 
 ### `public.join_requests`
 
-Access requests submitted by unknown users who want to view the board.
+Access requests from users with `unknown` role.
 
 | Column | Type | Constraints |
 |---|---|---|
 | `id` | `uuid` | PK, default `gen_random_uuid()` |
 | `requester_id` | `uuid` | FK → `profiles.id` |
-| `admin_email` | `text` | The admin email the user entered |
+| `admin_email` | `text` | Admin email entered by requester |
 | `status` | `text` | `'pending'` \| `'resolved'`, default `'pending'` |
 | `created_at` | `timestamptz` | Default `now()` |
+
+**RLS:** INSERT any authenticated user. SELECT own requests (or all for admins). UPDATE admins only.
 
 ---
 
@@ -91,103 +146,78 @@ Access requests submitted by unknown users who want to view the board.
 create type public.task_status as enum ('todo', 'doing', 'done');
 ```
 
-This enum is used by the `tasks.status` column.
-
 ---
 
-## Row-Level Security
+## Row-Level Security Summary
 
 TaskFlow uses a **role-based access model** with three roles:
 
-| Role | Task visibility | Task editing |
-|---|---|---|
-| `admin` | All tasks | Full CRUD + assign to members |
-| `member` | Only tasks assigned to them | Read-only |
-| `unknown` | No tasks (empty columns) | None — sees invitation prompt |
+| Role | Task visibility | Task editing | Projects |
+|---|---|---|---|
+| `admin` | All tasks | Full CRUD, assign members | Create, archive, delete |
+| `member` | Only tasks assigned to them | Read-only | Create |
+| `unknown` | No tasks (empty columns) | None | None — sees invitation prompt |
 
-| Table | Policy | Effect |
-|---|---|---|
-| `profiles` | SELECT | All authenticated users |
-| `profiles` | UPDATE (own) | Own display_name/avatar_url only (role self-change prevented) |
-| `profiles` | UPDATE (admin) | Any profile, any column |
-| `tasks` | SELECT (admin) | All tasks |
-| `tasks` | SELECT (member) | Only tasks where `assignee = auth.uid()` |
-| `tasks` | INSERT | Admins only |
-| `tasks` | UPDATE | Admins only |
-| `tasks` | DELETE | Admins only |
-| `invitations` | INSERT | Admins only |
-| `invitations` | SELECT | Admins (all), users (by own email) |
-| `invitations` | UPDATE | Admins only |
-| `join_requests` | INSERT | Any authenticated user (own requests) |
-| `join_requests` | SELECT | Own requests or all (admin) |
-| `join_requests` | UPDATE | Admins only |
-
-### Column-level permissions (tasks)
-
-Migration `20260612120000` revokes UPDATE on the whole `tasks` table and re-grants it only for specific columns:
-
-```sql
-revoke update on table public.tasks from authenticated;
-grant update (title, description, status, due_date, position, assignee)
-  on table public.tasks to authenticated;
-```
-
-This makes `created_by`, `created_at`, and `updated_at` immutable after insert even for admins.
-
-### Role assignment
-
-- **First user** to sign up after the migration becomes `admin`
-- Users invited via `invitations` table become `member` on signup
-- All others default to `unknown`
-- Admins can promote/demote users via Supabase dashboard or API
+**Key policies:**
+- `profiles`: SELECT all authenticated; UPDATE own (role self-change blocked); admins UPDATE any
+- `tasks`: Role-based SELECT; admins-only INSERT/UPDATE/DELETE; column-level revoke on immutable fields
+- `projects`: SELECT/INSERT all authenticated; UPDATE/DELETE admins only
+- `project_members`: SELECT all authenticated; INSERT/UPDATE/DELETE admins only
+- `invitations`: Admins manage; users can see their own
+- `join_requests`: Users create own; admins resolve
 
 ---
 
 ## Realtime
 
-The `tasks` table is added to the `supabase_realtime` publication:
+The `tasks` table is published to `supabase_realtime` with `replica identity full`:
 
 ```sql
 alter table public.tasks replica identity full;
 alter publication supabase_realtime add table public.tasks;
 ```
 
-`replica identity full` ensures UPDATE and DELETE events include the old row values in the broadcast payload.
+This ensures UPDATE and DELETE events include old row values.
 
 ---
 
-## Migrations
+## RPC Functions
 
-Located in `supabase/migrations/` — these are the **source of truth** for the database schema.
+| Function | Purpose |
+|---|---|
+| `is_admin()` | SECURITY DEFINER — checks if current user is admin (used by RLS) |
+| `admin_set_role(target_user uuid, new_role text)` | Set a user's role (admin only) |
+| `set_project_status(target_project uuid, new_status text)` | Archive/restore projects (admin only) |
+| `delete_own_account()` | Delete current user's account and data |
+
+---
+
+## Migrations (9 total)
+
+Located in `supabase/migrations/` — **source of truth** for the schema:
 
 | Migration | Description |
-|---|---|---|
-| `20260612100000_initial_schema.sql` | Creates `task_status` enum, `profiles` and `tasks` tables, RLS policies, Realtime publication, `handle_new_user` trigger |
-| `20260612120000_backend_hardening.sql` | Column-level UPDATE revoke, adds `created_by` index, length constraints on `description` (5000) and `display_name` (100) |
-| `20260612130000_fix_signup_long_display_name.sql` | Fixes signup crash when `display_name` exceeds 100 chars by truncating in the trigger |
-| `20260612140000_avatars_storage.sql` | Creates `avatars` storage bucket with RLS policies for profile photos |
-| `20260616100000_role_system.sql` | Adds `role` column to profiles (`admin`/`member`/`unknown`), creates `invitations` and `join_requests` tables, updates RLS for role-based task visibility |
+|---|---|
+| `20260612100000_initial_schema.sql` | `task_status` enum, `profiles` and `tasks` tables, RLS, Realtime publication, `handle_new_user` trigger |
+| `20260612120000_backend_hardening.sql` | Column-level UPDATE revoke, FK index, length caps (title 1–200, desc ≤5000, display_name ≤100) |
+| `20260612130000_fix_signup_long_display_name.sql` | Fix signup crash when display_name exceeds 100 chars (trigger truncation) |
+| `20260612140000_avatars_storage.sql` | `avatars` storage bucket with RLS policies |
+| `20260616100000_role_system.sql` | `role` column, `invitations` and `join_requests` tables, role-based RLS |
+| `20260617000000_delete_account_rpc.sql` | `delete_own_account()` RPC |
+| `20260617120000_rbac_projects_invitations.sql` | RBAC for projects + invitations revamp, `is_admin()` RPC |
+| `20260617120100_account_management.sql` | Account management improvements |
+| `20260618120000_project_members_and_colors.sql` | `project_members` junction table, `color`/`icon` on projects |
 
-### Apply migrations
-
+Apply with:
 ```bash
-cd supabase
 supabase db push
 ```
 
 ---
 
-## Seed data
+## Seed Data
 
-`supabase/seed.sql` inserts sample tasks for local development.
-
-```bash
-supabase db seed
-```
-
-The seed is **idempotent** — it skips if any tasks already exist. It requires at least one auth user (create via Supabase CLI or dashboard).
-
-### Seed tasks
+`supabase/seed.sql` inserts 6 sample tasks for local development:
 
 | Title | Status |
 |---|---|
@@ -198,69 +228,27 @@ The seed is **idempotent** — it skips if any tasks already exist. It requires 
 | Add task due-date picker | todo |
 | Mobile responsive pass | todo |
 
----
-
-## Trigger: auto-create profile + role assignment
-
-```sql
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer
-as $$
-declare
-  v_role text;
-  v_invitation_id uuid;
-  v_user_count int;
-begin
-  select count(*) into v_user_count from public.profiles;
-
-  if v_user_count = 0 then
-    v_role := 'admin';                                   -- first user ever
-  else
-    select id into v_invitation_id
-    from public.invitations
-    where invited_email = new.email
-      and status = 'pending'
-    limit 1;
-
-    if v_invitation_id is not null then
-      v_role := 'member';
-      update public.invitations set status = 'accepted'
-      where id = v_invitation_id;
-    else
-      v_role := 'unknown';
-    end if;
-  end if;
-
-  insert into public.profiles (id, display_name, role)
-  values (
-    new.id,
-    left(
-      coalesce(nullif(new.raw_user_meta_data ->> 'display_name', ''),
-               split_part(new.email, '@', 1)),
-      100
-    ),
-    v_role
-  );
-  return new;
-end;
-$$;
+```bash
+supabase db seed
 ```
 
-This fires after every sign up. Role rules:
-- **First user** → `admin`
+Requires at least one auth user. The seed is **idempotent** (skips if any tasks exist).
+
+---
+
+## Trigger: `handle_new_user()`
+
+Fires after every sign up. Role logic:
+- **First user ever** → `admin`
 - **Pending invitation matches email** → `member`, invitation marked `accepted`
 - **Everyone else** → `unknown`
 
-The `left(..., 100)` truncation prevents the 100-char check constraint from blocking registration.
+Also truncates `display_name` to 100 chars to prevent check constraint violations.
 
----
+## Trigger: `handle_new_project_member()`
 
-## Trigger: auto-update `updated_at`
+Fires after project insert. Automatically adds the creator (`created_by`) as a `project_members` row with role `admin`.
 
-```sql
-create trigger on_task_updated
-  before update on public.tasks
-  for each row execute function public.handle_updated_at();
-```
+## Trigger: `handle_updated_at()`
 
-The `handle_updated_at()` function sets `new.updated_at = now()` on every UPDATE.
+Sets `new.updated_at = now()` on every task UPDATE.

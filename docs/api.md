@@ -2,132 +2,9 @@
 
 TaskFlow uses **Supabase** as its primary backend. All data access goes through the Supabase JavaScript client (`@supabase/supabase-js`), which wraps Supabase Auth, PostgREST (RESTful PostgreSQL), and Realtime WebSocket channels.
 
-We use **Thunder Client** (VS Code extension) for manual API testing — a pre-built collection is included.
+We use **Thunder Client** (VS Code extension) for manual API testing — a pre-built collection is included at `docs/thunder-collection_TaskFlow-API.json`.
 
 There is also a legacy NestJS scaffold (`backend/`) with no running services — ignore it.
-
----
-
-## Activity: Test the API with Thunder Client (Free Tier)
-
-This walkthrough uses only the Supabase **Free Tier** — no custom SMTP, no paid add-ons.
-
-### 1. Install Thunder Client
-
-Open VS Code, go to the Extensions panel (`Ctrl+Shift+X`), search for **Thunder Client** and install it.
-
-### 2. Import the collection
-
-1. Open Thunder Client
-2. Click the **Collections** tab (folder icon)
-3. Click the **Import** button → **Import from File**
-4. Select `docs/thunder-collection_TaskFlow-API.json`
-
-You will see three folders: **Auth**, **Tasks**, and **Profiles**.
-
-### 3. Set environment variables
-
-1. In Thunder Client, click the **Env** tab (gear icon)
-2. Click **+ New Env**, name it `TaskFlow`
-3. Add these variables:
-
-| Variable | Value |
-|---|---|
-| `supabaseUrl` | Your Supabase project URL (e.g. `https://abc.supabase.co`) |
-| `supabaseAnonKey` | Your anon/public key (starts with `sb_publishable_`) |
-| `testUserEmail` | Email of a pre-existing Supabase auth user |
-| `testUserPassword` | Password of that user |
-| `accessToken` | _(leave empty — filled automatically on sign in)_ |
-| `userId` | _(leave empty — filled automatically on sign in)_ |
-| `taskId` | _(leave empty — filled after creating a task)_ |
-
-4. Select the **TaskFlow** environment from the dropdown at the top of Thunder Client.
-
-### 4. Sign in
-
-Add two variables in your **TaskFlow** Thunder Client environment: `testUserEmail` and `testUserPassword`. Then use the **Sign In** request:
-
-| | |
-|---|---|
-| **Method** | `POST` |
-| **URL** | `{{supabaseUrl}}/auth/v1/token?grant_type=password` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Content-Type: application/json` |
-| **Body** | `{ "email": "{{testUserEmail}}", "password": "{{testUserPassword}}" }` |
-
-1. Open the **Auth** folder and select **Sign In**
-2. Click **Send**
-3. On success, the test script automatically sets `accessToken` and `userId` in your environment
-4. You can verify by running **Get Current User**
-
-> **Need an account?** Sign up through the app at `http://localhost:5173`, confirm the email (check Supabase Auth > Users in the dashboard to manually confirm), then use those credentials in the Sign In request.
-
-### 5. Browse tasks
-
-| | |
-|---|---|
-| **Method** | `GET` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks?select=*&order=position.asc` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
-
-1. Open the **Tasks** folder
-2. Run **List Tasks with Assignee Profile** to see all tasks joined with the assignee's display name
-3. Run **List All Tasks** for a simpler response
-
-### 6. Create a task
-
-| | |
-|---|---|
-| **Method** | `POST` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}`, `Content-Type: application/json`, `Prefer: return=representation` |
-| **Body** | `{ "title": "Thunder Client test", "description": "Created from Thunder Client", "status": "todo", "position": 1024, "created_by": "{{userId}}" }` |
-
-1. Select **Create Task (To Do)**
-2. Click **Send**
-3. On success, the test script automatically stores the new task's `id` in the `taskId` env var
-
-### 7. Update a task
-
-| | |
-|---|---|
-| **Method** | `PATCH` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}`, `Content-Type: application/json`, `Prefer: return=representation` |
-| **Body** | `{ "title": "Updated title via PATCH", "status": "doing" }` |
-
-1. Select **Update Task Title** — changes the title and moves it to `"doing"`
-2. Click **Send**
-3. Then run **Update Task Position (Drag & Drop)** to change position and move to `"done"`
-
-### 8. Get a single task
-
-| | |
-|---|---|
-| **Method** | `GET` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}&select=*` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
-
-Run **Get Task by ID** — it uses `{{taskId}}` from the env to fetch the specific task you created.
-
-### 9. Delete a task
-
-| | |
-|---|---|
-| **Method** | `DELETE` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks?id=eq.{{taskId}}` |
-| **Headers** | `apikey: {{supabaseAnonKey}}`, `Authorization: Bearer {{accessToken}}` |
-
-Run **Delete Task** — removes the task you created earlier.
-
-### 10. Anonymous access
-
-| | |
-|---|---|
-| **Method** | `GET` |
-| **URL** | `{{supabaseUrl}}/rest/v1/tasks?select=*` |
-| **Headers** | `apikey: {{supabaseAnonKey}}` (no `Authorization` header) |
-
-Run **Anonymous: List Tasks (should be empty)** — notice it has no `Bearer` token. The RLS policy blocks anonymous requests, confirming auth is required.
 
 ---
 
@@ -145,15 +22,16 @@ export const supabase = url && anonKey ? createClient(url, anonKey) : null
 
 If `frontend/.env` is missing, `supabase` is `null` and the app renders a setup hint.
 
-Required env vars:
+### Required environment variables
 
 | Variable | Description |
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase project URL (e.g. `https://abc.supabase.co`) |
-| `VITE_SUPABASE_ANON_KEY` | Anon/public key (starts with `sb_publishable_`) |
+| `VITE_SUPABASE_ANON_KEY` | Anon/publishable key |
 | `VITE_TEST_USER_EMAIL` | Auth user email for integration tests |
 | `VITE_TEST_USER_PASSWORD` | Auth user password for integration tests |
-| `VITE_API_BASE_URL` | Optional, for NestJS backend (default `http://localhost:3000`) |
+
+`VITE_API_BASE_URL` is a legacy NestJS env var — do not rely on it.
 
 ---
 
@@ -171,8 +49,7 @@ const { error } = await supabase.auth.signUp({
 })
 ```
 
-- On success, Supabase sends a confirmation email and creates a row in `public.profiles` via the `handle_new_user` trigger.
-- **Free Tier note:** Custom SMTP is not available. You can manually confirm users in the Supabase Dashboard under **Auth > Users**.
+On success, Supabase sends a confirmation email and creates a row in `public.profiles` via the `handle_new_user` trigger. **Free Tier note:** Custom SMTP is not available — manually confirm users in Supabase Dashboard under **Auth > Users**.
 
 ### Sign in
 
@@ -181,7 +58,6 @@ const { data, error } = await supabase.auth.signInWithPassword({
   email,
   password,
 })
-// data.session — active session object
 ```
 
 ### Get current session
@@ -195,7 +71,7 @@ const { data } = await supabase.auth.getSession()
 
 ```js
 supabase.auth.onAuthStateChange((event, session) => {
-  // event: 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | ...
+  // event: 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED'
 })
 ```
 
@@ -207,72 +83,9 @@ await supabase.auth.signOut()
 
 ---
 
-## Tables
+## Tasks API
 
-### `public.profiles`
-
-One row per authenticated user, created automatically on sign up.
-
-| Column | Type | Constraints |
-|---|---|---|
-| `id` | `uuid` | PK, references `auth.users.id` on delete cascade |
-| `display_name` | `text` | Default `''`, max 100 chars |
-| `avatar_url` | `text?` | Nullable |
-| `created_at` | `timestamptz` | Default `now()` |
-
-**RLS:**
-- SELECT: all authenticated users
-- UPDATE: own row only (`id = auth.uid()`)
-
-**Fetch current user's profile:**
-
-```js
-const { data } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', userId)
-  .single()
-```
-
-**Update own display name:**
-
-```js
-await supabase
-  .from('profiles')
-  .update({ display_name: 'New Name' })
-  .eq('id', userId)
-```
-
----
-
-### `public.tasks`
-
-Kanban cards. The `status` enum value determines which column a card belongs to.
-
-| Column | Type | Constraints |
-|---|---|---|
-| `id` | `uuid` | PK, default `gen_random_uuid()` |
-| `title` | `text` | Required, 1–200 chars |
-| `description` | `text` | Default `''`, max 5000 chars |
-| `status` | `public.task_status` | `'todo'` \| `'doing'` \| `'done'`, default `'todo'` |
-| `due_date` | `date?` | Nullable |
-| `position` | `double precision` | Default `0`, fractional indexing for ordering |
-| `created_by` | `uuid` | FK -> `profiles.id`, immutable after insert |
-| `assignee` | `uuid?` | FK -> `profiles.id`, on delete set null |
-| `created_at` | `timestamptz` | Default `now()`, immutable after insert |
-| `updated_at` | `timestamptz` | Default `now()`, auto-updated by trigger |
-
-**RLS:**
-- SELECT: all authenticated users
-- INSERT: `created_by` must equal `auth.uid()`
-- UPDATE: any authenticated user — but `created_by`, `created_at`, `updated_at` are **column-level revoked** (see migration `20260612120000`)
-- DELETE: any authenticated user
-
-Indexes: `(status, position)`, `(due_date)` where not null, `(assignee)`, `(created_by)`
-
-**Realtime:** The table is published to the `supabase_realtime` publication with `replica identity full`, so UPDATE/DELETE events include old column values.
-
-#### List all tasks (with assignee profile join)
+### List all tasks (with assignee join)
 
 ```js
 const { data, error } = await supabase
@@ -281,7 +94,7 @@ const { data, error } = await supabase
   .order('position', { ascending: true })
 ```
 
-#### Create a task
+### Create a task
 
 ```js
 const { error } = await supabase.from('tasks').insert({
@@ -291,23 +104,24 @@ const { error } = await supabase.from('tasks').insert({
   status: 'todo',
   position: maxPositionInColumn + 1024,
   created_by: user.id,
+  project_id: projectId || null,
 })
 ```
 
-- New tasks are placed at the bottom of a column by setting `position` to 1024 above the current max.
+New tasks are placed at the bottom of a column by setting `position` to 1024 above the current max.
 
-#### Update a task
+### Update a task
 
 ```js
 const { error } = await supabase
   .from('tasks')
-  .update({ title, description, status, due_date, position, assignee })
+  .update({ title, description, status, due_date, position, assignee, project_id })
   .eq('id', taskId)
 ```
 
-Immutable columns (silently ignored by PostgREST if included in the payload): `created_by`, `created_at`, `updated_at`.
+Immutable columns (silently ignored by PostgREST): `created_by`, `created_at`, `updated_at`.
 
-#### Delete a task
+### Delete a task
 
 ```js
 const { error } = await supabase
@@ -316,9 +130,7 @@ const { error } = await supabase
   .eq('id', taskId)
 ```
 
-#### Reorder within a column (fractional indexing)
-
-When a card is dropped between two cards, compute a midpoint position:
+### Position system (fractional indexing)
 
 ```js
 function positionBetween(above, below) {
@@ -329,15 +141,125 @@ function positionBetween(above, below) {
 }
 ```
 
-Then call `updateTask(id, { status, position })`. This avoids re-indexing all siblings on every move.
+Located at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 
 ---
 
-## Realtime subscriptions
+## Profiles API
 
-Task changes are broadcast to all connected clients via Supabase Realtime (WebSocket). No polling or manual refresh is needed.
+### Get current user's profile
 
-### Subscribe to all task changes
+```js
+const { data } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', userId)
+  .single()
+```
+
+### Update own profile
+
+```js
+await supabase
+  .from('profiles')
+  .update({ display_name: 'New Name' })
+  .eq('id', userId)
+```
+
+### List all profiles
+
+```js
+const { data } = await supabase
+  .from('profiles')
+  .select('*')
+```
+
+---
+
+## Projects API
+
+### List projects
+
+```js
+const { data } = await supabase
+  .from('projects')
+  .select('*')
+  .order('created_at', { ascending: false })
+```
+
+### Create a project
+
+```js
+const { error } = await supabase.from('projects').insert({
+  name,
+  description,
+  color: '#6366f1',
+  icon: 'project',
+  created_by: user.id,
+})
+```
+
+Creator is auto-added as project admin via `handle_new_project_member()` trigger.
+
+### Update project
+
+```js
+await supabase
+  .from('projects')
+  .update({ name, description, color, icon })
+  .eq('id', projectId)
+```
+
+### Archive / restore project (admin only)
+
+```js
+await supabase.rpc('set_project_status', {
+  target_project: projectId,
+  new_status: 'archived',  // or 'active'
+})
+```
+
+---
+
+## Project Members API
+
+### List project members
+
+```js
+const { data } = await supabase
+  .from('project_members')
+  .select('*, user:profiles!project_members_user_id_fkey(display_name, avatar_url)')
+  .eq('project_id', projectId)
+```
+
+### Add/update/remove members (admin only via RLS)
+
+```js
+await supabase.from('project_members').insert({ project_id, user_id, role: 'member' })
+await supabase.from('project_members').update({ role: 'admin' }).eq('id', memberId)
+await supabase.from('project_members').delete().eq('id', memberId)
+```
+
+---
+
+## RPC Functions
+
+```js
+// Check if current user is admin
+await supabase.rpc('is_admin')
+
+// Admin: set a user's role
+await supabase.rpc('admin_set_role', { target_user: userId, new_role: 'admin' })
+
+// Delete own account
+await supabase.rpc('delete_own_account')
+```
+
+---
+
+## Realtime Subscriptions
+
+Task changes are broadcast to all connected clients via Supabase Realtime (WebSocket). No polling needed.
 
 ```js
 const channel = supabase
@@ -347,8 +269,8 @@ const channel = supabase
     { event: '*', schema: 'public', table: 'tasks' },
     (payload) => {
       // payload.eventType: 'INSERT' | 'UPDATE' | 'DELETE'
-      // payload.new: the new row (INSERT/UPDATE)
-      // payload.old: the old row (UPDATE/DELETE) — available because of replica identity full
+      // payload.new: the new row
+      // payload.old: the old row (available because replica identity full)
     },
   )
   .subscribe()
@@ -361,72 +283,87 @@ The `useBoard` hook handles merging Realtime payloads into local state, includin
 
 ---
 
-## Seed data
+## Presence (Online Users)
 
-`supabase/seed.sql` inserts sample tasks for local development:
+Real-time online user tracking via Supabase Realtime Presence:
 
-```bash
-supabase db seed
+```js
+const channel = supabase.channel('online-users')
+channel.on('presence', { event: 'sync' }, () => {
+  const state = channel.presenceState()
+})
 ```
 
-Requires at least one auth user. Create one locally:
-
-```bash
-supabase auth users create your-test-user@example.com --password your-password
-```
-
-The seed is idempotent — it skips if any tasks already exist.
+`usePresence()` returns a Set of online user IDs.
 
 ---
 
-## Database migrations
+## Storage (Avatars)
 
-Migrations live in `supabase/migrations/` and are the **source of truth** for the schema:
+Public bucket `avatars/`, authenticated upload at `avatars/{userId}/`:
 
-| File | Description |
-|---|---|
-| `20260612100000_initial_schema.sql` | Tables, enums, RLS, Realtime publication |
-| `20260612120000_backend_hardening.sql` | Column-level revoke, FK index, length caps |
-| `20260612130000_fix_signup_long_display_name.sql` | Fix signup crash on long display names |
+```js
+const { error } = await supabase.storage
+  .from('avatars')
+  .upload(`${userId}/${fileName}`, file)
 
-Apply with:
-
-```bash
-supabase db push
+const { data } = supabase.storage
+  .from('avatars')
+  .getPublicUrl(`${userId}/${fileName}`)
 ```
 
 ---
 
-## Thunder Client collection
-
-A Thunder Client collection for manual API testing is available at `docs/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, and Profiles endpoints against the Supabase REST API (`/rest/v1/`). Follow the [Activity guide](#activity-test-the-api-with-thunder-client-free-tier) above for step-by-step usage.
-
----
-
-## Endpoint quick reference
+## Endpoint Quick Reference
 
 | Method | URL | Description |
 |---|---|---|
 | `POST` | `/auth/v1/token?grant_type=password` | Sign in with email + password |
 | `GET` | `/auth/v1/user` | Get current authenticated user |
-| `POST` | `/auth/v1/logout` | Sign out current session |
-| `GET` | `/rest/v1/tasks?select=*&order=position.asc` | List all tasks (sorted by position) |
-| `GET` | `/rest/v1/tasks?select=*,assignee:profiles!tasks_assignee_fkey(display_name,avatar_url)&order=position.asc` | List tasks with assignee profile join |
-| `GET` | `/rest/v1/tasks?id=eq.{id}&select=*` | Get a single task by ID |
-| `POST` | `/rest/v1/tasks` | Create a new task |
-| `PATCH` | `/rest/v1/tasks?id=eq.{id}` | Update task fields |
-| `DELETE` | `/rest/v1/tasks?id=eq.{id}` | Delete a task |
-| `GET` | `/rest/v1/profiles?select=*` | List all user profiles |
+| `POST` | `/auth/v1/logout` | Sign out |
+| `GET` | `/rest/v1/tasks?select=*&order=position.asc` | List all tasks |
+| `GET` | `/rest/v1/tasks?select=*,assignee:profiles!tasks_assignee_fkey(display_name,avatar_url)&order=position.asc` | Tasks with assignee join |
+| `GET` | `/rest/v1/tasks?id=eq.{id}&select=*` | Get task by ID |
+| `POST` | `/rest/v1/tasks` | Create task |
+| `PATCH` | `/rest/v1/tasks?id=eq.{id}` | Update task |
+| `DELETE` | `/rest/v1/tasks?id=eq.{id}` | Delete task |
+| `GET` | `/rest/v1/profiles?select=*` | List all profiles |
+| `GET` | `/rest/v1/projects?select=*` | List all projects |
+| `POST` | `/rest/v1/projects` | Create project |
+| `PATCH` | `/rest/v1/projects?id=eq.{id}` | Update project |
+| `DELETE` | `/rest/v1/projects?id=eq.{id}` | Delete project |
+| `POST` | `/rest/v1/rpc/set_project_status` | Archive/restore project |
+| `POST` | `/rest/v1/rpc/admin_set_role` | Admin: set user role |
+| `POST` | `/rest/v1/rpc/delete_own_account` | Delete own account |
 
-All endpoints require headers: `apikey` (anon key) and `Authorization: Bearer {token}` (except anonymous test). URL prefix is `https://{project}.supabase.co`.
+All endpoints require headers: `apikey` (anon key) and `Authorization: Bearer {token}`. URL prefix is `https://{project}.supabase.co`.
 
 ---
 
-## Legacy NestJS backend
+## Thunder Client Collection
 
-The `backend/` directory contains an empty NestJS 11 scaffold with Prisma 6. It has:
-- No controllers, services, or gateways
-- A Prisma schema (`backend/prisma/schema.prisma`) that mirrors the original design but is **not** the active schema
-- No Prisma service
+A Thunder Client collection is available at `docs/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, Profiles, Projects, and Project Members endpoints.
 
-It is not used by the running application.
+### Setup
+
+1. Install **Thunder Client** VS Code extension
+2. Import `docs/thunder-collection_TaskFlow-API.json`
+3. Create a **TaskFlow** environment with:
+
+| Variable | Value |
+|---|---|
+| `supabaseUrl` | Your Supabase project URL |
+| `supabaseAnonKey` | Your anon/public key |
+| `testUserEmail` | Auth user email |
+| `testUserPassword` | Auth user password |
+| `accessToken` | _(filled automatically on sign in)_ |
+| `userId` | _(filled automatically on sign in)_ |
+| `taskId` | _(filled after creating a task)_ |
+
+4. Run **Sign In** first — the test script auto-sets `accessToken` and `userId`
+
+---
+
+## Legacy NestJS Backend
+
+The `backend/` directory contains an empty NestJS scaffold. It has no controllers, services, or gateways. The Prisma schema (`backend/prisma/schema.prisma`) is **not** the active schema — `supabase/migrations/` is the source of truth. Do not modify `backend/`.

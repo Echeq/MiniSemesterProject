@@ -2,6 +2,7 @@
   "client": "Thunder Client",
   "collectionName": "TaskFlow API",
   "created": "2026-06-12",
+  "updated": "2026-06-18",
   "folders": [
     {
       "name": "Auth",
@@ -20,6 +21,18 @@
       "containerId": "",
       "created": "2026-06-12",
       "sortNum": 30
+    },
+    {
+      "name": "Projects",
+      "containerId": "",
+      "created": "2026-06-18",
+      "sortNum": 40
+    },
+    {
+      "name": "Project Members",
+      "containerId": "",
+      "created": "2026-06-18",
+      "sortNum": 50
     }
   ],
   "requests": [
@@ -65,6 +78,20 @@
       "headers": [
         { "name": "apikey", "value": "{{supabaseAnonKey}}" },
         { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Anonymous: List Tasks (should be empty)",
+      "containerId": "Tasks",
+      "method": "GET",
+      "sortNum": 5,
+      "url": "{{supabaseUrl}}/rest/v1/tasks?select=*",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" }
       ],
       "params": [],
       "body": { "type": "json", "raw": "" },
@@ -207,13 +234,172 @@
       "testScript": ""
     },
     {
-      "name": "Anonymous: List Tasks (should be empty)",
-      "containerId": "Tasks",
+      "name": "Get My Profile",
+      "containerId": "Profiles",
       "method": "GET",
-      "sortNum": 5,
-      "url": "{{supabaseUrl}}/rest/v1/tasks?select=*",
+      "sortNum": 20,
+      "url": "{{supabaseUrl}}/rest/v1/profiles?id=eq.{{userId}}",
       "headers": [
-        { "name": "apikey", "value": "{{supabaseAnonKey}}" }
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "List All Projects",
+      "containerId": "Projects",
+      "method": "GET",
+      "sortNum": 10,
+      "url": "{{supabaseUrl}}/rest/v1/projects?select=*",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Create Project",
+      "containerId": "Projects",
+      "method": "POST",
+      "sortNum": 20,
+      "url": "{{supabaseUrl}}/rest/v1/projects",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Test Project\",\n  \"description\": \"Created from Thunder Client\",\n  \"color\": \"#6366f1\",\n  \"icon\": \"project\",\n  \"created_by\": \"{{userId}}\"\n}"
+      },
+      "preScript": "",
+      "testScript": "const res = JSON.parse(res.text);\r\nif (res[0]?.id) {\r\n  thunder.setEnvVar('projectId', res[0].id);\r\n}"
+    },
+    {
+      "name": "Update Project",
+      "containerId": "Projects",
+      "method": "PATCH",
+      "sortNum": 30,
+      "url": "{{supabaseUrl}}/rest/v1/projects?id=eq.{{projectId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Updated Project Name\",\n  \"color\": \"#22c55e\"\n}"
+      },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Archive Project (RPC)",
+      "containerId": "Projects",
+      "method": "POST",
+      "sortNum": 40,
+      "url": "{{supabaseUrl}}/rest/v1/rpc/set_project_status",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"target_project\": \"{{projectId}}\",\n  \"new_status\": \"archived\"\n}"
+      },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Delete Project",
+      "containerId": "Projects",
+      "method": "DELETE",
+      "sortNum": 50,
+      "url": "{{supabaseUrl}}/rest/v1/projects?id=eq.{{projectId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "List Project Members",
+      "containerId": "Project Members",
+      "method": "GET",
+      "sortNum": 10,
+      "url": "{{supabaseUrl}}/rest/v1/project_members?select=*&project_id=eq.{{projectId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
+      ],
+      "params": [],
+      "body": { "type": "json", "raw": "" },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Add Project Member",
+      "containerId": "Project Members",
+      "method": "POST",
+      "sortNum": 20,
+      "url": "{{supabaseUrl}}/rest/v1/project_members",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Prefer", "value": "return=representation" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"project_id\": \"{{projectId}}\",\n  \"user_id\": \"{{userId}}\",\n  \"role\": \"member\"\n}"
+      },
+      "preScript": "",
+      "testScript": "const res = JSON.parse(res.text);\r\nif (res[0]?.id) {\r\n  thunder.setEnvVar('memberId', res[0].id);\r\n}"
+    },
+    {
+      "name": "Update Member Role",
+      "containerId": "Project Members",
+      "method": "PATCH",
+      "sortNum": 30,
+      "url": "{{supabaseUrl}}/rest/v1/project_members?id=eq.{{memberId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "params": [],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"role\": \"admin\"\n}"
+      },
+      "preScript": "",
+      "testScript": ""
+    },
+    {
+      "name": "Remove Project Member",
+      "containerId": "Project Members",
+      "method": "DELETE",
+      "sortNum": 40,
+      "url": "{{supabaseUrl}}/rest/v1/project_members?id=eq.{{memberId}}",
+      "headers": [
+        { "name": "apikey", "value": "{{supabaseAnonKey}}" },
+        { "name": "Authorization", "value": "Bearer {{accessToken}}" }
       ],
       "params": [],
       "body": { "type": "json", "raw": "" },

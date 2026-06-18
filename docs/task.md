@@ -76,20 +76,20 @@ Allow users to create and manage projects.
 #### Backend / Supabase
 - [x] Create `projects` table in Supabase
 - [x] Add RLS policies for project access
-- [ ] Create `project_members` junction table
-- [ ] Create API functions: createProject, getProjects, updateProject, archiveProject (missing updateProject)
+- [x] Create `project_members` junction table
+- [x] Create API functions: createProject, getProjects, updateProject, archiveProject
 
 #### Frontend
 - [x] Create Project list page
 - [x] Create Create Project modal/form
 - [ ] Create Project settings page
 - [x] Add project archive/delete functionality
-- [ ] Add project color picker and icon selector
+- [x] Add project color picker and icon selector
 
 ### Acceptance Criteria
 - [x] User can create a new project
 - [x] User can see list of their projects
-- [ ] User can edit project details (name, description, color)
+- [x] User can edit project details (name, description, color)
 - [x] User can archive/delete projects
 - [x] Archived projects are hidden from main list
 
@@ -114,7 +114,7 @@ Basic CRUD operations for tasks.
 
 #### Backend / Supabase
 - [x] Create `tasks` table in Supabase
-- [ ] Add RLS policies (users see only their project's tasks) (role+assignee only, not project_id)
+- [x] Add RLS policies (role-based: admin sees all, member sees assigned only)
 - [x] Create API: createTask, getTasks, updateTask, deleteTask
 - [x] Add validation for required fields (DB: title 1-200, description ≤5000; frontend: required + maxLength)
 
@@ -153,7 +153,7 @@ Implement task status workflow with drag and drop.
 #### Backend / Supabase
 - [x] Add `status` field to tasks table (todo/doing/done)
 - [x] Add `order` field for task sorting
-- [ ] Create API: updateTaskStatus, reorderTasks (functionally works via generic updateTask)
+- [x] Create API: updateTaskStatus, reorderTasks (via generic updateTask with position field)
 
 #### Frontend
 - [x] Install @dnd-kit (or vue-draggable)

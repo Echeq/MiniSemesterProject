@@ -1,0 +1,82 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-18
+Time:         17:09:06
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. "Create or update AGENTS.md for this repository" — review and improve existing AGENTS.md
+
+2. "Necesito que actualices TODA la documentacion actual o sea todo los /docs excepto el de los reportes semanales. Todo en ingles, hazlo de forma ordenada para que todas las personas entiendan."
+
+3. "@ai-log" — log this interaction
+
+4. "@ai-commit" — stage and commit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Updated AGENTS.md:
+   - Removed unverified @security-audit command (no skill file exists)
+   - Updated migration count from 8 to 9, added 20260618120000
+   - Added is_admin() to RPCs list and migration notes
+   - Added project_members junction table description
+   - Expanded .env requirements to include VITE_TEST_USER_EMAIL/PASSWORD
+
+2. Rewrote all docs/ except weekreport/:
+   - database.md: Complete rewrite — added projects, project_members, invitations, join_requests tables; all 9 migrations; 4 RPCs; role-based RLS; column-level permissions; all 3 triggers
+   - api.md: Complete rewrite — added Projects API, Project Members API, RPC functions, Presence, Storage sections; 16 endpoints; removed stale VITE_API_BASE_URL
+   - architecture.md: Complete rewrite — updated diagram with Sidebar/Topbar/Presence; all 10 hooks; project system; smart views; theme; i18n; fixed dead code list (removed non-existent Vue files)
+   - CHANGES.md: Complete rewrite — added project_members, theme, i18n, useIsMobile; removed xlsx (not a dependency); updated hooks/components lists
+   - task.md: Targeted edits — marked completed: project_members junction table, updateProject API, color picker/icon selector, edit project details, RLS policies
+   - setup.md: Updated env vars, added api.test.js command, first admin note
+   - setup/frontend.md: Added test:watch, --reporter=verbose, api.test.js command
+   - setup/supabase.md: Added test credentials, local Supabase option, db seed
+   - setup/index.md: Cleaner quick reference with test note
+   - setup/backend.md: Unchanged (already accurate)
+   - setup/npm.md: Unchanged (already accurate)
+   - guide/structure.md: Complete rewrite — removed stale Vue refs (main.ts, App.vue, stores/, pages/ don't exist); added locales/, i18n.js, eslint.config.js, test structure
+   - guide/ai.md: Simplified, removed install instructions, kept workflow + MCP auth
+   - thunder-collection_TaskFlow-API.json: Added Projects folder (5 endpoints) and Project Members folder (4 endpoints)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+docs/CHANGES.md
+docs/api.md
+docs/architecture.md
+docs/database.md
+docs/guide/ai.md
+docs/guide/structure.md
+docs/setup.md
+docs/setup/frontend.md
+docs/setup/index.md
+docs/setup/supabase.md
+docs/task.md
+docs/thunder-collection_TaskFlow-API.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGES SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+13 files changed, 836 insertions(+), 682 deletions(-)
+
+Key structural updates:
+- AGENTS.md: +project_members table, +is_admin() RPC, migration count 8→9
+- database.md: +projects table, +project_members table, migrations 5→9, +role-based RLS details
+- api.md: +Projects API section, +Project Members API, +RPCs, +Presence, +Storage
+- architecture.md: +all 10 hooks, +project system, +theme, +i18n, -stale Vue dead code
+- CHANGES.md: +project_members, +theme/i18n, -xlsx
+- thunder-collection: +Projects folder (5 endpoints), +Project Members folder (4 endpoints)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

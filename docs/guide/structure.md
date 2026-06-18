@@ -5,41 +5,57 @@ MiniSemesterProject/
 ├── .opencode/                     # OpenCode AI config
 │   ├── scripts/                   #   PowerShell/Bash scripts for logging
 │   └── skills/                    #   ai-commit / ai-log-generate skills
-├── backend/                       # Legacy NestJS scaffold (dead code)
-│   ├── prisma/
-│   │   └── schema.prisma          #   Inactive Prisma schema (stale)
-│   ├── generated/                 #   Prisma client output (gitignored)
-│   ├── src/                       #   Empty NestJS modules
-│   └── test/                      #   Jest e2e setup
+├── backend/                       # Legacy NestJS scaffold (dead code — do not edit)
+│   ├── dist/                      #   Build output
+│   ├── generated/                 #   Prisma client output
+│   ├── node_modules/              #   Dependencies
+│   └── .env                       #   Legacy env
 ├── docs/                          # Project documentation
-│   ├── api.md                     #   Supabase API reference + Thunder Client walkthrough
+│   ├── api.md                     #   Supabase API reference + Thunder Client guide
 │   ├── architecture.md            #   React + Supabase data flow
 │   ├── database.md                #   Schema, RLS, migrations, seed
 │   ├── setup.md                   #   Full setup guide
+│   ├── CHANGES.md                 #   System summary + feature catalog
+│   ├── task.md                    #   Module tracking (checklist)
 │   ├── guide/
 │   │   ├── ai.md                  #   OpenCode workflow (@ai-log, @ai-commit)
 │   │   └── structure.md           #   This file
+│   ├── setup/
+│   │   ├── index.md               #   Setup index
+│   │   ├── frontend.md            #   Frontend commands
+│   │   ├── supabase.md            #   Supabase config
+│   │   ├── npm.md                 #   npm quick start
+│   │   └── backend.md             #   Legacy NestJS notes
 │   ├── log/                       #   AI interaction logs
+│   ├── weekreport/                #   Weekly team reports
 │   └── thunder-collection_TaskFlow-API.json  # Thunder Client collection
 ├── frontend/                      # Active React 19 application
-│   ├── public/                    #   Static assets (favicon)
+│   ├── public/                    #   Static assets (favicon.svg, icons.svg)
 │   ├── src/                       #   Application source
-│   │   ├── api/                   #   Supabase client + REST helpers
-│   │   ├── components/            #   React components (AuthForm, Board, Column, ...)
-│   │   ├── hooks/                 #   Custom hooks (useAuth, useBoard, useProfile, ...)
+│   │   ├── api/                   #   supabaseClient.js
+│   │   ├── components/            #   React components (Board, Column, TaskCard, ...)
+│   │   ├── hooks/                 #   Custom hooks (useAuth, useBoard, ...)
+│   │   ├── locales/               #   i18n (en.json, es.json, id.json, zh.json)
+│   │   ├── i18n.js                #   i18next configuration
 │   │   ├── App.jsx                #   Root component (auth gate + board)
 │   │   ├── main.jsx               #   React entry point
 │   │   └── index.css              #   Tailwind v4 entry
-│   ├── tests/                     #   Vitest test files
+│   ├── tests/                     #   Vitest tests (17 files)
+│   │   ├── setup.js               #   Test setup (jsdom cleanup, matchMedia mock)
+│   │   ├── mockSupabase.js        #   Mock Supabase factory
+│   │   └── components/, hooks/    #   Component and hook tests
 │   ├── index.html                 #   HTML shell
-│   ├── vite.config.js             #   Active Vite config (React + Tailwind)
-│   ├── vitest.config.js           #   Test configuration
-│   └── .env                       #   Supabase credentials (gitignored)
+│   ├── vite.config.js             #   Vite config (React + Tailwind)
+│   ├── vitest.config.js           #   Test config (globals: true, jsdom, 15s timeout)
+│   ├── eslint.config.js           #   ESLint flat config
+│   ├── tsconfig.json              #   TypeScript config (tooling only)
+│   └── .env.example               #   Environment template
 ├── supabase/                      # Supabase database
-│   ├── migrations/                #   SQL migrations (schema source of truth)
-│   ├── seed.sql                   #   Dev seed data
+│   ├── migrations/                #   9 SQL migrations (schema source of truth)
+│   ├── seed.sql                   #   Dev seed data (6 sample tasks)
 │   └── README.md                  #   Supabase CLI usage
-├── AGENTS.md                      # AI instruction file (/init)
+├── AGENTS.md                      # AI instruction file
+├── opencode.json                  # OpenCode config (Supabase MCP)
 └── README.md                      # Project landing page
 ```
 
@@ -47,22 +63,18 @@ MiniSemesterProject/
 
 | Path | Role |
 |---|---|
-| `frontend/src/api/` | Supabase client initialization and API helpers |
-| `frontend/src/components/` | React components (Board, Column, TaskCard, Topbar, Sidebar, etc.) |
-| `frontend/src/hooks/` | Custom hooks for auth, board data, profile management |
-| `supabase/migrations/` | Database migration files (the real schema) |
-| `docs/` | All project documentation — setup, API, architecture, database |
-| `backend/` | Legacy NestJS scaffold — not active |
+| `frontend/src/api/` | Supabase client initialization |
+| `frontend/src/components/` | React components (Board, Column, TaskCard, Sidebar, Topbar, etc.) |
+| `frontend/src/hooks/` | Custom hooks (useAuth, useBoard, useProfile, useProjects, etc.) |
+| `frontend/src/locales/` | i18n translation files (en, es, id, zh) |
+| `frontend/tests/` | Vitest test files (17 files, 89 tests) |
+| `supabase/migrations/` | Database migration files (source of truth for schema) |
+| `docs/` | All project documentation |
 
-## Stale code (do not modify)
+## Dead code (do not modify)
 
-| Path | What |
+| Path | Why |
 |---|---|
-| `frontend/src/main.ts` | Vue 3 entry point |
-| `frontend/src/App.vue` | Vue 3 root |
-| `frontend/src/style.css` | Vue 3 styles |
-| `frontend/src/stores/` | Pinia stores |
-| `frontend/src/pages/` | Vue router pages |
-| `frontend/src/composables/` | Vue composables |
-| `frontend/vite.config.ts` | Vue plugin config |
-| `backend/` | Full NestJS scaffold (AppModule is empty) |
+| `backend/` | Orphaned NestJS scaffold — only dist/, generated/, node_modules/, .env remain |
+| `frontend/src/composables/` | Empty directory — Vue 3 remnant |
+| `frontend/src/assets/` | Empty directory — Vue 3 remnant |

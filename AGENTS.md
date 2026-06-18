@@ -4,7 +4,6 @@
 
 - `@ai-log` — Log last interaction to `docs/log/`
 - `@ai-commit` — Stage all + conventional commit
-- `@security-audit` — Run automated security audit (secrets, vulns, deps, CI/CD)
 
 ## Commands
 
@@ -54,16 +53,18 @@ Supabase CLI (from root or `supabase/`):
 - **i18n**: i18next + react-i18next. Locales at `src/locales/{en,es,id,zh}.json`. Language stored in `localStorage` key `lang`.
 - **Test organization**: tests under `tests/{components,hooks}/` by type. `api.test.js` excluded from default vitest run.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 (incompatible majors — import carefully).
-- **Migrations** (8 total):
+- **Migrations** (9 total):
   - `20260612100000` — initial schema (tables, RLS, realtime, triggers)
   - `20260612120000` — column-level grants, length constraints
   - `20260612130000` — fix signup crash with long display names
   - `20260612140000` — avatars storage bucket + RLS
   - `20260616100000` — role system (role column, invitations, join_requests)
   - `20260617000000` — delete_own_account RPC
-  - `20260617120000` — RBAC projects + invitations revamp
+  - `20260617120000` — RBAC projects + invitations revamp, `is_admin()` RPC
   - `20260617120100` — account management
-- **RPCs**: `admin_set_role(target_user, new_role)`, `set_project_status(target_project, new_status)`, `delete_own_account()`
+  - `20260618120000` — project_members junction table, color/icon on projects
+- **RPCs**: `admin_set_role(target_user, new_role)`, `set_project_status(target_project, new_status)`, `delete_own_account()`, `is_admin()`
+- **project_members**: Junction table with per-project role (`admin`/`member`). Creator auto-added as admin via `handle_new_project_member()` trigger. RLS: all authenticated can read, only admins can write.
 
 ## Hooks overview
 
@@ -82,7 +83,7 @@ Supabase CLI (from root or `supabase/`):
 
 ## Setup gotchas
 
-- `frontend/.env` must contain `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Copy `frontend/.env.example` → `.env`.
+- `frontend/.env` must contain `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` + `VITE_TEST_USER_EMAIL` + `VITE_TEST_USER_PASSWORD`. Copy `frontend/.env.example` → `.env`.
 - Tests load `.env` via `dotenv.config()` directly, not Vite env — they work without Vite dev server.
 - Tests read `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` from `.env`.
 - `api.test.js` is excluded from vitest runner (`exclude` in `vitest.config.js`) — run explicitly with `npx vitest run tests/api.test.js`.

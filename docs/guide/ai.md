@@ -2,47 +2,30 @@
 
 This project uses **OpenCode** as the AI-powered CLI assistant.
 
-## Installation
+## Configuration
 
-**Windows (PowerShell):**
-```powershell
-winget install opencode
-```
-
-**Mac (Homebrew):**
-```bash
-brew install opencode
-```
-
-**Linux (curl):**
-```bash
-curl -fsSL https://opencode.ai/install.sh | sh
-```
+The project's OpenCode config is at `opencode.json` (root) with skills in `.opencode/skills/`. The AGENTS.md file provides workspace-level instructions.
 
 ## Commands
 
-| Command | When | What it does |
-|---------|------|-------------|
-| `/init` | Start of every session | Loads `AGENTS.md` + discovers skills |
-| `@ai-log` | After every AI interaction | Logs the conversation to `docs/log/` |
-| `@ai-commit` | When ready to commit | Stages all changes and creates a commit |
-| Chat naturally | Anytime | Ask the AI for features, fixes, explanations |
+| Command | What it does |
+|---|---|
+| `@ai-log` | Log last AI interaction to `docs/log/` |
+| `@ai-commit` | Stage all changes + create a conventional commit |
 
 ## Supabase MCP
 
-The project connects to Supabase via OpenCode's MCP server for AI-driven database operations. Each team member authenticates individually with their own Supabase account:
+The project connects to Supabase via OpenCode's MCP server for AI-driven database operations. Each team member authenticates individually:
 
 ```bash
 opencode mcp auth supabase
 ```
 
-This opens a browser for OAuth login. No credentials are stored in the repository.
-
-Once authenticated, the AI can list tables, run SQL queries, apply migrations, and manage the database directly.
+This opens a browser for OAuth login. No credentials are stored in the repository. Once authenticated, the AI can list tables, run SQL queries, apply migrations, and manage the database.
 
 ## Daily workflow
 
-1. Run `opencode` and type `/init`
+1. Open the project in OpenCode (AGENTS.md auto-loads)
 2. Ask the AI for what you need
 3. After the AI responds, type `@ai-log`
 4. When done, type `@ai-commit`
@@ -51,7 +34,6 @@ Once authenticated, the AI can list tables, run SQL queries, apply migrations, a
 
 ```
 $ opencode
-/init
 > Create a Kanban column component
 [AI writes the component]
 
@@ -60,17 +42,4 @@ $ opencode
 
 @ai-commit
 ✅ Commit created: feat: add Kanban column component
-```
-
-## Without OpenCode (standalone scripts)
-
-**Windows:**
-```powershell
-.\.opencode\scripts\new-ai-log.ps1
-```
-
-**Mac/Linux:**
-```bash
-chmod +x .opencode/scripts/new-ai-log.sh
-./.opencode/scripts/new-ai-log.sh
 ```

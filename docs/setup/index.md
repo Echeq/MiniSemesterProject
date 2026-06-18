@@ -6,4 +6,5 @@ Quick reference:
 
 - **Frontend:** `cd frontend && npm install && npm run dev`
 - **Supabase:** Copy credentials from project dashboard to `frontend/.env`
-- **Legacy:** `docs/setup/backend.md` — NestJS scaffold (inactive)
+- **Tests:** `npm test` (api.test.js excluded — run separately)
+- **Backend:** `docs/setup/backend.md` — NestJS scaffold (inactive, do not use)
