@@ -186,10 +186,12 @@ function Settings({ session, profile, onSaved }) {
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [password, setPassword] = useState('')
+  const [newEmail, setNewEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState(null)
   const [error, setError] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const fileRef = useRef(null)
 
   function flash(setter, text) {
@@ -235,6 +237,22 @@ function Settings({ session, profile, onSaved }) {
     }
   }
 
+  async function changeEmail(e) {
+    e.preventDefault()
+    if (!newEmail) return
+    setBusy(true); setError(null)
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      if (error) throw error
+      setNewEmail('')
+      flash(setMsg, 'Verification email sent.')
+    } catch (err) {
+      flash(setError, err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function changePassword(e) {
     e.preventDefault()
     if (password.length < 6) return flash(setError, 'Password must be at least 6 characters.')
@@ -252,7 +270,6 @@ function Settings({ session, profile, onSaved }) {
   }
 
   async function deleteAccount() {
-    if (!window.confirm('Delete your account permanently? This removes your profile and everything you own. This cannot be undone.')) return
     setBusy(true); setError(null)
     try {
       const { error } = await supabase.rpc('delete_own_account')
@@ -292,6 +309,16 @@ function Settings({ session, profile, onSaved }) {
         </label>
       </form>
 
+      <form onSubmit={changeEmail} className="mb-6">
+        <label className="block">
+          <span className={labelCls}>New email</span>
+          <div className="flex gap-2">
+            <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
+            <button disabled={busy || !newEmail} className="btn btn-default">Update</button>
+          </div>
+        </label>
+      </form>
+
       <form onSubmit={changePassword} className="mb-6">
         <label className="block">
           <span className={labelCls}>New password</span>
@@ -305,7 +332,17 @@ function Settings({ session, profile, onSaved }) {
       <div className="rounded-md border p-4" style={{ borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
         <p className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>Danger zone</p>
         <p className="mt-1 text-xs text-[var(--fg-muted)]">Permanently delete your account and all data you own. Blocked if you're the only admin.</p>
-        <button type="button" onClick={deleteAccount} disabled={busy} className="btn btn-danger mt-3">Delete my account</button>
+        {deleteConfirm ? (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Are you sure? This cannot be undone.</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">Cancel</button>
+              <button type="button" onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? 'Deleting…' : 'Confirm delete'}</button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" onClick={() => setDeleteConfirm(true)} className="btn btn-danger mt-3">Delete my account</button>
+        )}
       </div>
     </div>
   )
