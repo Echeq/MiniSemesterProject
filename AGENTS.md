@@ -7,59 +7,58 @@
 
 ## Commands
 
-| Directory | Command | Action |
-|---|---|---|
-| `frontend/` | `npm run dev` | Vite dev (port 5173, LAN via `host: true`) |
-| `frontend/` | `npm test` | Vitest (needs `.env` — hits real Supabase) |
-| `frontend/` | `npm run test:watch` | Vitest watch |
-| `frontend/` | `npm run build` | Vite production build |
-| `frontend/` | `npx vitest run --reporter=verbose` | Single test |
-| `backend/` | `npm run start:dev` | NestJS dev server (--watch) |
-| `backend/` | `npm run build` | Compile to `dist/` |
-| `backend/` | `npm run lint` | ESLint --fix (flat config) |
-| `backend/` | `npm test` | Jest (`*.spec.ts`) |
-| `backend/` | `npm run test:e2e` | Jest e2e (`*.e2e-spec.ts`) |
-| `supabase/` | `supabase start` | Start local Supabase |
-| `supabase/` | `supabase db reset` | Run all migrations + seed |
+All commands run from `frontend/`:
 
-Tests read test credentials from `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` in `.env`.
+| Command | Action |
+|---|---|
+| `npm run dev` | Vite dev (port 5173, LAN via `host: true`) |
+| `npm test` | Vitest (requires `.env` — hits real Supabase) |
+| `npm run test:watch` | Vitest watch |
+| `npm run build` | Vite production build |
+| `npx vitest run --reporter=verbose` | Single test |
+
+Supabase CLI (from root or `supabase/`):
+
+| Command | Action |
+|---|---|
+| `supabase start` | Start local Supabase |
+| `supabase db reset` | Run all migrations + seed |
 
 ## Dead code — do NOT edit
 
 | Path | Why |
 |---|---|
-| `backend/` | NestJS scaffold — empty AppModule, never wired |
-| `frontend/src/main.ts`, `App.vue`, `style.css`, `stores/`, `pages/`, `composables/` | Vue 3 remnants after React migration |
-| `frontend/vite.config.ts` | Vue plugin config — use `vite.config.js` (React + Tailwind) |
-| `backend/prisma/schema.prisma` | Stale original design — active schema is `supabase/migrations/` |
-| `frontend/src/api/client.ts` | Legacy NestJS fetch wrapper — app uses `supabase-js` directly |
-| dep `socket.io-client` (frontend) / `socket.io` (backend) | Unused — realtime is Supabase Realtime |
+| `backend/` | Orphaned NestJS scaffold dir — no source remains (only dist/, generated/, node_modules/) |
+| `frontend/src/composables/` | Empty directory — Vue 3 remnant |
+| `frontend/src/api/supabaseClient.js` is the real API client | `src/api/` only has one file |
+| `socket.io-client` dep in `frontend/package.json` | Unused — realtime is Supabase Realtime |
+| `vite.config.ts` (does not exist) | Only `vite.config.js` (React + Tailwind) is active |
 
 ## Architecture
 
-- **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Entry: `src/main.jsx` → `App.jsx`. Frontend `src/` is JSX (tsconfig is build-tooling only).
-- **Backend**: Supabase only (auth, PostgREST, realtime, storage). NestJS in `backend/` is dead scaffold.
-- **DB source of truth**: `supabase/migrations/` (SQL). Prisma schema is stale — never reconcile.
+- **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Entry: `src/main.jsx` → `App.jsx`. Source is JSX (tsconfig is tooling-only).
+- **Backend**: Supabase only (auth, PostgREST, realtime, storage). No server.
+- **DB source of truth**: `supabase/migrations/` (SQL). Never reconcile against Prisma or elsewhere.
 - **Role system** (`profiles.role`): `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite/join-request flow). First signup ever → admin. Invited email → member.
-- **Position system**: float8 `position` column. `positionBetween()` at `frontend/src/hooks/useBoard.js:9`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
+- **Position system**: float8 `position` column. `positionBetween()` at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 - **`created_by` immutable** via column-level grants (migration `20260612120000`). Updatable only: `title, description, status, due_date, position, assignee`.
-- **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100. Trigger truncates display_name on signup to prevent registration failures.
-- **Realtime**: `tasks` in `supabase_realtime` publication with `replica identity full`. Frontend subscribes via `supabase.channel('board')` — no Socket.IO server.
+- **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100. Trigger truncates display_name on signup.
+- **Realtime**: `tasks` in `supabase_realtime` publication with `replica identity full`. Frontend subscribes via `supabase.channel('board')`.
 - **i18n**: i18next + react-i18next. Locales at `src/locales/{en,es,id,zh}.json`. Language stored in `localStorage` key `lang`.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 (incompatible majors — import carefully).
 
 ## Setup gotchas
 
-- `frontend/.env` must contain `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Copy `frontend/.env.example` → `.env` and fill credentials.
-- Supabase MCP (`opencode.json`) usa OAuth individual — cada miembro ejecuta `opencode mcp auth supabase` con su propia cuenta.
-- `VITE_API_BASE_URL` (default `http://localhost:3000`) is for legacy NestJS — unused. Do not rely on it.
-- Tests load `.env` via `dotenv.config()` directly (not Vite env), so they work without Vite dev server.
-- Tests read test credentials from `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` in `.env`.
+- `frontend/.env` must contain `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`. Copy `frontend/.env.example` → `.env`.
+- Tests load `.env` via `dotenv.config()` directly, not Vite env — they work without Vite dev server.
+- Tests read `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWORD` from `.env`.
+- `api.test.js` is excluded from the vitest runner (`exclude` in `vitest.config.js`) — run it explicitly: `npx vitest run tests/api.test.js`.
+- `supabaseClient.js` exports `null` when env vars are missing — app degrades gracefully.
 - `supabase/seed.sql` is idempotent but requires at least one auth user before running.
-- `supabaseClient.js` exports `null` when env vars are missing — the app degrades gracefully.
-- Install dependencies from `frontend/`. Root `package-lock.json` is an orphaned artifact (gitignored).
+- Install dependencies from `frontend/`. Root `package-lock.json` is orphaned (gitignored).
 - Vitest timeout: 15s (configured in `frontend/vitest.config.js`).
 - Account deletion RPC: migration `20260617000000`.
+- `VITE_API_BASE_URL` is unused (legacy NestJS env var). Do not rely on it.
 
 ## Conventions
 
@@ -68,5 +67,4 @@ Tests read test credentials from `VITE_TEST_USER_EMAIL` / `VITE_TEST_USER_PASSWO
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config file).
 - RLS enforced on all tables — every Supabase query runs as the signed-in user.
 - Avatar bucket: `avatars/`, public read, authenticated upload at `avatars/{userId}/`.
-- OpenCode config: `opencode.json` (root) + `.opencode/` (skills, scripts).
-- NestJS scaffold in `backend/` is dead code — do not touch its Prettier/ESLint config.
+- OpenCode config: `opencode.json` (root) + `.opencode/` (skills, scripts, plans).
