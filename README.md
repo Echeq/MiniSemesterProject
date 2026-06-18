@@ -9,7 +9,7 @@
 | Frontend | React 19, Vite 8, Tailwind CSS v4, TypeScript 6, @dnd-kit |
 | Backend | Supabase (Auth, PostgREST, Realtime, PostgreSQL) |
 | Testing | Vitest 4, Thunder Client |
-| AI Tooling | OpenCode (@ai-log, @ai-commit) |
+| AI Tooling | OpenCode (@ai-log, @ai-commit, Supabase MCP) |
 
 [Architecture →](docs/architecture.md)
 

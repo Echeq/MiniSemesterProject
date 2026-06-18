@@ -28,6 +28,18 @@ curl -fsSL https://opencode.ai/install.sh | sh
 | `@ai-commit` | When ready to commit | Stages all changes and creates a commit |
 | Chat naturally | Anytime | Ask the AI for features, fixes, explanations |
 
+## Supabase MCP
+
+The project connects to Supabase via OpenCode's MCP server for AI-driven database operations. Each team member authenticates individually with their own Supabase account:
+
+```bash
+opencode mcp auth supabase
+```
+
+This opens a browser for OAuth login. No credentials are stored in the repository.
+
+Once authenticated, the AI can list tables, run SQL queries, apply migrations, and manage the database directly.
+
 ## Daily workflow
 
 1. Run `opencode` and type `/init`

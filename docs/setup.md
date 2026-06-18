@@ -23,19 +23,20 @@ npm install
 
 ### Option A: Use an existing project
 
-Ask a team member for the Supabase project credentials, then create `frontend/.env`:
+Copy the template and fill in credentials from a team member:
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
+```bash
+cp .env.example .env
 ```
+
+Then edit `frontend/.env` with the real values.
 
 ### Option B: Create a new project
 
 1. Go to [supabase.com](https://supabase.com) and create a free account
 2. Create a new project (choose a nearby region)
 3. In **Project Settings → API**, copy the **Project URL** and **anon public key**
-4. Create `frontend/.env` as shown above
+4. Copy `.env.example` to `.env` and paste the values
 
 ### Option C: Local Supabase (CLI)
 
@@ -45,7 +46,7 @@ supabase start
 supabase db push
 ```
 
-Then use the local `anon key` and `API URL` from `supabase start` output.
+Then use the local `anon key` and `API URL` from `supabase start` output in `frontend/.env`.
 
 ---
 
@@ -62,7 +63,19 @@ If `.env` is missing or invalid, the app shows a setup hint instead of crashing.
 
 ---
 
-## 4. Run tests
+## 4. Set up Supabase MCP (AI agent access)
+
+The project uses OpenCode with a Supabase MCP server for AI-driven database operations. Each team member must authenticate individually:
+
+```bash
+opencode mcp auth supabase
+```
+
+This opens a browser to log in with your Supabase account (OAuth). No shared secrets needed.
+
+---
+
+## 5. Run tests
 
 ```bash
 cd frontend
@@ -78,7 +91,7 @@ Tests hit the real Supabase API, so `.env` must have valid credentials and a tes
 
 ---
 
-## 5. Access from your phone (same WiFi)
+## 6. Access from your phone (same WiFi)
 
 1. Find your PC's local IP:
    ```bash
@@ -93,14 +106,15 @@ Tests hit the real Supabase API, so `.env` must have valid credentials and a tes
 
 ---
 
-## Available commands
+## Team onboarding checklist
 
-| Command | Action |
-|---|---|
-| `npm run dev` | Start Vite dev server (localhost + LAN) |
-| `npm run build` | Production build |
-| `npm run test` | Run tests (Vitest) |
-| `npm run test:watch` | Tests in watch mode |
+For each new team member:
+
+1. Clone the repo
+2. `cd frontend && npm install`
+3. `cp .env.example .env` and fill in Supabase credentials
+4. `opencode mcp auth supabase` — authenticate with their own Supabase account
+5. `npm run dev` to start developing
 
 ---
 
@@ -123,3 +137,4 @@ Tests hit the real Supabase API, so `.env` must have valid credentials and a tes
 | Can't sign up (Free tier) | Supabase Free tier requires email confirmation. Manually confirm users in **Supabase Dashboard → Auth → Users** |
 | Phone can't connect | Ensure both devices are on the same WiFi; disable VPN; check firewall |
 | `npm install` fails | Use Node.js 20+ and npm 10+ |
+| MCP auth fails | Run `opencode mcp debug supabase` to diagnose |
