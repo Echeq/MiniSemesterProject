@@ -244,3 +244,77 @@ begin
   return new;
 end;
 $$;
+
+-- ============================================================
+-- 7. Admin policies for join_requests
+-- ============================================================
+create policy "Admins can view all join requests"
+  on public.join_requests for select
+  to authenticated
+  using (public.is_admin());
+
+create policy "Admins can update join requests"
+  on public.join_requests for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- ============================================================
+-- 8. Task RLS — role-based access
+--    Admins: full CRUD on all tasks
+--    Members: read-only, only tasks assigned to them
+-- ============================================================
+drop policy if exists "Authenticated users can view tasks" on public.tasks;
+drop policy if exists "Authenticated users can create tasks as themselves" on public.tasks;
+drop policy if exists "Authenticated users can update tasks" on public.tasks;
+drop policy if exists "Authenticated users can delete tasks" on public.tasks;
+
+create policy "Admins can read all tasks"
+  on public.tasks for select
+  to authenticated
+  using (public.is_admin());
+
+create policy "Members can read assigned tasks"
+  on public.tasks for select
+  to authenticated
+  using (
+    not public.is_admin()
+    and (select role from public.profiles where id = auth.uid()) = 'member'
+    and assignee = auth.uid()
+  );
+
+create policy "Admins can insert tasks"
+  on public.tasks for insert
+  to authenticated
+  with check (public.is_admin() and created_by = auth.uid());
+
+create policy "Admins can update tasks"
+  on public.tasks for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+create policy "Admins can delete tasks"
+  on public.tasks for delete
+  to authenticated
+  using (public.is_admin());
+
+-- ============================================================
+-- 9. Profile RLS — users update own (except role), admins update any
+-- ============================================================
+drop policy if exists "Users can update own profile" on public.profiles;
+
+create policy "Users can update own profile (except role)"
+  on public.profiles for update
+  to authenticated
+  using (id = (select auth.uid()))
+  with check (
+    id = (select auth.uid())
+    and role = (select role from public.profiles where id = auth.uid())
+  );
+
+create policy "Admins can update any profile"
+  on public.profiles for update
+  to authenticated
+  using (public.is_admin())
+  with check (true);

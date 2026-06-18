@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 vi.mock('react-i18next', () => ({
@@ -46,15 +46,15 @@ describe('TaskCard', () => {
 
   it('shows assignee initial when present', async () => {
     const TaskCard = (await import('../../src/components/TaskCard')).default
-    render(<TaskCard task={makeTask({ assignee: { display_name: 'Alice', avatar_url: null } })} onClick={vi.fn()} role="admin" />)
-    expect(screen.getByText('A')).toBeInTheDocument()
+    render(<TaskCard task={makeTask({ assignee: 'u2', assignee_profile: { display_name: 'Alice', avatar_url: null } })} onClick={vi.fn()} role="admin" />)
+    await waitFor(() => expect(screen.getByText('A')).toBeInTheDocument())
   })
 
   it('shows due date badge when due_date set', async () => {
     const TaskCard = (await import('../../src/components/TaskCard')).default
-    const futureDate = new Date(Date.now() + 86400000).toISOString()
+    const futureDate = '2026-06-19'
     render(<TaskCard task={makeTask({ due_date: futureDate })} onClick={vi.fn()} role="admin" />)
-    const badge = screen.getByText((content) => content.includes(futureDate.slice(0, 10)))
+    const badge = screen.getByText('Jun 19')
     expect(badge).toBeInTheDocument()
   })
 

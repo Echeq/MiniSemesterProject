@@ -59,7 +59,7 @@ describe('App', () => {
     mockSupabase.auth.getSession.mockReturnValue(new Promise(() => {}))
     const { default: App } = await import('../../src/App')
     render(<App />)
-    expect(screen.getByText('board.loading')).toBeInTheDocument()
+    expect(screen.getByText('Loading…')).toBeInTheDocument()
   })
 
   it('renders AuthForm when no session', async () => {
@@ -67,7 +67,7 @@ describe('App', () => {
     const { default: App } = await import('../../src/App')
     render(<App />)
     await waitFor(() => {
-      expect(screen.getByText('auth.signInToBoard')).toBeInTheDocument()
+      expect(screen.getByText('Sign in to your board')).toBeInTheDocument()
     })
   })
 
@@ -80,16 +80,11 @@ describe('App', () => {
     mockUseProfile.mockReturnValue({
       profile: { id: 'uid', display_name: 'Admin', role: 'admin', avatar_url: null },
       loading: false,
-      updateProfile: vi.fn(),
-      uploadAvatar: vi.fn(),
-      changePassword: vi.fn(),
-      updateEmail: vi.fn(),
-      deleteAccount: vi.fn(),
     })
     const { default: App } = await import('../../src/App')
     render(<App />)
     await waitFor(() => {
-      expect(screen.getAllByText('Admin').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('All tasks').length).toBeGreaterThanOrEqual(1)
     })
   })
 })

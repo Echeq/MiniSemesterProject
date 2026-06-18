@@ -1,0 +1,99 @@
+﻿╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-18
+Time:         11:00:10
+Git Branch:   review
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. "todos los test funcionan bien — ya los test estan listo?"
+   User confirmed all tests pass and asked if they're ready.
+
+2. "y como ejecuto los test?"
+   Asked how to run tests.
+
+3. "y en que carpeta?"
+   Asked which directory.
+
+4. "Ok ahora quiero que reorganices todos los archivos de test,
+    los test viejos que no cumplan los requisitos o esten en
+    redundancia se eliminaran"
+   Asked to reorganize test files and remove old/redundant ones.
+
+5. "Ahora actualiza la documentacion todo"
+   Asked to update all documentation.
+
+6. "@ai-log"
+   Triggered AI interaction log.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Confirmed all 85 tests in 16 files pass. Ready.
+
+2. Explained test commands: 
+px vitest run --reporter=verbose
+   and 
+pm run test:watch.
+
+3. Explained tests run from rontend/ directory.
+
+4. Test reorganization:
+   - Audited all 17+ test files (no redundancies found)
+   - Moved tests/useIsMobile.test.js → tests/hooks/useIsMobile.test.js
+   - Extracted 4 positionBetween tests from excluded api.test.js
+     into new tests/hooks/positionBetween.test.js
+   - Deleted orphaned tests/components/Header.test.jsx
+   - Result: 17 files, 89 tests, 0 failures
+
+5. Documentation update (8 files rewritten, 2 patched):
+   - frontend/README.md — Vue 3 template → React 19 reference
+   - docs/setup/backend.md — NestJS guide → legacy marker
+   - docs/setup/frontend.md — Added Supabase env vars, test commands
+   - docs/setup/supabase.md — Removed old edge function ref
+   - docs/setup/index.md — Fixed broken links
+   - docs/setup/npm.md — Removed tsc reference, simplified
+   - docs/architecture.md — Header → Topbar/Sidebar/ProfileMenu
+   - docs/guide/structure.md — Same Header fix
+   - supabase/README.md — Added projects, join_requests, unknown role
+   - AGENTS.md — Test count 85→89, new paths, test structure note
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILES AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Modified:
+  AGENTS.md
+  docs/architecture.md
+  docs/guide/structure.md
+  docs/setup/backend.md
+  docs/setup/frontend.md
+  docs/setup/index.md
+  docs/setup/npm.md
+  docs/setup/supabase.md
+  frontend/README.md
+  frontend/tests/api.test.js
+  frontend/tests/components/App.test.jsx
+  frontend/tests/hooks/useProfile.test.js
+  frontend/tests/components/AuthForm.test.jsx
+  frontend/tests/components/Board.test.jsx
+  frontend/tests/components/Column.test.jsx
+  frontend/tests/components/TaskCard.test.jsx
+  frontend/tests/components/TaskModal.test.jsx
+  supabase/README.md
+
+Deleted:
+  frontend/tests/components/Header.test.jsx
+  frontend/tests/useIsMobile.test.js
+
+Created:
+  frontend/tests/hooks/positionBetween.test.js
+  frontend/tests/hooks/useIsMobile.test.js
+

@@ -65,10 +65,11 @@ The `AuthGate` component calls `useAuth()`, which checks for an existing session
 | `useBoard()` | Fetches tasks, provides CRUD helpers, subscribes to realtime |
 | `useProfile()` | Manages the current user's profile (display name, avatar) |
 | `Board` | Renders the Kanban columns with drag-and-drop |
-| `Header` | App bar with "New task" button and sign out |
+| `Topbar` | Top bar with "All tasks", smart views, insights toggle |
+| `Sidebar` | Left sidebar with project switcher, team presence, quick actions |
 | `TaskModal` | Create / edit / delete task dialog |
 | `TaskActionSheet` | Mobile bottom sheet for task actions |
-| `ProfileMenu` | Floating button to open profile settings |
+| `ProfileMenu` | User menu with account settings and sign out |
 
 ### Board layout
 

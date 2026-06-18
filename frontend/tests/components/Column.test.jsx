@@ -39,40 +39,25 @@ describe('Column', () => {
 
   it('renders column header with status label', async () => {
     const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[]} role="admin" onTaskClick={vi.fn()} onInvitationClick={vi.fn()} onMobileAction={vi.fn()} />)
-    expect(screen.getByText('board.todo')).toBeInTheDocument()
+    render(<Column status="todo" tasks={[]} onTaskClick={vi.fn()} />)
+    expect(screen.getByText('To Do')).toBeInTheDocument()
   })
 
   it('shows task count', async () => {
     const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[makeTask()]} role="admin" onTaskClick={vi.fn()} onInvitationClick={vi.fn()} onMobileAction={vi.fn()} />)
+    render(<Column status="todo" tasks={[makeTask()]} onTaskClick={vi.fn()} />)
     expect(screen.getByText('1')).toBeInTheDocument()
   })
 
   it('shows no-tasks placeholder when empty', async () => {
     const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[]} role="admin" onTaskClick={vi.fn()} onInvitationClick={vi.fn()} onMobileAction={vi.fn()} />)
-    expect(screen.getByText('board.noTasks')).toBeInTheDocument()
-  })
-
-  it('shows invitation prompt for unknown role', async () => {
-    const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[]} role="unknown" onTaskClick={vi.fn()} onInvitationClick={vi.fn()} onMobileAction={vi.fn()} />)
-    expect(screen.getByText('board.tasksHidden')).toBeInTheDocument()
-    expect(screen.getByText('board.clickRequest')).toBeInTheDocument()
-  })
-
-  it('calls onInvitationClick when unknown user clicks request', async () => {
-    const onInvitationClick = vi.fn()
-    const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[]} role="unknown" onTaskClick={vi.fn()} onInvitationClick={onInvitationClick} onMobileAction={vi.fn()} />)
-    await userEvent.click(screen.getByText('board.clickRequest'))
-    expect(onInvitationClick).toHaveBeenCalled()
+    render(<Column status="todo" tasks={[]} onTaskClick={vi.fn()} />)
+    expect(screen.getByText('Drop tasks here')).toBeInTheDocument()
   })
 
   it('renders task cards for non-empty column', async () => {
     const Column = (await import('../../src/components/Column')).default
-    render(<Column status="todo" tasks={[makeTask({ id: 't1', title: 'First' }), makeTask({ id: 't2', title: 'Second' })]} role="admin" onTaskClick={vi.fn()} onInvitationClick={vi.fn()} onMobileAction={vi.fn()} />)
+    render(<Column status="todo" tasks={[makeTask({ id: 't1', title: 'First' }), makeTask({ id: 't2', title: 'Second' })]} onTaskClick={vi.fn()} />)
     expect(screen.getByText('First')).toBeInTheDocument()
     expect(screen.getByText('Second')).toBeInTheDocument()
   })
