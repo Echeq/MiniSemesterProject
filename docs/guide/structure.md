@@ -48,7 +48,7 @@ MiniSemesterProject/
 | Path | Role |
 |---|---|
 | `frontend/src/api/` | Supabase client initialization and API helpers |
-| `frontend/src/components/` | React components (Board, Column, TaskCard, Header, etc.) |
+| `frontend/src/components/` | React components (Board, Column, TaskCard, Topbar, Sidebar, etc.) |
 | `frontend/src/hooks/` | Custom hooks for auth, board data, profile management |
 | `supabase/migrations/` | Database migration files (the real schema) |
 | `docs/` | All project documentation — setup, API, architecture, database |

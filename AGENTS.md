@@ -12,10 +12,11 @@ All commands run from `frontend/`:
 | Command | Action |
 |---|---|
 | `npm run dev` | Vite dev (port 5173, LAN via `host: true`) |
-| `npm test` | Vitest (requires `.env` — hits real Supabase) |
+| `npm test` | Vitest (89 tests — 85 unit + 4 positionBetween) |
 | `npm run test:watch` | Vitest watch |
 | `npm run build` | Vite production build |
-| `npx vitest run --reporter=verbose` | Single test |
+| `npx vitest run --reporter=verbose` | All tests with names |
+| `npx vitest run tests/api.test.js` | API integration tests (excluded from default) |
 
 Supabase CLI (from root or `supabase/`):
 
@@ -40,11 +41,12 @@ Supabase CLI (from root or `supabase/`):
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage). No server.
 - **DB source of truth**: `supabase/migrations/` (SQL). Never reconcile against Prisma or elsewhere.
 - **Role system** (`profiles.role`): `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite/join-request flow). First signup ever → admin. Invited email → member.
-- **Position system**: float8 `position` column. `positionBetween()` at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
+- **Position system**: float8 `position` column. `positionBetween()` at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing. Tests at `frontend/tests/hooks/positionBetween.test.js`.
 - **`created_by` immutable** via column-level grants (migration `20260612120000`). Updatable only: `title, description, status, due_date, position, assignee`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100. Trigger truncates display_name on signup.
 - **Realtime**: `tasks` in `supabase_realtime` publication with `replica identity full`. Frontend subscribes via `supabase.channel('board')`.
 - **i18n**: i18next + react-i18next. Locales at `src/locales/{en,es,id,zh}.json`. Language stored in `localStorage` key `lang`.
+- **Test reorganization**: tests live under `tests/{components,hooks}/` by type. `api.test.js` excluded from default vitest run. Hook tests in `tests/hooks/`, component tests in `tests/components/`.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 (incompatible majors — import carefully).
 
 ## Setup gotchas

@@ -19,35 +19,35 @@ describe('AuthForm', () => {
   it('renders sign in mode by default', async () => {
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    expect(screen.getByText('auth.signInToBoard')).toBeInTheDocument()
-    expect(screen.getByText('auth.signIn')).toBeInTheDocument()
-    expect(screen.queryByText('auth.displayName')).not.toBeInTheDocument()
+    expect(screen.getByText('Sign in to your board')).toBeInTheDocument()
+    expect(screen.getByText('Sign in')).toBeInTheDocument()
+    expect(screen.queryByText('Display name')).not.toBeInTheDocument()
   })
 
   it('toggles to sign up mode', async () => {
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.click(screen.getByText('auth.noAccount'))
-    expect(screen.getByText('auth.createAccount')).toBeInTheDocument()
-    expect(screen.getByText('auth.signUp')).toBeInTheDocument()
-    expect(screen.getByText('auth.displayName')).toBeInTheDocument()
+    await userEvent.click(screen.getByText("Don't have an account? Sign up"))
+    expect(screen.getByText('Create your account')).toBeInTheDocument()
+    expect(screen.getByText('Sign up')).toBeInTheDocument()
+    expect(screen.getByText('Display name')).toBeInTheDocument()
   })
 
   it('toggles back to sign in', async () => {
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.click(screen.getByText('auth.noAccount'))
-    await userEvent.click(screen.getByText('auth.hasAccount'))
-    expect(screen.getByText('auth.signInToBoard')).toBeInTheDocument()
+    await userEvent.click(screen.getByText("Don't have an account? Sign up"))
+    await userEvent.click(screen.getByText('Already have an account? Sign in'))
+    expect(screen.getByText('Sign in to your board')).toBeInTheDocument()
   })
 
   it('calls signInWithPassword on sign in submit', async () => {
     mockSupabase.auth.signInWithPassword.mockResolvedValue({ data: { session: {} }, error: null })
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'pass123')
-    await userEvent.click(screen.getByText('auth.signIn'))
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'pass123')
+    await userEvent.click(screen.getByText('Sign in'))
     await waitFor(() => {
       expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
         email: 'a@b.com',
@@ -60,11 +60,11 @@ describe('AuthForm', () => {
     mockSupabase.auth.signUp.mockResolvedValue({ data: { user: { id: 'new' } }, error: null })
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.click(screen.getByText('auth.noAccount'))
-    await userEvent.type(screen.getByLabelText('auth.displayName'), 'Alice')
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'pass123')
-    await userEvent.click(screen.getByText('auth.signUp'))
+    await userEvent.click(screen.getByText("Don't have an account? Sign up"))
+    await userEvent.type(screen.getByLabelText('Display name'), 'Alice')
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'pass123')
+    await userEvent.click(screen.getByText('Sign up'))
     await waitFor(() => {
       expect(mockSupabase.auth.signUp).toHaveBeenCalledWith({
         email: 'a@b.com',
@@ -78,9 +78,9 @@ describe('AuthForm', () => {
     mockSupabase.auth.signInWithPassword.mockResolvedValue({ data: {}, error: { message: 'Invalid login' } })
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'wrong')
-    await userEvent.click(screen.getByText('auth.signIn'))
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'wrong')
+    await userEvent.click(screen.getByText('Sign in'))
     await waitFor(() => {
       expect(screen.getByText('Invalid login')).toBeInTheDocument()
     })
@@ -90,13 +90,13 @@ describe('AuthForm', () => {
     mockSupabase.auth.signUp.mockResolvedValue({ data: { user: { id: 'new' } }, error: null })
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.click(screen.getByText('auth.noAccount'))
-    await userEvent.type(screen.getByLabelText('auth.displayName'), 'Alice')
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'pass123')
-    await userEvent.click(screen.getByText('auth.signUp'))
+    await userEvent.click(screen.getByText("Don't have an account? Sign up"))
+    await userEvent.type(screen.getByLabelText('Display name'), 'Alice')
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'pass123')
+    await userEvent.click(screen.getByText('Sign up'))
     await waitFor(() => {
-      expect(screen.getByText('auth.checkEmail')).toBeInTheDocument()
+      expect(screen.getByText('Account created. If email confirmation is on, check your inbox — otherwise just sign in.')).toBeInTheDocument()
     })
   })
 
@@ -104,21 +104,21 @@ describe('AuthForm', () => {
     mockSupabase.auth.signInWithPassword.mockImplementation(() => new Promise(() => {}))
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'pass123')
-    await userEvent.click(screen.getByText('auth.signIn'))
-    expect(screen.getByText('auth.signIn')).toBeDisabled()
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'pass123')
+    await userEvent.click(screen.getByText('Sign in'))
+    expect(screen.getByText('Please wait…')).toBeDisabled()
   })
 
   it('clears error on mode toggle', async () => {
     mockSupabase.auth.signInWithPassword.mockResolvedValue({ data: {}, error: { message: 'Bad' } })
     const AuthForm = (await import('../../src/components/AuthForm')).default
     render(<AuthForm />)
-    await userEvent.type(screen.getByLabelText('auth.email'), 'a@b.com')
-    await userEvent.type(screen.getByLabelText('auth.password'), 'x')
-    await userEvent.click(screen.getByText('auth.signIn'))
+    await userEvent.type(screen.getByLabelText('Email'), 'a@b.com')
+    await userEvent.type(screen.getByLabelText('Password'), 'x')
+    await userEvent.click(screen.getByText('Sign in'))
     await waitFor(() => expect(screen.getByText('Bad')).toBeInTheDocument())
-    await userEvent.click(screen.getByText('auth.noAccount'))
+    await userEvent.click(screen.getByText("Don't have an account? Sign up"))
     expect(screen.queryByText('Bad')).not.toBeInTheDocument()
   })
 })

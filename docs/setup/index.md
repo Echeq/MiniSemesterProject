@@ -1,6 +1,9 @@
 # Setup
 
-Choose the guide for your area:
+See the main **[Setup Guide](../setup.md)** for full instructions.
 
-- **[Backend setup](backend.md)** — NestJS, Prisma, PostgreSQL, Redis
-- **[Frontend setup](frontend.md)** — Vue 3, Vite, dependencies
+Quick reference:
+
+- **Frontend:** `cd frontend && npm install && npm run dev`
+- **Supabase:** Copy credentials from project dashboard to `frontend/.env`
+- **Legacy:** `docs/setup/backend.md` — NestJS scaffold (inactive)

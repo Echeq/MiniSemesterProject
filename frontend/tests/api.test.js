@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
-import { positionBetween } from '../src/hooks/useBoard'
+
 
 // Load .env manually so tests work regardless of Vite env handling
 dotenv.config()
@@ -234,22 +234,4 @@ describe('Profiles API (GET /rest/v1/profiles)', () => {
   })
 })
 
-// ─── Positioning logic (unit tests for the helper) ──────────────────────────
 
-describe('positionBetween helper (drag & drop positioning)', () => {
-  it('midpoint between two values', () => {
-    expect(positionBetween(100, 200)).toBe(150)
-  })
-
-  it('after last card: max + 1024', () => {
-    expect(positionBetween(5000, null)).toBe(6024)
-  })
-
-  it('before first card: below - 1024', () => {
-    expect(positionBetween(null, 500)).toBe(-524)
-  })
-
-  it('no cards: default 1024', () => {
-    expect(positionBetween(null, null)).toBe(1024)
-  })
-})
