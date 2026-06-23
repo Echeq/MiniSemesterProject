@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Avatar from './Avatar'
+import EmptyState from './EmptyState'
 
 function Icon({ path, className = 'h-4 w-4' }) {
   return (
@@ -119,7 +120,11 @@ export default function Sidebar({
           </form>
         )}
 
-        {active.length === 0 && !creating && <p className="px-2 py-1 text-xs text-[var(--fg-subtle)]">No projects yet</p>}
+        {active.length === 0 && !creating && (
+          <div className="px-1 py-2">
+            <EmptyState icon="project" title="No projects" description="Create one to start organizing tasks." />
+          </div>
+        )}
 
         {active.map((p) => {
           const prog = projProgress(p.id)

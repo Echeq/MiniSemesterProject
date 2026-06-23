@@ -11,6 +11,7 @@ import {
 import { STATUSES, positionBetween } from '../hooks/useBoard'
 import Column from './Column'
 import TaskCard from './TaskCard'
+import EmptyState from './EmptyState'
 
 export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null }) {
   const [activeTask, setActiveTask] = useState(null)
@@ -77,13 +78,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
               <div className="w-full max-w-lg">{banner}</div>
             </div>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--card)] text-[var(--fg-subtle)]">
-                <svg className="h-6 w-6" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" /></svg>
-              </div>
-              <p className="text-sm font-medium">Nothing here</p>
-              <p className="mt-1 text-sm text-[var(--fg-muted)]">No tasks match this view.</p>
-            </div>
+            <EmptyState icon="search" title="No tasks found" description="No tasks match this view. Try a different filter or create a new task." />
           )
         ) : (
           <>
