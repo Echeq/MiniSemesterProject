@@ -6,9 +6,11 @@
 create or replace function public.delete_account()
 returns void
 language plpgsql
-security definer
+security definer set search_path = public, auth
 as $$
 begin
-  delete from auth.users where id = auth.uid();
+  -- Backwards-compatible wrapper:
+  -- Enforce the same "last admin" guard as delete_own_account().
+  perform public.delete_own_account();
 end;
 $$;
