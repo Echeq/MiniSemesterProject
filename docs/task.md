@@ -77,19 +77,20 @@ Allow users to create and manage projects.
 - [x] Create `projects` table in Supabase
 - [x] Add RLS policies for project access
 - [x] Create `project_members` junction table
-- [x] Create API functions: createProject, getProjects, updateProject, archiveProject
+- [x] Create API functions: createProject, getProjects, archiveProject
+- [ ] Create `updateProject` API
 
 #### Frontend
 - [x] Create Project list page
 - [x] Create Create Project modal/form
 - [ ] Create Project settings page
 - [x] Add project archive/delete functionality
-- [x] Add project color picker and icon selector
+- [ ] Add project color picker and icon selector (DB columns exist, UI pending)
 
 ### Acceptance Criteria
 - [x] User can create a new project
 - [x] User can see list of their projects
-- [x] User can edit project details (name, description, color)
+- [ ] User can edit project details (name, description, color) — pending: settings page + updateProject API
 - [x] User can archive/delete projects
 - [x] Archived projects are hidden from main list
 
@@ -498,14 +499,14 @@ Admin-only features for system management.
 - [ ] Add system configuration table
 
 #### Frontend
-- [ ] Create Admin Panel (only visible to Admins)
+- [x] Create Admin Panel (only visible to Admins)
 - [ ] Add Log viewer page (filter by user, action, date)
 - [ ] Add Export Backup button (download all data as JSON)
 - [ ] Add Restore from Backup (upload JSON)
 - [ ] Add System Settings page (configurable options)
 
 ### Acceptance Criteria
-- [ ] Only Admins can access admin panel
+- [x] Only Admins can access admin panel
 - [ ] Logs show user actions (login, create task, delete, etc.)
 - [ ] Admin can export full database backup
 - [ ] Admin can restore from backup
@@ -532,7 +533,7 @@ Final touches before submission.
 ### Tasks
 
 #### Testing
-- [ ] Write unit tests for critical functions
+- [x] Write unit tests for critical functions (89 tests passing, components + hooks + i18n)
 - [ ] Cross-browser testing (Chrome, Firefox, Safari)
 - [ ] Mobile testing (iOS, Android)
 - [ ] Performance testing (>200 tasks)
@@ -543,7 +544,7 @@ Final touches before submission.
 - [ ] Add 404 page
 - [ ] Add empty states (no tasks, no projects)
 - [ ] Add animations (fade, slide)
-- [ ] Dark mode (bonus)
+- [x] Dark mode (bonus) — Already implemented via useTheme() + CSS vars
 
 #### Deployment
 - [ ] Deploy frontend to Vercel
@@ -552,8 +553,8 @@ Final touches before submission.
 - [ ] Verify Supabase is production ready
 
 #### Documentation
-- [ ] Update README with setup instructions
-- [ ] Add API documentation
+- [x] Update README with setup instructions
+- [x] Add API documentation
 - [ ] Add user manual
 - [ ] Prepare presentation slides
 
