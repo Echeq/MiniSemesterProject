@@ -1,0 +1,85 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-23
+Time:         08:41:30
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Asked about Vercel deploy necessity (answered: not needed, alternatives given)
+- Asked if current tasks are enough to finish in 2 weeks (no, 88% max, adjusted)
+- Asked to add more tasks for backend, frontend, and documenter this week
+- Asked to write ALL tasks in English without D1~D4 grouping
+- Asked to do Echeq's PM/QA work now
+- Asked to update week report with completed work, then do full audit of entire repo, report discrepancies as Frontend:/Backend:/PM: lists, no changes allowed
+- Asked to fix PM errors found in audit
+- @ai-log
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Vercel alternatives: npm run preview (local demo), GitHub Pages (15min), Vercel (30min). For a mini-semester, preview is enough.
+
+2. Adjusted target: with only 2 weeks, max achievable is 88%. Gantt, 3D Sphere, and List View filters won't finish unless scope is cut. Suggested adding more to this week.
+
+3. Expanded week plan from 68% to 75% target (+36 items vs +23):
+   - Backend added: notifications table, updateProject API, addTaskDependency RPC, order_by/dir in getFilteredTasks
+   - Frontend added: empty states, PDF/CSV export, List View toggle (basic), ExportMenu component
+   - PM added: ErrorBoundary, NotFound, empty states consistency, user manual draft, slides draft, cross-browser check
+
+4. Wrote all tasks in English without day labels.
+
+5. Executed Echeq's completable work:
+   - Created ErrorBoundary.jsx (class component, catches errors, fallback UI, integrated in App.jsx)
+   - Created NotFound.jsx (404 page with icon + back-to-home link)
+   - Created EmptyState.jsx (reusable: icon + title + description + action slot, 4 icons)
+   - Updated week report section 5.4 and task table (D1 ✅, D2 ✅)
+
+6. Full repo audit via 2 sub-agents:
+   Backend findings: 1 BUG (migration #8 duplicate storage policy names causes crash), 1 stale RPC (delete_account alongside delete_own_account), 1 doc error (RPC signatures use enum not text)
+   Frontend findings: 2 unwired new components (EmptyState, NotFound), 6 dead source files (AccountModal, InvitationPopup, InviteDialog, ProfileSettings, TaskActionSheet, useIsMobile), 5 dead test files
+   PM findings: requirements-matrix missing 3 dead code entries, AGENTS.md RPC signatures imprecise
+   Verified: all 19 App.jsx imports resolve, all 9 migrations present, all hooked files correctly imported, 89 tests pass
+
+7. Fixed PM errors:
+   - requirements-matrix.md: added InvitationPopup.jsx, TaskActionSheet.jsx, useIsMobile.js to dead code list
+   - AGENTS.md: fixed RPC signatures from text to app_role/project_status enum types
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+frontend/src/components/ErrorBoundary.jsx (new)
+frontend/src/components/NotFound.jsx (new)
+frontend/src/components/EmptyState.jsx (new)
+frontend/src/App.jsx
+AGENTS.md
+docs/requirements-matrix.md
+docs/weekreport/第三组 - 陈昌发 - 小组周会会议纪要（第二周）.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+App.jsx: No ErrorBoundary import or usage. BoardPage rendered directly.
+AGENTS.md: RPC signatures used text type params.
+requirements-matrix.md: Dead code section only had InviteDialog, AccountModal, ProfileSettings, socket.io-client.
+Week report: Target 68% (+23 items), D1/D2 not marked complete, no section 5.4, no sections 6.6-6.9.
+ErrorBoundary/NotFound/EmptyState: Did not exist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3 new components created and tests verified (89 pass).
+App.jsx: BoardPage wrapped in ErrorBoundary.
+AGENTS.md: RPCs use correct enum types (app_role, project_status).
+requirements-matrix.md: 3 dead code entries added (InvitationPopup, TaskActionSheet, useIsMobile).
+Week report: Target 75% (+36 items), D1✅ D2✅, sections 5.4 + 6.6-6.9 added, expanded task tables.

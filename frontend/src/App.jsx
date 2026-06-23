@@ -16,6 +16,7 @@ import TaskModal from './components/TaskModal'
 import ProfileModal from './components/ProfileModal'
 import AdminModal from './components/AdminModal'
 import InsightsPanel from './components/InsightsPanel'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function MissingEnv() {
   return (
@@ -237,5 +238,9 @@ function AuthGate({ theme, toggleTheme }) {
     )
   }
   if (!session) return <AuthForm />
-  return <BoardPage session={session} theme={theme} toggleTheme={toggleTheme} />
+  return (
+    <ErrorBoundary>
+      <BoardPage session={session} theme={theme} toggleTheme={toggleTheme} />
+    </ErrorBoundary>
+  )
 }

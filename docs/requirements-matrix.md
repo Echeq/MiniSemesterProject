@@ -229,6 +229,9 @@
 | `frontend/src/composables/` (empty) | Do not edit — Vue 3 remnant |
 | `frontend/src/assets/` (empty) | Do not edit — Vue 3 remnant |
 | `InviteDialog.jsx` | Unused — old column names, can't work with current schema |
+| `InvitationPopup.jsx` | Unused — same old-schema issue as InviteDialog |
+| `TaskActionSheet.jsx` | Unused — never imported |
 | `AccountModal.jsx` | Unused — replaced by `ProfileModal.jsx` |
 | `ProfileSettings.jsx` | Unused — replaced by `ProfileModal.jsx` |
+| `useIsMobile.js` (hook) | Unused — never imported in any source file |
 | `socket.io-client` in package.json | Unused — realtime uses Supabase Realtime |
