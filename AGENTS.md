@@ -69,6 +69,9 @@ Supabase CLI (from root or `supabase/`):
 - `docs/architecture.md` — how React, Supabase Auth, Realtime, and the DB connect
 - `docs/database.md` — tables, enums, RLS policies, migrations
 - `docs/api.md` — auth endpoints, task CRUD, realtime subscriptions
+- `docs/deploy.md` — full deploy guide (local, production, branches, data migration)
+- `scripts/deploy-supabase.sh` / `.ps1` — interactive deploy scripts
+- `scripts/migrate-supabase-data.sh` — copy data between projects
 - `docs/guide/ai.md` — OpenCode workflow details
 
 ## Setup gotchas
