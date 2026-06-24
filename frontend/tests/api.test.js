@@ -234,4 +234,103 @@ describe('Profiles API (GET /rest/v1/profiles)', () => {
   })
 })
 
+// ─── RPC: Log Activity ──────────────────────────────────────────────────────
+describe('RPC log_activity', () => {
+  beforeAll(async () => {
+    await supabase.auth.signInWithPassword(TEST_USER)
+  })
+
+  it('logs an activity entry', async () => {
+    const { error } = await supabase.rpc('log_activity', {
+      p_action: 'test_action',
+      p_target_type: 'tasks',
+      p_target_id: null,
+      p_metadata: { source: 'api_test' },
+    })
+    expect(error).toBeNull()
+  })
+
+  it('logs are visible via system_logs table for admins', async () => {
+    const { data, error } = await supabase
+      .from('system_logs')
+      .select('*')
+      .eq('action', 'test_action')
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    expect(error).toBeNull()
+    expect(data.length).toBeGreaterThanOrEqual(1)
+    expect(data[0].action).toBe('test_action')
+    expect(data[0].metadata?.source).toBe('api_test')
+  })
+})
+
+// ─── RPC: Task Dependencies ───────────────────────────────────────────────────
+describe('RPC task dependencies', () => {
+  let taskId, blockerId
+
+  beforeAll(async () => {
+    await supabase.auth.signInWithPassword(TEST_USER)
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Create two tasks
+    const t1 = await supabase.from('tasks').insert({
+      title: 'TEST: blocker',
+      status: 'todo', position: 0, created_by: user.id,
+    }).select().single()
+    const t2 = await supabase.from('tasks').insert({
+      title: 'TEST: blocked',
+      status: 'todo', position: 1, created_by: user.id,
+    }).select().single()
+    blockerId = t1.data?.id
+    taskId = t2.data?.id
+  })
+
+  it('add_task_dependency creates a dependency', async () => {
+    const { error } = await supabase.rpc('add_task_dependency', {
+      p_task_id: taskId,
+      p_depends_on_id: blockerId,
+    })
+    expect(error).toBeNull()
+  })
+
+  it('check_blocked_tasks returns blocking tasks', async () => {
+    const { data, error } = await supabase.rpc('check_blocked_tasks', {
+      target_task_id: taskId,
+    })
+    expect(error).toBeNull()
+    expect(Array.isArray(data)).toBe(true)
+    expect(data.some((r) => r.title === 'TEST: blocker')).toBe(true)
+    expect(data.some((r) => r.status === 'todo')).toBe(true)
+  })
+
+  afterAll(async () => {
+    if (taskId) await supabase.from('tasks').delete().eq('id', taskId)
+    if (blockerId) await supabase.from('tasks').delete().eq('id', blockerId)
+  })
+})
+
+// ─── RPC: get_filtered_tasks ──────────────────────────────────────────────────
+describe('RPC get_filtered_tasks', () => {
+  beforeAll(async () => {
+    await supabase.auth.signInWithPassword(TEST_USER)
+  })
+
+  it('returns all tasks when no filters', async () => {
+    const { data, error } = await supabase.rpc('get_filtered_tasks')
+    expect(error).toBeNull()
+    expect(Array.isArray(data)).toBe(true)
+  })
+
+  it('filters by status', async () => {
+    const { data, error } = await supabase.rpc('get_filtered_tasks', {
+      p_status: 'todo',
+    })
+    expect(error).toBeNull()
+    if (data.length > 0) {
+      data.forEach((t) => expect(t.status).toBe('todo'))
+    }
+  })
+})
+
 

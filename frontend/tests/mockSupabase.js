@@ -1,17 +1,20 @@
 import { vi } from 'vitest'
 
 export function createMockBuilder(resolveValue) {
+  const thenFn = (fn) => Promise.resolve(resolveValue).then(fn)
   const builder = {
     select: vi.fn(() => builder),
     order: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     neq: vi.fn(() => builder),
+    is: vi.fn(() => builder),
     in: vi.fn(() => builder),
-    single: vi.fn(() => builder),
+    match: vi.fn(() => builder),
+    single: vi.fn(() => ({ then: thenFn, catch: (fn) => Promise.resolve(resolveValue).catch(fn) })),
     insert: vi.fn(() => builder),
     update: vi.fn(() => builder),
-    delete: vi.fn(() => builder),
-    then: (fn) => Promise.resolve(resolveValue).then(fn),
+    delete: vi.fn(() => ({ ...builder, eq: vi.fn(() => builder) })),
+    then: thenFn,
     catch: (fn) => Promise.resolve(resolveValue).catch(fn),
   }
   return builder

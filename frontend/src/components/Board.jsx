@@ -12,12 +12,13 @@ import { STATUSES, positionBetween } from '../hooks/useBoard'
 import Column from './Column'
 import TaskCard from './TaskCard'
 import EmptyState from './EmptyState'
+import ListView from './ListView'
+import { CardSkeleton } from './Skeleton'
 
-export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null }) {
+export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null, showListView = false, loading = false }) {
   const [activeTask, setActiveTask] = useState(null)
+  const [visibleCols, setVisibleCols] = useState(STATUSES)
 
-  // Distance/delay activation keeps plain clicks (open modal) and touch
-  // scrolling working alongside drag.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, {
@@ -29,10 +30,15 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)]),
   )
 
-  // Smart views only render columns that actually contain matching tasks.
   const visibleStatuses = hideEmptyColumns
     ? STATUSES.filter((s) => byStatus[s].length > 0)
-    : STATUSES
+    : visibleCols.filter((s) => visibleCols.includes(s))
+
+  function toggleCol(status) {
+    setVisibleCols((prev) =>
+      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
+    )
+  }
 
   function handleDragEnd({ active, over }) {
     setActiveTask(null)
@@ -41,7 +47,6 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     const task = tasks.find((t) => t.id === active.id)
     if (!task) return
 
-    // over.id is either a column status (empty area) or another task's id
     const overTask = tasks.find((t) => t.id === over.id)
     const targetStatus = overTask ? overTask.status : over.id
     if (!STATUSES.includes(targetStatus)) return
@@ -60,6 +65,23 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }
 
+  if (loading) {
+    return (
+      <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+        {STATUSES.map((s) => (
+          <div key={s} className="flex w-[19rem] flex-shrink-0 flex-col gap-2.5 sm:w-80">
+            <div className="mb-1 h-5 w-20 rounded bg-[var(--surface-hover)] animate-pulse" />
+            {[1, 2, 3].map((i) => <CardSkeleton key={i} />)}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (showListView) {
+    return <ListView tasks={tasks} onTaskClick={onTaskClick} />
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -71,9 +93,28 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
       onDragEnd={handleDragEnd}
     >
       <div className="flex min-h-0 flex-1 flex-col">
+        {!hideEmptyColumns && !banner && (
+          <div className="flex items-center gap-2 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
+            <span className="text-xs font-medium text-[var(--fg-muted)]">Columns:</span>
+            {STATUSES.map((s) => {
+              const active = visibleCols.includes(s)
+              const dot = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
+              return (
+                <button key={s} onClick={() => toggleCol(s)}
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition ${
+                    active ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
+                  }`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot[s] }} />
+                  {s === 'todo' ? 'To Do' : s === 'doing' ? 'Doing' : 'Done'}
+                  <span className="text-[var(--fg-subtle)]">({byStatus[s].length})</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
         {visibleStatuses.length === 0 ? (
           banner ? (
-            // Due soon / Overdue with no matches: the message replaces the board.
             <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
               <div className="w-full max-w-lg">{banner}</div>
             </div>

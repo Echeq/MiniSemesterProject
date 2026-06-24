@@ -4,6 +4,8 @@ import Avatar from './Avatar'
 
 const STATUS_LABEL = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const STATUS_VAR = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
+const PRIORITY_LABEL = { P0: 'Critical', P1: 'High', P2: 'Medium', P3: 'Low' }
+const PRIORITY_COLOR = { P0: '#ef4444', P1: '#f59e0b', P2: '#eab308', P3: '#10b981' }
 
 function formatDate(d) {
   return new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -28,12 +30,16 @@ function DueBadge({ due_date, status }) {
   )
 }
 
+const BLOCKED_ICON = 'M4 4a4 4 0 0 1 8 0v2h.25A1.75 1.75 0 0 1 14 7.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4zm1.5 2h5V4a2.5 2.5 0 0 0-5 0z'
+
 export default function TaskCard({ task, onClick, overlay = false }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     disabled: overlay,
   })
   const style = overlay ? undefined : { transform: CSS.Transform.toString(transform), transition }
+  const hasLabels = task.labels && task.labels.length > 0
+  const blockedCount = task.blocked_by || 0
 
   return (
     <div
@@ -46,7 +52,16 @@ export default function TaskCard({ task, onClick, overlay = false }) {
         isDragging ? 'opacity-40' : ''
       } ${overlay ? 'rotate-2 shadow-[var(--shadow-md)]' : ''}`}
     >
-      <div className="mb-1.5 flex items-center gap-1.5">
+      <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+        {task.priority && (
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+            style={{ color: PRIORITY_COLOR[task.priority], background: `color-mix(in srgb, ${PRIORITY_COLOR[task.priority]} 16%, transparent)` }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: PRIORITY_COLOR[task.priority] }} />
+            {PRIORITY_LABEL[task.priority]}
+          </span>
+        )}
         <span
           className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
           style={{ color: STATUS_VAR[task.status], border: `1px solid color-mix(in srgb, ${STATUS_VAR[task.status]} 45%, transparent)` }}
@@ -59,9 +74,26 @@ export default function TaskCard({ task, onClick, overlay = false }) {
       {task.description && (
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--fg-muted)]">{task.description}</p>
       )}
-      {(task.due_date || task.assignee) && (
+      {hasLabels && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {task.labels.map((l) => (
+            <span key={l.id} className="inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium text-white"
+              style={{ background: l.color || '#6366f1' }}
+            >
+              {l.name}
+            </span>
+          ))}
+        </div>
+      )}
+      {(task.due_date || task.assignee || blockedCount > 0) && (
         <div className="mt-2.5 flex items-center gap-2 border-t border-[var(--border-muted)] pt-2.5">
           <DueBadge due_date={task.due_date} status={task.status} />
+          {blockedCount > 0 && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--danger)' }}>
+              <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor"><path d={BLOCKED_ICON} /></svg>
+              Blocked by {blockedCount}
+            </span>
+          )}
           {task.assignee_profile?.display_name && (
             <span className="ml-auto" title={task.assignee_profile.display_name}>
               <Avatar name={task.assignee_profile.display_name} url={task.assignee_profile.avatar_url} size="xs" />
