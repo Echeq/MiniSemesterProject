@@ -7,11 +7,27 @@ const mockSupabase = createMockSupabase()
 vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key) => ({
+      'auth.signIn': 'Sign in',
+      'auth.signUp': 'Sign up',
+      'auth.signOut': 'Sign out',
+      'auth.displayName': 'Display name',
+      'auth.email': 'Email',
+      'auth.password': 'Password',
+      'auth.signInToBoard': 'Sign in to your board',
+      'auth.createAccount': 'Create an account',
+      'auth.noAccount': "Don't have an account? Sign up",
+      'auth.hasAccount': 'Already have an account? Sign in',
+      'auth.checkEmail': 'Check your email to confirm your account, then sign in.',
+      'lang.switcher': 'Language',
+    }[key] || key),
+  }),
 }))
 
 vi.mock('../../src/i18n', () => ({
   default: { language: 'en', changeLanguage: vi.fn() },
+  changeLanguage: vi.fn(),
 }))
 
 vi.mock('../../src/hooks/useIsMobile', () => ({

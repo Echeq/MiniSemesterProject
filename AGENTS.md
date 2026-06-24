@@ -41,7 +41,8 @@ Supabase CLI (from root or `supabase/`):
 
 - **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Source is JSX (tsconfig is tooling-only typecheck).
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage, presence). No custom server.
-- **DB source of truth**: `supabase/migrations/` (SQL). 9 migrations from `20260612100000` → `20260618120000`.
+- **DB source of truth**: `supabase/migrations/` (SQL). 10 migrations from `20260612100000` → `20260625000002`.
+- **Supabase MCP applies migrations remotely** — it does NOT write to `supabase/migrations/`. After MCP migrations, run `supabase db pull` locally or copy the SQL into a file to prevent drift.
 - **Entry**: `src/main.jsx` → `App.jsx`. App renders a setup hint when `supabaseClient.js` exports `null` (env vars missing).
 - **Root `package.json`** is a dependency stub (only `@supabase/supabase-js`). All real dependencies in `frontend/`. Install from `frontend/`.
 - **Root `package-lock.json`** is orphaned (gitignored).
@@ -54,7 +55,7 @@ Supabase CLI (from root or `supabase/`):
 - **Smart views** are client-side filters: `view:mine` (assigned), `view:due` (≤7d), `view:overdue` (past due, not done).
 - **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite flow). First signup ever → admin.
 - **Position system**: float8 `position`. `positionBetween()` at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
-- **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id`.
+- **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
 - **RLS**: Admins see all tasks; members see assigned only; unknown see none.
 - **RPCs**: `admin_set_role(target_user uuid, new_role app_role)`, `set_project_status(target_project uuid, new_status project_status)`, `delete_own_account()`, `delete_account()` (legacy wrapper calling `delete_own_account()`), `is_admin()`.

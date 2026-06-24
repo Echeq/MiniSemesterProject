@@ -83,8 +83,32 @@ export function useBoard(projectId = 'all') {
       .then(({ data, error }) => {
         if (error) setError(error.message)
         else {
+          const ids = data.map((t) => t.id)
+          lastTaskIdsRef.current = ids
           setTasks(data)
-          enrichTasksData(data)
+          // Batch enrich: labels and dependency counts
+          Promise.all([
+            supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
+            supabase.from('task_dependencies').select('task_id, depends_on_id').in('task_id', ids),
+          ]).then(([labelsRes, depsRes]) => {
+            if (!labelsRes.data && !depsRes.data) return
+            const labelMap = {}
+            ;(labelsRes.data || []).forEach((tl) => {
+              if (!labelMap[tl.task_id]) labelMap[tl.task_id] = []
+              labelMap[tl.task_id].push(tl.label)
+            })
+            const depCountMap = {}
+            ;(depsRes.data || []).forEach((td) => {
+              depCountMap[td.task_id] = (depCountMap[td.task_id] || 0) + 1
+            })
+            setTasks((prev) =>
+              prev.map((t) => ({
+                ...t,
+                labels: labelMap[t.id] || [],
+                blocked_by: depCountMap[t.id] || 0,
+              })),
+            )
+          }).catch(() => {})
           for (const s of STATUSES) {
             const col = data.filter((t) => t.status === s)
             maxPositions.current[s] = col.length ? col[col.length - 1].position : 0

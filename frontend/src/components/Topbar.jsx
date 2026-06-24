@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
@@ -26,7 +27,7 @@ const VIEWS = [
   },
 ]
 
-export default function Topbar({
+const Topbar = memo(function Topbar({
   title,
   archived,
   taskCount,
@@ -48,7 +49,7 @@ export default function Topbar({
   const { t } = useTranslation()
 
   return (
-    <header className="flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
+    <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
         <h1 className="truncate text-base font-semibold">{title}</h1>
         {archived && (
@@ -119,4 +120,6 @@ export default function Topbar({
       </div>
     </header>
   )
-}
+})
+
+export default Topbar

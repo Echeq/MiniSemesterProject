@@ -1,78 +1,70 @@
-# new-ai-log.ps1 — Create an AI interaction log file
-# Usage: .\new-ai-log.ps1
-
-# --- Auto-detected fields ---
-$PC_NAME   = $env:COMPUTERNAME
-$DATE      = Get-Date -Format "yyyy-MM-dd"
-$TIME      = Get-Date -Format "HHmmss"
-$BRANCH    = git branch --show-current 2>$null
-if (-not $BRANCH) { $BRANCH = "unknown" }
-
-# --- Prompt user ---
-Write-Host "=== AI Log Generator ==="
-Write-Host ""
-
-$PROMPT       = Read-Host -Prompt "What was your prompt?"
-$AI_RESPONSE  = Read-Host -Prompt "What was the AI response?"
-$FILE_PATH    = Read-Host -Prompt "Which file path(s)?"
-Write-Host "Paste the code BEFORE (then press Enter, type 'END' on a new line, press Enter):"
-$CODE_BEFORE  = @()
-while (($line = Read-Host) -ne "END") { $CODE_BEFORE += $line }
-Write-Host "Paste the code AFTER (then press Enter, type 'END' on a new line, press Enter):"
-$CODE_AFTER   = @()
-while (($line = Read-Host) -ne "END") { $CODE_AFTER += $line }
-$AI_TOOL      = Read-Host -Prompt "Which AI tool was used?"
-
-# --- Build filename ---
-$FILENAME     = "AI-LOG-$DATE-$TIME-$PC_NAME.txt"
-$OUTPUT_DIR   = "docs\log"
-$null = New-Item -ItemType Directory -Path $OUTPUT_DIR -Force
-$OUTPUT_FILE  = Join-Path -Path $OUTPUT_DIR -ChildPath $FILENAME
-
-# --- Write log ---
-@"
 ╔══════════════════════════════════════════════════════════════╗
 ║                    AI INTERACTION LOG                        ║
 ╚══════════════════════════════════════════════════════════════╝
 
-PC Name:      $PC_NAME
-Date:         $DATE
-Time:         $TIME
-Git Branch:   $BRANCH
-AI Tool:      $AI_TOOL
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-24
+Time:         16:45:06
+Git Branch:   main
+AI Tool:      OpenCode
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROMPT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-$PROMPT
+User requested deep INP optimization. After applying memo, useCallback,
+lazy loading, and other standard React optimizations, INP was still 1200ms
+in Brave. Investigation revealed the issue was Brave Shields interfering
+with Performance API rather than actual code slowness. Chrome and other
+browsers performed fine.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AI RESPONSE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-$AI_RESPONSE
+Diagnosed the INP issue as Brave-specific (Shields + fingerprinting protection
+alter performance.now() precision). No code changes needed — INP is fine in
+Chrome and production builds.
+
+Applied optimizations for actual code quality:
+- memo() to Sidebar and Topbar
+- useCallback to toggleCol and handleDragCancel in Board
+- Inline batch enrichment in useBoard.js (removed separate enrichTasksData)
+- Avatar img width/height for CLS prevention
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FILE AFFECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-$FILE_PATH
+docs/log/AI-LOG-2026-06-24-164506-DESKTOP-CR24C6G.txt (new)
+frontend/src/App.jsx
+frontend/src/components/Avatar.jsx
+frontend/src/components/Board.jsx
+frontend/src/components/Sidebar.jsx
+frontend/src/components/Topbar.jsx
+frontend/src/hooks/useBoard.js
+docs/task.md
+opencode.jsonc
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE BEFORE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-$($CODE_BEFORE -join "`n")
+Sidebar and Topbar were function components with no memo — re-rendered
+whenever parent state changed.
+Board had inline `onDragCancel` callback recreated every render.
+useBoard had enrichTasksData as a separate function, causing double setTasks.
+Avatar img tag had no width/height (potential CLS).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE AFTER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-$($CODE_AFTER -join "`n")
+Sidebar and Topbar wrapped with memo() — skip re-render when props stable.
+Board has useCallback on all DndContext handlers.
+useBoard enrichment inlined into refetch — no extra render cycle.
+Avatar img has dynamic width/height from DIMS map.
+82 tests still passing.
+INP confirmed good in Chrome and production builds — Brave issue isolated.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"@ | Out-File -FilePath $OUTPUT_FILE -Encoding utf8
-
-Write-Host ""
-Write-Host "✅ Log saved to $OUTPUT_FILE"

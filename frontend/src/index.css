@@ -25,6 +25,7 @@
   --todo: #818b98;
   --doing: #bf8700;
   --done: #1a7f37;
+  --online: #2da44e;
   --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04);
   --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15), 0 8px 24px rgba(140, 149, 159, 0.2);
 
@@ -63,6 +64,7 @@
   --todo: #6e7681;
   --doing: #d29922;
   --done: #3fb950;
+  --online: #56d364;
   --shadow-sm: 0 0 transparent;
   --shadow-md: 0 8px 24px rgba(1, 4, 9, 0.6);
 

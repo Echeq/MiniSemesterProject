@@ -19,6 +19,7 @@ function pickGradient(seed = '') {
 }
 
 const SIZES = { xs: 'h-6 w-6 text-[10px]', sm: 'h-8 w-8 text-xs', md: 'h-10 w-10 text-sm', lg: 'h-16 w-16 text-xl' }
+const DIMS = { xs: 24, sm: 32, md: 40, lg: 64 }
 
 export default function Avatar({ name = '', url = null, size = 'md', ring = false }) {
   const initials = name
@@ -34,7 +35,8 @@ export default function Avatar({ name = '', url = null, size = 'md', ring = fals
   }`
 
   if (url) {
-    return <img src={url} alt={name} className={`${base} object-cover`} />
+    const dim = DIMS[size] || 40
+    return <img src={url} alt={name} width={dim} height={dim} className={`${base} object-cover`} />
   }
   return (
     <span className={`${base} bg-gradient-to-br ${pickGradient(name)}`}>

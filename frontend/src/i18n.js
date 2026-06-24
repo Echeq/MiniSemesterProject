@@ -17,4 +17,10 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 })
 
+// Helper to change language and persist (exported for use in components)
+export function changeLanguage(lng) {
+  localStorage.setItem('lang', lng)
+  i18n.changeLanguage(lng)
+}
+
 export default i18n

@@ -1,0 +1,96 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-24
+Time:         17:23:43
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Multiple prompts in this session:
+1. Fix AGENTS.md with verified facts
+2. Execute all backend + PM tasks (get_logs RPC, preferences, AdminModal tabs, docs)
+3. Reduce INP (memo, useCallback, lazy loading, Avatar dimensions)
+4. Fix ProfileMenu z-index dropdown behind columns
+5. Add "Someone is editing" indicator via Realtime presence
+6. Add language switcher to ProfileMenu + i18n persistence fix
+7. Fix AuthForm translations
+8. Brighter online dot (--online CSS var) + orange editing badge in Team sidebar
+9. Close button on InsightsPanel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All 82 tests passing. Multiple features implemented across 15+ files.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+docs/deploy.md (new)
+docs/presentation-outline.md (new)
+docs/user-manual.md (new)
+docs/log/AI-LOG-2026-06-24-172343-DESKTOP-CR24C6G.txt
+docs/log/AI-LOG-2026-06-24-164506-DESKTOP-CR24C6G.txt
+docs/log/AI-LOG-2026-06-24-163015-DESKTOP-CR24C6G.txt
+docs/task.md
+frontend/src/App.jsx
+frontend/src/components/AdminModal.jsx
+frontend/src/components/AuthForm.jsx
+frontend/src/components/Avatar.jsx
+frontend/src/components/BackupPanel.jsx (new)
+frontend/src/components/Board.jsx
+frontend/src/components/Column.jsx
+frontend/src/components/InsightsPanel.jsx
+frontend/src/components/LogViewer.jsx (new)
+frontend/src/components/ProfileMenu.jsx
+frontend/src/components/Sidebar.jsx
+frontend/src/components/TaskCard.jsx
+frontend/src/components/TaskModal.jsx
+frontend/src/components/Topbar.jsx
+frontend/src/hooks/useBoard.js
+frontend/src/hooks/useLabels.js (new)
+frontend/src/hooks/useTaskEditing.js (new)
+frontend/src/i18n.js
+frontend/src/index.css
+frontend/src/locales/en.json
+opencode.jsonc (new)
+scripts/deploy-supabase.ps1 (new)
+scripts/deploy-supabase.sh (new)
+scripts/migrate-supabase-data.sh (new)
+supabase/migrations/20260625000002_logs_and_preferences.sql (new)
+frontend/tests/components/App.test.jsx
+frontend/tests/components/AuthForm.test.jsx
+frontend/tests/components/Board.test.jsx
+frontend/tests/components/EmptyState.test.jsx (new)
+frontend/tests/components/ErrorBoundary.test.jsx (new)
+frontend/tests/components/ExportMenu.test.jsx (new)
+frontend/tests/components/LabelManager.test.jsx (new)
+frontend/tests/components/ProjectSettingsModal.test.jsx (new)
+frontend/tests/components/TaskCardPriority.test.jsx (new)
+frontend/tests/hooks/useBoard.test.js
+frontend/tests/i18n.test.js
+frontend/tests/mockI18n.js (new)
+frontend/tests/mockSupabase.js
+frontend/tests/setup.js
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See individual commit messages for per-change context.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All 82 tests passing. Multiple features implemented.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

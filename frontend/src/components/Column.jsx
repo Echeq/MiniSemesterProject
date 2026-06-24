@@ -6,7 +6,7 @@ import TaskCard from './TaskCard'
 
 const DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
 
-function Column({ status, tasks, onTaskClick, onAddTask }) {
+function Column({ status, tasks, onTaskClick, onAddTask, editors }) {
   const { t } = useTranslation()
   const LABELS = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
 
@@ -42,7 +42,7 @@ function Column({ status, tasks, onTaskClick, onAddTask }) {
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto p-2.5">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+            <TaskCard key={task.id} task={task} onClick={onTaskClick} editors={editors} />
           ))}
           {tasks.length === 0 && (
             <div className="rounded-md border border-dashed border-[var(--border)] px-4 py-8 text-center text-xs text-[var(--fg-subtle)]">

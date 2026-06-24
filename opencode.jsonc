@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Supabase MCP for database operations
+  "mcp": {
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=iudqysuvrgxeaxyllfiw",
+      "oauth": {}
+    }
+  },
+  // Orchestrator subagents for task routing
+  "subagents": {
+    "orchestrator-scout": {
+      "model": "deepseek-chat",
+      "description": "Exploration, bulk work, simple implementation, code review"
+    },
+    "orchestrator-deep": {
+      "model": "deepseek-reasoner",
+      "description": "Complex implementation, deep debugging, architectural decisions"
+    }
+  }
+}

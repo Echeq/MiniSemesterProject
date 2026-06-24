@@ -25,7 +25,7 @@ export default function AuthForm() {
           options: { data: { display_name: displayName } },
         })
         if (error) throw error
-        setMessage('Account created. If email confirmation is on, check your inbox — otherwise just sign in.')
+        setMessage(t('auth.checkEmail'))
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
@@ -58,7 +58,7 @@ export default function AuthForm() {
           {mode === 'signup' && (
             <label className="mb-3 block">
               <span className={labelCls}>{t('auth.displayName')}</span>
-              <input type="text" required maxLength={100} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="input" placeholder="Jane Doe" />
+              <input type="text" required maxLength={100} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="input" placeholder={t('auth.displayName')} />
             </label>
           )}
 
@@ -76,7 +76,7 @@ export default function AuthForm() {
           {message && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)' }}>{message}</p>}
 
           <button type="submit" disabled={busy} className="btn btn-primary w-full">
-            {busy ? '…' : mode === 'signin' ? t('auth.signIn') : t('auth.signUp')}
+            {busy ? 'Please wait…' : mode === 'signin' ? t('auth.signIn') : t('auth.signUp')}
           </button>
 
           <button

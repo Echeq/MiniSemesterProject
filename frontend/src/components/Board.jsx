@@ -36,6 +36,7 @@ export default function Board({
   activeView = 'kanban',
   loading = false,
   members = [],
+  editors,
 }) {
   const [activeTask, setActiveTask] = useState(null)
   const [visibleCols, setVisibleCols] = useState(STATUSES)
@@ -62,11 +63,11 @@ export default function Board({
     [hideEmptyColumns, byStatus, visibleCols],
   )
 
-  function toggleCol(status) {
+  const toggleCol = useCallback((status) => {
     setVisibleCols((prev) =>
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
     )
-  }
+  }, [])
 
   useEffect(() => {
     if (labelFilter && setLabelFilter && !labels.some((l) => l.id === labelFilter)) {
@@ -82,6 +83,8 @@ export default function Board({
   const handleDragStart = useCallback(({ active }) => {
     setActiveTask(tasksRef.current.find((t) => t.id === active.id) ?? null)
   }, [])
+
+  const handleDragCancel = useCallback(() => setActiveTask(null), [])
 
   const handleDragEnd = useCallback(({ active, over }) => {
     setActiveTask(null)
@@ -134,7 +137,7 @@ export default function Board({
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
-      onDragCancel={() => setActiveTask(null)}
+      onDragCancel={handleDragCancel}
       onDragEnd={handleDragEnd}
     >
       <div className="flex min-h-0 flex-1 flex-col">
@@ -229,7 +232,14 @@ export default function Board({
             {banner}
             <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
               {visibleStatuses.map((status) => (
-                <Column key={status} status={status} tasks={byStatus[status]} onTaskClick={onTaskClick} onAddTask={onAddTask} />
+                <Column
+                  key={status}
+                  status={status}
+                  tasks={byStatus[status]}
+                  onTaskClick={onTaskClick}
+                  onAddTask={onAddTask}
+                  editors={editors}
+                />
               ))}
             </div>
           </>

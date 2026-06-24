@@ -1,56 +1,10 @@
----
-name: ai-log-generate
-description: Log every AI interaction — prompt, response, affected file, code before/after, and metadata. Triggers on "@ai-log".
----
-
-## Workflow
-
-When user says `@ai-log`, generate a log file by reading the conversation.
-
-### 1. Auto-detect
-
-Collect these automatically via bash:
-
-| Field | Command (Windows) | Command (Mac/Linux) |
-|---|---|---|
-| PC Name | `$env:COMPUTERNAME` | `hostname` |
-| Date | `Get-Date -Format "yyyy-MM-dd"` | `date +%F` |
-| Time | `Get-Date -Format "HHmmss"` | `date +%H%M%S` |
-| Git Branch | `git branch --show-current` | `git branch --show-current` |
-
-### 2. Read from conversation history
-
-Extract these from the chat, do NOT ask the user:
-
-- **Prompt** — What the user asked (their messages)
-- **AI Response** — What you replied (your messages)
-- **File Path** — Files you created or edited
-- **Code Before** — Previous content of edited files (use `git diff`)
-- **Code After** — New content after your changes
-- **AI Tool** — Always `OpenCode`
-
-Run `git diff --name-only` to list changed files and `git diff` for full before/after.
-
-If git diff is empty (new files not yet staged), compare file contents before/after via `read`.
-
-### 3. Generate filename
-
-Format: `AI-LOG-YYYY-MM-DD-HHMMSS-PCNAME.txt`
-
-Example: `AI-LOG-2026-06-12-093931-DESKTOP-CR24C6G.txt`
-
-### 4. Write the log
-
-Save to `docs/log/<filename>` with the template below. Replace placeholders with real values.
-
-```
 ╔══════════════════════════════════════════════════════════════╗
 ║                    AI INTERACTION LOG                        ║
 ╚══════════════════════════════════════════════════════════════╝
 
-PC Name:      DESKTOP-ABC123
-Date:         2026-06-12
-Time:         09:39:31
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-24
+Time:         16:30:15
 Git Branch:   main
 AI Tool:      OpenCode
 
@@ -58,38 +12,51 @@ AI Tool:      OpenCode
 PROMPT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-What the user asked
+User asked to execute pending backend and PM tasks:
+- Backend: get_logs RPC, preferences column on profiles, preference RPCs
+- PM: Log viewer + Backup tabs in AdminModal, user manual, presentation outline
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AI RESPONSE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-What the AI replied
+Applied migration via Supabase MCP + saved local file. Created LogViewer.jsx
+and BackupPanel.jsx components, wired into AdminModal with new tabs.
+Wrote user manual (16 sections) and presentation outline (15 slides).
+Updated task.md verification marks and AGENTS.md migration count.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FILE AFFECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-relative/path/to/file.js
-relative/path/to/another.css
+AGENTS.md
+docs/presentation-outline.md (new)
+docs/user-manual.md (new)
+frontend/src/components/AdminModal.jsx
+frontend/src/components/BackupPanel.jsx (new)
+frontend/src/components/LogViewer.jsx (new)
+supabase/migrations/20260625000002_logs_and_preferences.sql (new)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE BEFORE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-code before changes
+AdminModal had only Members and Invitations tabs.
+No log viewer, no backup panel.
+No user manual or presentation outline existed.
+AGENTS.md said 9 migrations.
+No get_logs RPC or profile preferences existed.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CODE AFTER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-code after changes
+AdminModal has Members, Invitations, Logs, Backup tabs.
+LogViewer.jsx fetches system_logs via get_logs RPC with action/date filters.
+BackupPanel.jsx calls export_all_data() RPC and downloads JSON.
+docs/user-manual.md covers all user-facing features.
+docs/presentation-outline.md has 15 slides.
+AGENTS.md says 10 migrations.
+Backend now has get_logs RPC, preferences column, and get/set_preferences RPCs.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### 5. Confirm
-
-Tell the user:
-
-> ✅ Log saved to `docs/log/AI-LOG-2026-06-12-093931-DESKTOP-CR24C6G.txt`

@@ -28,7 +28,6 @@ export default function TaskModal({
   onRemoveDependency,
   onClose,
 }) {
-  const editing = Boolean(task)
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
@@ -40,6 +39,7 @@ export default function TaskModal({
   const [blockedBy, setBlockedBy] = useState(task?.depends_on?.map((d) => d.id) ?? [])
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const editing = Boolean(task)
 
   const availableLabels = labels.filter((l) => l.project_id === projectId || (!projectId && !l.project_id))
   const projectTasks = allTasks.filter((t) => t.id !== task?.id && (t.project_id === projectId || (!projectId && !t.project_id)))

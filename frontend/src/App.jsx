@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
 import { useBoard } from './hooks/useBoard'
@@ -8,19 +8,21 @@ import { useMembers } from './hooks/useMembers'
 import { useTheme } from './hooks/useTheme'
 import { useTaskStats } from './hooks/useTaskStats'
 import { usePresence } from './hooks/usePresence'
+import { useTaskEditing } from './hooks/useTaskEditing'
 import { useLabels } from './hooks/useLabels'
 import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import Board from './components/Board'
-import GanttView from './components/GanttView'
-import DataSphere from './components/DataSphere'
-import TaskModal from './components/TaskModal'
-import ProfileModal from './components/ProfileModal'
-import AdminModal from './components/AdminModal'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
-import LabelManager from './components/LabelManager'
+
+const TaskModal = lazy(() => import('./components/TaskModal'))
+const ProfileModal = lazy(() => import('./components/ProfileModal'))
+const AdminModal = lazy(() => import('./components/AdminModal'))
+const LabelManager = lazy(() => import('./components/LabelManager'))
+const GanttView = lazy(() => import('./components/GanttView'))
+const DataSphere = lazy(() => import('./components/DataSphere'))
 
 function MissingEnv() {
   return (
@@ -87,6 +89,8 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { members } = useMembers()
   const stats = useTaskStats()
   const onlineIds = usePresence(session, profile)
+  const profileName = profile?.display_name || session.user.email
+  const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
   const [scope, setScope] = useState('all')
   const isProject = scope !== null && typeof scope === 'object'
@@ -104,7 +108,15 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
-  const handleTaskClick = useCallback((task) => setModal(task), [])
+  const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
+  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+  const handleNewTask = useCallback(() => setModal('new'), [])
+  const handleOpenLabelManager = useCallback(() => setShowLabelManager(true), [])
+  const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
+  const handleOpenAccount = useCallback(() => setPanel('account'), [])
+  const handleOpenAdmin = useCallback(() => setPanel('admin'), [])
+  const handleCloseModal = useCallback(() => { setModal(null); stopEditing() }, [stopEditing])
+  const handleClosePanel = useCallback(() => setPanel(null), [])
 
   const logActivity = useMemo(() => ({
     log: async (action, targetType, targetId, metadata) => {
@@ -179,6 +191,7 @@ function BoardPage({ session, theme, toggleTheme }) {
           onOpenAdmin={() => setPanel('admin')}
           members={members}
           onlineIds={onlineIds}
+          editors={editors}
           stats={stats}
           currentUserId={userId}
           loadingProjects={projectsLoading}
@@ -194,25 +207,25 @@ function BoardPage({ session, theme, toggleTheme }) {
           theme={theme}
           onToggleTheme={toggleTheme}
           showInsights={showInsights}
-          onToggleInsights={() => setShowInsights((s) => !s)}
+          onToggleInsights={handleToggleInsights}
           activeView={activeView}
           onSetView={setActiveView}
-          onNewTask={() => setModal('new')}
-          onOpenLabelManager={isProject ? () => setShowLabelManager(true) : null}
+          onNewTask={handleNewTask}
+          onOpenLabelManager={isProject ? handleOpenLabelManager : null}
           session={session}
           profile={profile}
           isAdmin={isAdmin}
-          onOpenAccount={() => setPanel('account')}
-          onOpenAdmin={() => setPanel('admin')}
+          onOpenAccount={handleOpenAccount}
+          onOpenAdmin={handleOpenAdmin}
         />
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
         <ErrorBoundary>
           {activeView === 'gantt' ? (
-            <GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} />
+            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} /></Suspense>
           ) : activeView === 'sphere' ? (
-            <DataSphere tasks={filteredViewTasks} />
+            <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
           ) : (
             <Board
               tasks={filteredViewTasks}
@@ -230,54 +243,57 @@ function BoardPage({ session, theme, toggleTheme }) {
               activeView={activeView}
               loading={loading}
               members={members}
+              editors={editors}
             />
           )}
         </ErrorBoundary>
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} />}
+      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
 
-      {modal && (
-        <TaskModal
-          task={modal === 'new' || modal?.defaultStatus ? null : modal}
-          defaultStatus={modal?.defaultStatus}
-          members={members}
-          projects={projects}
-          defaultProjectId={defaultProjectId}
-          labels={labels}
-          allTasks={tasks}
-          onCreate={createTask}
-          onUpdate={updateTask}
-          onDelete={deleteTask}
-          onAddLabels={addLabel}
-          onRemoveLabel={removeLabel}
-          onAddDependency={addDependency}
-          onRemoveDependency={removeDependency}
-          onClose={() => setModal(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {modal && (
+          <TaskModal
+            task={modal === 'new' || modal?.defaultStatus ? null : modal}
+            defaultStatus={modal?.defaultStatus}
+            members={members}
+            projects={projects}
+            defaultProjectId={defaultProjectId}
+            labels={labels}
+            allTasks={tasks}
+            onCreate={createTask}
+            onUpdate={updateTask}
+            onDelete={deleteTask}
+            onAddLabels={addLabel}
+            onRemoveLabel={removeLabel}
+            onAddDependency={addDependency}
+            onRemoveDependency={removeDependency}
+            onClose={handleCloseModal}
+          />
+        )}
 
-      {showLabelManager && isProject && (
-        <LabelManager
-          projectId={scope.id}
-          onClose={() => setShowLabelManager(false)}
-        />
-      )}
+        {showLabelManager && isProject && (
+          <LabelManager
+            projectId={scope.id}
+            onClose={handleCloseLabelManager}
+          />
+        )}
 
-      {panel === 'account' && (
-        <ProfileModal
-          session={session}
-          profile={profile}
-          stats={stats}
-          onSaved={refetchProfile}
-          onGoToMyTasks={() => setScope('view:mine')}
-          onClose={() => setPanel(null)}
-        />
-      )}
+        {panel === 'account' && (
+          <ProfileModal
+            session={session}
+            profile={profile}
+            stats={stats}
+            onSaved={refetchProfile}
+            onGoToMyTasks={() => setScope('view:mine')}
+            onClose={handleClosePanel}
+          />
+        )}
 
-      {panel === 'admin' && isAdmin && (
-        <AdminModal session={session} onClose={() => setPanel(null)} />
-      )}
+        {panel === 'admin' && isAdmin && (
+          <AdminModal session={session} onClose={handleClosePanel} />
+        )}
+      </Suspense>
     </div>
   )
 }
