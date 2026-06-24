@@ -3,16 +3,23 @@ import Modal from './Modal'
 import Avatar from './Avatar'
 import { useMembers } from '../hooks/useMembers'
 import { useInvitations } from '../hooks/useInvitations'
+import LogViewer from './LogViewer'
+import BackupPanel from './BackupPanel'
 
 export default function AdminModal({ session, onClose }) {
   const [tab, setTab] = useState('members')
   return (
     <Modal title="Admin panel" subtitle="Manage your team" onClose={onClose} maxWidth="max-w-lg">
-      <div className="mb-4 flex gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
+      <div className="mb-4 flex flex-wrap gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
         <TabButton active={tab === 'members'} onClick={() => setTab('members')}>Members</TabButton>
         <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>Invitations</TabButton>
+        <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>Logs</TabButton>
+        <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>Backup</TabButton>
       </div>
-      {tab === 'members' ? <Members session={session} /> : <Invites />}
+      {tab === 'members' && <Members session={session} />}
+      {tab === 'invites' && <Invites />}
+      {tab === 'logs' && <LogViewer />}
+      {tab === 'backup' && <BackupPanel />}
     </Modal>
   )
 }

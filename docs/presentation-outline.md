@@ -1,139 +1,147 @@
-# TaskFlow — Presentation Outline
-
-> Estimated: 10 slides, 12-15 minutes
-
----
+# Presentation Outline
 
 ## Slide 1 — Title
-
-- **TaskFlow** — Visual Task Scheduling & Management for Small Teams
-- Team: 陈昌发 (PM), 孔刚 (Frontend), 周奕龙 (Backend)
-- 华中科技大学 — Mini Semester Project 2026
+- TaskFlow: Real-time Collaborative Kanban Board
+- Team: @goanarbolkong, @MemerZxZ, @Echeq
+- MiniSemester Project
 
 ---
 
 ## Slide 2 — Problem
-
-- Small teams use sticky notes, spreadsheets, or WhatsApp to track tasks
-- No real-time visibility on who's doing what
-- Deadlines get missed without alerts
-- One-paragraph setup
+- Teams lack a simple, real-time task tracker
+- Existing tools are complex, expensive, or require custom servers
+- Need for live collaboration without infrastructure overhead
 
 ---
 
 ## Slide 3 — Solution
-
-- Real-time Kanban board with drag & drop
-- Role-based access (admin / member)
-- Smart views: My tasks, Due soon, Overdue
-- Multi-project support with team presence (who's online)
-- **Live demo next**
+- TaskFlow: a single-page Kanban app
+- Drag-and-drop, real-time sync, no backend to manage
+- Entire backend = Supabase (auth, database, realtime, storage)
 
 ---
 
-## Slide 4 — Live Demo (Core Features)
-
-Show the running app:
-1. Sign in / Sign up
-2. Create a task, drag between columns
-3. Show smart view: "My tasks"
-4. Open another browser — show real-time sync
-5. Show dark mode toggle + language switch
-
----
-
-## Slide 5 — Tech Stack
+## Slide 4 — Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Vite 8, Tailwind CSS 4, @dnd-kit |
-| Backend | Supabase (Auth, PostgREST, Realtime, Storage, PostgreSQL) |
-| Testing | Vitest (57 unit tests) |
-| AI Tooling | OpenCode (MCP, @ai-commit, @ai-log) |
-| Docs | i18next (4 languages), jsPDF (export) |
+| Frontend | React 19, Vite 8, Tailwind CSS v4 |
+| Drag & drop | @dnd-kit (core 6, sortable 10, utilities 3) |
+| Backend | Supabase (PostgREST, Auth, Realtime, Storage) |
+| Testing | Vitest 4 + Testing Library |
+| AI tooling | OpenCode (Supabase MCP) |
 
 ---
 
-## Slide 6 — Architecture
+## Slide 5 — Architecture
 
-- **No custom server** — React SPA talks directly to Supabase
-- SQL migrations are the single source of truth (9 files)
-- Row-Level Security: admin sees all, member sees assigned only, unknown sees nothing
-- Realtime: WebSocket broadcast on every INSERT/UPDATE/DELETE
-- Presence: online user tracking via Realtime Presence
-- Diagram: Browser → Supabase (Auth + PostgREST + Realtime + Storage) → PostgreSQL
+```
+Browser (React 19 SPA)
+      │
+      ├── Supabase Auth (sign in/up, sessions)
+      ├── PostgREST (CRUD on tasks, projects, profiles)
+      ├── Realtime (live updates via WebSocket)
+      └── Storage (avatar uploads)
+```
 
----
-
-## Slide 7 — Key Features Deep-Dive
-
-| Feature | Tech |
-|---|---|
-| Drag & Drop | @dnd-kit (core + sortable) — cross-column + within-column, mobile touch |
-| Position System | float8 fractional indexing — midpoint on reorder, no re-indexing |
-| Smart Views | Client-side filters — mine, due ≤7d, overdue |
-| Export | PDF + CSV from current view |
-| Theme | CSS variable system — light/dark toggle, localStorage persistence |
-| i18n | 4 languages — en, es, zh, id |
+- No custom server — zero infrastructure
+- Row-Level Security enforces permissions at DB level
 
 ---
 
-## Slide 8 — Testing & Quality
+## Slide 6 — Features (1/2)
 
-- 57 unit tests (Vitest + Testing Library)
-- Components: Board, Column, TaskCard, TaskModal, AuthForm, ProfileSettings
-- Hooks: useAuth, useBoard, useProfile, positionBetween
-- API integration tests (excluded from CI, run manually)
-- AI-assisted code audit: 1 migration bug found and fixed, 11 dead files removed
-
----
-
-## Slide 9 — Challenges & Learnings
-
-| Challenge | Solution |
-|---|---|
-| @dnd-kit version incompatibility (core@6, sortable@10) | Careful import management |
-| Migration duplicate policy crash | Added `IF NOT EXISTS` |
-| Realtime merge with joined data | Re-fetch row with assignee join before merging |
-| Position drift over time | float8 precision avoids re-indexing entirely |
-| AI-assisted development | OpenCode MCP for migrations, components, docs |
+- **Kanban board** with drag-and-drop between columns
+- **Real-time sync** — changes appear in <1s across clients
+- **Smart views**: My tasks, Due soon, Overdue
+- **Projects** with colors, icons, and archive/restore
+- **Task priorities** (P0–P3 with color coding)
 
 ---
 
-## Slide 10 — Results & Future
+## Slide 7 — Features (2/2)
 
-### What we built (Week 2 target)
-- ✅ Auth + roles + invitations
-- ✅ Task CRUD + drag & drop
-- ✅ Real-time sync + presence
-- ✅ Projects + members + colors
-- ✅ Priority + labels + dependencies
-- ✅ PDF/CSV export
-- 🔄 Smart notifications (Week 3)
-
-### Dashboard numbers
-- 9 SQL migrations
-- 57 tests, 0 failures
-- 19 components, 10 hooks
-- 4 languages
-- 75% of requirements complete (target by Week 2)
+- **Labels** — custom colored labels per project
+- **Task dependencies** — blocking relationships with circular detection
+- **List view** — table with sortable columns
+- **Export** — PDF and CSV download
+- **Dark/light theme** — persisted preference
+- **Admin panel** — role management, audit logs, backup
 
 ---
 
-## Backup Slides (if time permits)
+## Slide 8 — Database Schema
 
-### B1 — Database Schema
-- 6 tables: profiles, tasks, projects, project_members, invitations, join_requests
-- 4 RPCs: is_admin, admin_set_role, set_project_status, delete_own_account
-- 3 triggers: handle_new_user, handle_new_project_member, handle_updated_at
+10 migrations covering:
+- Tables: profiles, tasks, projects, project_members, labels, task_labels
+- Notifications, task_dependencies, system_logs, invitations
+- RLS policies: admin sees all, member sees assigned
+- RPCs: admin_set_role, check_blocked_tasks, log_activity, export_all_data
 
-### B2 — RLS Deep-Dive
-- Role-based policies on every table
-- Column-level grants: created_by immutable
-- First user → admin bootstrap via trigger
+---
 
-### B3 — AI Workflow
-- OpenCode + AGENTS.md for context
-- @ai-log for tracking every interaction
-- @ai-commit for conventional commits
-- MCP Supabase for AI-driven DB operations
+## Slide 9 — Security
+
+- Row-Level Security on every table
+- Column-level grants (created_by immutable)
+- Role system: admin / member / unknown
+- First user becomes admin automatically
+- Invitation flow with role assignment on signup
+
+---
+
+## Slide 10 — Testing
+
+- **82 unit tests** across 18 test files
+- Components rendered with Testing Library
+- Hooks tested with renderHook + mock Supabase
+- API integration tests against real Supabase
+- CI-ready: `npm test` runs in seconds
+
+---
+
+## Slide 11 — Deployment
+
+- Static frontend (Vite build → dist/)
+- Deploy to Vercel, Netlify, Cloudflare, or any static host
+- Supabase project linked via `supabase link`
+- Migrations applied via `supabase db push`
+- Full guide in `docs/deploy.md`
+
+---
+
+## Slide 12 — Demo
+
+Live walkthrough:
+1. Sign in / sign up
+2. Create a project
+3. Create tasks with priority and labels
+4. Drag between columns
+5. Open two tabs — show realtime sync
+6. Smart views: My tasks, Overdue
+7. Export to PDF
+8. Admin panel: logs, backup
+
+---
+
+## Slide 13 — Challenges & Lessons
+
+- @dnd-kit versions core@6 + sortable@10 + utilities@3 — incompatible majors, careful import required
+- Supabase MCP applies migrations remotely — local files must be synced manually
+- Position system uses float8 midpoint + 1024 — no re-indexing needed
+- Realtime payloads lack joined fields — re-fetch single row on INSERT/UPDATE
+
+---
+
+## Slide 14 — Future Work
+
+- Gantt chart timeline view
+- 3D data sphere visualization (Three.js)
+- Advanced filter panel with saved presets
+- Mobile app (React Native)
+- Email notifications
+- OAuth providers (Google, GitHub)
+
+---
+
+## Slide 15 — Q&A
