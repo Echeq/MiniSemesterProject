@@ -1,15 +1,17 @@
 import { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard'
 
-const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
 
 function Column({ status, tasks, onTaskClick, onAddTask }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status })
+  const { t } = useTranslation()
+  const LABELS = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
 
-  const sortableIds = useMemo(() => tasks.map((t) => t.id), [tasks])
+  const { setNodeRef, isOver } = useDroppable({ id: status })
+  const sortableIds = useMemo(() => tasks.map((task) => task.id), [tasks])
 
   return (
     <div
@@ -44,7 +46,7 @@ function Column({ status, tasks, onTaskClick, onAddTask }) {
           ))}
           {tasks.length === 0 && (
             <div className="rounded-md border border-dashed border-[var(--border)] px-4 py-8 text-center text-xs text-[var(--fg-subtle)]">
-              Drop tasks here
+              {t('board.noTasks')}
             </div>
           )}
         </div>

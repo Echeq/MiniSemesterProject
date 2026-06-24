@@ -13,6 +13,8 @@ import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import Board from './components/Board'
+import GanttView from './components/GanttView'
+import DataSphere from './components/DataSphere'
 import TaskModal from './components/TaskModal'
 import ProfileModal from './components/ProfileModal'
 import AdminModal from './components/AdminModal'
@@ -95,8 +97,10 @@ function BoardPage({ session, theme, toggleTheme }) {
   const [modal, setModal] = useState(null)
   const [panel, setPanel] = useState(null)
   const [showInsights, setShowInsights] = useState(true)
-  const [showListView, setShowListView] = useState(false)
+  const [activeView, setActiveView] = useState('kanban')
   const [showLabelManager, setShowLabelManager] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState('')
+  const [labelFilter, setLabelFilter] = useState(null)
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
@@ -119,9 +123,16 @@ function BoardPage({ session, theme, toggleTheme }) {
     return tasks
   }, [tasks, isView, scope, userId])
 
+  const filteredViewTasks = useMemo(() => {
+    let result = viewTasks
+    if (priorityFilter) result = result.filter((t) => t.priority === priorityFilter)
+    if (labelFilter) result = result.filter((t) => t.labels?.some((l) => l.id === labelFilter))
+    return result
+  }, [viewTasks, priorityFilter, labelFilter])
+
   const memoBanner = useMemo(
-    () => <ViewBanner scope={scope} count={viewTasks.length} />,
-    [scope, viewTasks.length],
+    () => <ViewBanner scope={scope} count={filteredViewTasks.length} />,
+    [scope, filteredViewTasks.length],
   )
 
   const projectActions = useMemo(
@@ -178,14 +189,14 @@ function BoardPage({ session, theme, toggleTheme }) {
         <Topbar
           title={scopeLabel}
           archived={isProject && liveScope.status === 'archived'}
-          taskCount={viewTasks.length}
-          tasks={viewTasks}
+          taskCount={filteredViewTasks.length}
+          tasks={filteredViewTasks}
           theme={theme}
           onToggleTheme={toggleTheme}
           showInsights={showInsights}
           onToggleInsights={() => setShowInsights((s) => !s)}
-          showListView={showListView}
-          onToggleView={() => setShowListView((s) => !s)}
+          activeView={activeView}
+          onSetView={setActiveView}
           onNewTask={() => setModal('new')}
           onOpenLabelManager={isProject ? () => setShowLabelManager(true) : null}
           session={session}
@@ -198,21 +209,33 @@ function BoardPage({ session, theme, toggleTheme }) {
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
         <ErrorBoundary>
-          <Board
-            tasks={viewTasks}
-            updateTask={updateTask}
-            onTaskClick={handleTaskClick}
-            onAddTask={(status) => setModal({ defaultStatus: status })}
-            labels={labels}
-            hideEmptyColumns={isView}
-            banner={memoBanner}
-            showListView={showListView}
-            loading={loading}
-          />
+          {activeView === 'gantt' ? (
+            <GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} />
+          ) : activeView === 'sphere' ? (
+            <DataSphere tasks={filteredViewTasks} />
+          ) : (
+            <Board
+              tasks={filteredViewTasks}
+              allViewTasks={viewTasks}
+              updateTask={updateTask}
+              onTaskClick={handleTaskClick}
+              onAddTask={(status) => setModal({ defaultStatus: status })}
+              labels={labels}
+              priorityFilter={priorityFilter}
+              setPriorityFilter={setPriorityFilter}
+              labelFilter={labelFilter}
+              setLabelFilter={setLabelFilter}
+              hideEmptyColumns={isView}
+              banner={memoBanner}
+              activeView={activeView}
+              loading={loading}
+              members={members}
+            />
+          )}
         </ErrorBoundary>
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} />}
+      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} />}
 
       {modal && (
         <TaskModal

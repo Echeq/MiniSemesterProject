@@ -136,8 +136,17 @@ export default function TaskModal({
           <label className="flex-1">
             <span className={labelCls}>Status</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
-              {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+              {STATUSES.map((s) => (
+                <option key={s} value={s} disabled={s === 'done' && (task?.blocked_by || 0) > 0}>
+                  {STATUS_LABELS[s]}{s === 'done' && (task?.blocked_by || 0) > 0 ? ' (blocked)' : ''}
+                </option>
+              ))}
             </select>
+            {editing && (task?.blocked_by || 0) > 0 && (
+              <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
+                Blocked by {task.blocked_by} incomplete task{task.blocked_by !== 1 ? 's' : ''} — resolve dependencies first.
+              </p>
+            )}
           </label>
         </div>
 

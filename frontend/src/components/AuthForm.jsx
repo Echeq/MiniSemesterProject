@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 
 export default function AuthForm() {
+  const { t } = useTranslation()
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,25 +50,25 @@ export default function AuthForm() {
           </div>
           <h1 className="text-2xl font-bold">TaskFlow</h1>
           <p className="mt-1 text-sm text-[var(--fg-muted)]">
-            {mode === 'signin' ? 'Sign in to your board' : 'Create your account'}
+            {mode === 'signin' ? t('auth.signInToBoard') : t('auth.createAccount')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-6">
           {mode === 'signup' && (
             <label className="mb-3 block">
-              <span className={labelCls}>Display name</span>
+              <span className={labelCls}>{t('auth.displayName')}</span>
               <input type="text" required maxLength={100} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="input" placeholder="Jane Doe" />
             </label>
           )}
 
           <label className="mb-3 block">
-            <span className={labelCls}>Email</span>
+            <span className={labelCls}>{t('auth.email')}</span>
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input" placeholder="you@example.com" />
           </label>
 
           <label className="mb-5 block">
-            <span className={labelCls}>Password</span>
+            <span className={labelCls}>{t('auth.password')}</span>
             <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="input" placeholder="••••••••" />
           </label>
 
@@ -74,7 +76,7 @@ export default function AuthForm() {
           {message && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)' }}>{message}</p>}
 
           <button type="submit" disabled={busy} className="btn btn-primary w-full">
-            {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Sign up'}
+            {busy ? '…' : mode === 'signin' ? t('auth.signIn') : t('auth.signUp')}
           </button>
 
           <button
@@ -82,7 +84,7 @@ export default function AuthForm() {
             onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); setMessage(null) }}
             className="mt-4 w-full text-center text-sm text-[var(--accent)] hover:underline"
           >
-            {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            {mode === 'signin' ? t('auth.noAccount') : t('auth.hasAccount')}
           </button>
         </form>
       </div>
