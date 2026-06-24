@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
 import { useBoard } from './hooks/useBoard'
@@ -13,12 +13,13 @@ import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import Board from './components/Board'
-import TaskModal from './components/TaskModal'
-import ProfileModal from './components/ProfileModal'
-import AdminModal from './components/AdminModal'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
-import LabelManager from './components/LabelManager'
+
+const TaskModal = lazy(() => import('./components/TaskModal'))
+const ProfileModal = lazy(() => import('./components/ProfileModal'))
+const AdminModal = lazy(() => import('./components/AdminModal'))
+const LabelManager = lazy(() => import('./components/LabelManager'))
 
 function MissingEnv() {
   return (
@@ -101,6 +102,15 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { labels } = useLabels(isProject ? scope.id : null)
 
   const handleTaskClick = useCallback((task) => setModal(task), [])
+  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+  const handleToggleView = useCallback(() => setShowListView((s) => !s), [])
+  const handleNewTask = useCallback(() => setModal('new'), [])
+  const handleOpenLabelManager = useCallback(() => setShowLabelManager(true), [])
+  const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
+  const handleOpenAccount = useCallback(() => setPanel('account'), [])
+  const handleOpenAdmin = useCallback(() => setPanel('admin'), [])
+  const handleCloseModal = useCallback(() => setModal(null), [])
+  const handleClosePanel = useCallback(() => setPanel(null), [])
 
   const logActivity = useMemo(() => ({
     log: async (action, targetType, targetId, metadata) => {
@@ -183,16 +193,16 @@ function BoardPage({ session, theme, toggleTheme }) {
           theme={theme}
           onToggleTheme={toggleTheme}
           showInsights={showInsights}
-          onToggleInsights={() => setShowInsights((s) => !s)}
+          onToggleInsights={handleToggleInsights}
           showListView={showListView}
-          onToggleView={() => setShowListView((s) => !s)}
-          onNewTask={() => setModal('new')}
-          onOpenLabelManager={isProject ? () => setShowLabelManager(true) : null}
+          onToggleView={handleToggleView}
+          onNewTask={handleNewTask}
+          onOpenLabelManager={isProject ? handleOpenLabelManager : null}
           session={session}
           profile={profile}
           isAdmin={isAdmin}
-          onOpenAccount={() => setPanel('account')}
-          onOpenAdmin={() => setPanel('admin')}
+          onOpenAccount={handleOpenAccount}
+          onOpenAdmin={handleOpenAdmin}
         />
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
@@ -212,46 +222,48 @@ function BoardPage({ session, theme, toggleTheme }) {
 
       {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} />}
 
-      {modal && (
-        <TaskModal
-          task={modal === 'new' ? null : modal}
-          members={members}
-          projects={projects}
-          defaultProjectId={defaultProjectId}
-          labels={labels}
-          allTasks={tasks}
-          onCreate={createTask}
-          onUpdate={updateTask}
-          onDelete={deleteTask}
-          onAddLabels={addLabel}
-          onRemoveLabel={removeLabel}
-          onAddDependency={addDependency}
-          onRemoveDependency={removeDependency}
-          onClose={() => setModal(null)}
-        />
-      )}
+      <Suspense fallback={null}>
+        {modal && (
+          <TaskModal
+            task={modal === 'new' ? null : modal}
+            members={members}
+            projects={projects}
+            defaultProjectId={defaultProjectId}
+            labels={labels}
+            allTasks={tasks}
+            onCreate={createTask}
+            onUpdate={updateTask}
+            onDelete={deleteTask}
+            onAddLabels={addLabel}
+            onRemoveLabel={removeLabel}
+            onAddDependency={addDependency}
+            onRemoveDependency={removeDependency}
+            onClose={handleCloseModal}
+          />
+        )}
 
-      {showLabelManager && isProject && (
-        <LabelManager
-          projectId={scope.id}
-          onClose={() => setShowLabelManager(false)}
-        />
-      )}
+        {showLabelManager && isProject && (
+          <LabelManager
+            projectId={scope.id}
+            onClose={handleCloseLabelManager}
+          />
+        )}
 
-      {panel === 'account' && (
-        <ProfileModal
-          session={session}
-          profile={profile}
-          stats={stats}
-          onSaved={refetchProfile}
-          onGoToMyTasks={() => setScope('view:mine')}
-          onClose={() => setPanel(null)}
-        />
-      )}
+        {panel === 'account' && (
+          <ProfileModal
+            session={session}
+            profile={profile}
+            stats={stats}
+            onSaved={refetchProfile}
+            onGoToMyTasks={() => setScope('view:mine')}
+            onClose={handleClosePanel}
+          />
+        )}
 
-      {panel === 'admin' && isAdmin && (
-        <AdminModal session={session} onClose={() => setPanel(null)} />
-      )}
+        {panel === 'admin' && isAdmin && (
+          <AdminModal session={session} onClose={handleClosePanel} />
+        )}
+      </Suspense>
     </div>
   )
 }

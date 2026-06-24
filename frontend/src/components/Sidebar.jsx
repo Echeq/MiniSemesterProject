@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import Avatar from './Avatar'
 import EmptyState from './EmptyState'
 import CreateProjectModal from './CreateProjectModal'
@@ -31,7 +31,7 @@ const ICONS = {
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const in7Str = () => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 
-export default function Sidebar({
+const Sidebar = memo(function Sidebar({
   projects,
   scope,
   onSelectScope,
@@ -249,7 +249,9 @@ export default function Sidebar({
       )}
     </aside>
   )
-}
+})
+
+export default Sidebar
 
 function SectionLabel({ children }) {
   return <p className="px-2 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{children}</p>

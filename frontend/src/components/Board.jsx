@@ -38,11 +38,11 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     [hideEmptyColumns, byStatus, visibleCols],
   )
 
-  function toggleCol(status) {
+  const toggleCol = useCallback((status) => {
     setVisibleCols((prev) =>
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
     )
-  }
+  }, [])
 
   const tasksRef = useRef(tasks)
   useEffect(() => { tasksRef.current = tasks }, [tasks])
@@ -52,6 +52,8 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
   const handleDragStart = useCallback(({ active }) => {
     setActiveTask(tasksRef.current.find((t) => t.id === active.id) ?? null)
   }, [])
+
+  const handleDragCancel = useCallback(() => setActiveTask(null), [])
 
   const handleDragEnd = useCallback(({ active, over }) => {
     setActiveTask(null)
@@ -102,7 +104,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
-      onDragCancel={() => setActiveTask(null)}
+      onDragCancel={handleDragCancel}
       onDragEnd={handleDragEnd}
     >
       <div className="flex min-h-0 flex-1 flex-col">

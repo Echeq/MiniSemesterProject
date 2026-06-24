@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
 import ExportMenu from './ExportMenu'
 
-export default function Topbar({
+const Topbar = memo(function Topbar({
   title,
   archived,
   taskCount,
@@ -83,4 +84,6 @@ export default function Topbar({
       </div>
     </header>
   )
-}
+})
+
+export default Topbar

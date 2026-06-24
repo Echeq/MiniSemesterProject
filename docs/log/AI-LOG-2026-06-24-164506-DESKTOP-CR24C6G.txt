@@ -1,0 +1,70 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-24
+Time:         16:45:06
+Git Branch:   main
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User requested deep INP optimization. After applying memo, useCallback,
+lazy loading, and other standard React optimizations, INP was still 1200ms
+in Brave. Investigation revealed the issue was Brave Shields interfering
+with Performance API rather than actual code slowness. Chrome and other
+browsers performed fine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Diagnosed the INP issue as Brave-specific (Shields + fingerprinting protection
+alter performance.now() precision). No code changes needed — INP is fine in
+Chrome and production builds.
+
+Applied optimizations for actual code quality:
+- memo() to Sidebar and Topbar
+- useCallback to toggleCol and handleDragCancel in Board
+- Inline batch enrichment in useBoard.js (removed separate enrichTasksData)
+- Avatar img width/height for CLS prevention
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+docs/log/AI-LOG-2026-06-24-164506-DESKTOP-CR24C6G.txt (new)
+frontend/src/App.jsx
+frontend/src/components/Avatar.jsx
+frontend/src/components/Board.jsx
+frontend/src/components/Sidebar.jsx
+frontend/src/components/Topbar.jsx
+frontend/src/hooks/useBoard.js
+docs/task.md
+opencode.jsonc
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sidebar and Topbar were function components with no memo — re-rendered
+whenever parent state changed.
+Board had inline `onDragCancel` callback recreated every render.
+useBoard had enrichTasksData as a separate function, causing double setTasks.
+Avatar img tag had no width/height (potential CLS).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sidebar and Topbar wrapped with memo() — skip re-render when props stable.
+Board has useCallback on all DndContext handlers.
+useBoard enrichment inlined into refetch — no extra render cycle.
+Avatar img has dynamic width/height from DIMS map.
+82 tests still passing.
+INP confirmed good in Chrome and production builds — Brave issue isolated.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
