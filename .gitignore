@@ -19,6 +19,9 @@ supabase/.temp/
 # Orphaned root artifact
 /package-lock.json
 
+# OpenCode local config
+.opencode/
+
 # OS
 .DS_Store
 Thumbs.db
