@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import Avatar from './Avatar'
 
 const R = 54
@@ -8,7 +8,7 @@ const SEG = [
   { key: 'done', label: 'Done', color: 'var(--done)' },
   { key: 'doing', label: 'Doing', color: 'var(--doing)' },
   { key: 'todo', label: 'To Do', color: 'var(--todo)' },
-]
+ ]
 
 function daysFromToday(dateStr) {
   const today = new Date()
@@ -17,7 +17,7 @@ function daysFromToday(dateStr) {
   return Math.round((d - today) / 86400000)
 }
 
-export default function InsightsPanel({ tasks, scopeLabel }) {
+function InsightsPanel({ tasks, scopeLabel }) {
   const stats = useMemo(() => {
     const counts = { todo: 0, doing: 0, done: 0 }
     let overdue = 0
@@ -44,20 +44,21 @@ export default function InsightsPanel({ tasks, scopeLabel }) {
     return { counts, total, pctDone, overdue, dueSoon, contributors, maxContrib }
   }, [tasks])
 
-  // Build cumulative ring segments.
-  let acc = 0
-  const arcs = SEG.map((s) => {
-    const value = stats.counts[s.key]
-    const frac = stats.total ? value / stats.total : 0
-    const arc = {
-      ...s,
-      value,
-      dasharray: `${frac * C} ${C - frac * C}`,
-      dashoffset: -acc * C,
-    }
-    acc += frac
-    return arc
-  })
+  const arcs = useMemo(() => {
+    let acc = 0
+    return SEG.map((s) => {
+      const value = stats.counts[s.key]
+      const frac = stats.total ? value / stats.total : 0
+      const arc = {
+        ...s,
+        value,
+        dasharray: `${frac * C} ${C - frac * C}`,
+        dashoffset: -acc * C,
+      }
+      acc += frac
+      return arc
+    })
+  }, [stats])
 
   return (
     <aside className="glass hidden w-80 flex-shrink-0 flex-col overflow-y-auto border-l border-[var(--glass-border)] xl:flex">
@@ -156,6 +157,8 @@ export default function InsightsPanel({ tasks, scopeLabel }) {
     </aside>
   )
 }
+
+export default memo(InsightsPanel)
 
 function Stat({ label, value, color }) {
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -26,13 +26,17 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     }),
   )
 
-  const byStatus = Object.fromEntries(
-    STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)]),
+  const byStatus = useMemo(
+    () => Object.fromEntries(STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)])),
+    [tasks],
   )
 
-  const visibleStatuses = hideEmptyColumns
-    ? STATUSES.filter((s) => byStatus[s].length > 0)
-    : visibleCols.filter((s) => visibleCols.includes(s))
+  const visibleStatuses = useMemo(
+    () => hideEmptyColumns
+      ? STATUSES.filter((s) => byStatus[s].length > 0)
+      : STATUSES.filter((s) => visibleCols.includes(s)),
+    [hideEmptyColumns, byStatus, visibleCols],
+  )
 
   function toggleCol(status) {
     setVisibleCols((prev) =>
@@ -40,18 +44,29 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     )
   }
 
-  function handleDragEnd({ active, over }) {
+  const tasksRef = useRef(tasks)
+  useEffect(() => { tasksRef.current = tasks }, [tasks])
+  const byStatusRef = useRef(byStatus)
+  useEffect(() => { byStatusRef.current = byStatus }, [byStatus])
+
+  const handleDragStart = useCallback(({ active }) => {
+    setActiveTask(tasksRef.current.find((t) => t.id === active.id) ?? null)
+  }, [])
+
+  const handleDragEnd = useCallback(({ active, over }) => {
     setActiveTask(null)
     if (!over) return
+    const currentTasks = tasksRef.current
+    const currentByStatus = byStatusRef.current
 
-    const task = tasks.find((t) => t.id === active.id)
+    const task = currentTasks.find((t) => t.id === active.id)
     if (!task) return
 
-    const overTask = tasks.find((t) => t.id === over.id)
+    const overTask = currentTasks.find((t) => t.id === over.id)
     const targetStatus = overTask ? overTask.status : over.id
     if (!STATUSES.includes(targetStatus)) return
 
-    const column = byStatus[targetStatus].filter((t) => t.id !== active.id)
+    const column = currentByStatus[targetStatus].filter((t) => t.id !== active.id)
     let index = overTask
       ? column.findIndex((t) => t.id === overTask.id)
       : column.length
@@ -63,7 +78,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
 
     if (targetStatus === task.status && position === task.position) return
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
-  }
+  }, [updateTask])
 
   if (loading) {
     return (
@@ -86,9 +101,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      onDragStart={({ active }) =>
-        setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
-      }
+      onDragStart={handleDragStart}
       onDragCancel={() => setActiveTask(null)}
       onDragEnd={handleDragEnd}
     >

@@ -78,19 +78,19 @@ Allow users to create and manage projects.
 - [x] Add RLS policies for project access
 - [x] Create `project_members` junction table
 - [x] Create API functions: createProject, getProjects, archiveProject
-- [ ] Create `updateProject` API
+- [x] Create `updateProject` API (useProjects.js updateProject function)
 
 #### Frontend
 - [x] Create Project list page
-- [x] Create Create Project modal/form
-- [ ] Create Project settings page
+- [x] Create Create Project modal/form (CreateProjectModal.jsx — includes name, description, color, icon)
+- [x] Create Project settings page (ProjectSettingsModal.jsx)
 - [x] Add project archive/delete functionality
-- [ ] Add project color picker and icon selector (DB columns exist, UI pending)
+- [x] Add project color picker and icon selector (preset palette + preset icons)
 
 ### Acceptance Criteria
 - [x] User can create a new project
 - [x] User can see list of their projects
-- [ ] User can edit project details (name, description, color) — pending: settings page + updateProject API
+- [x] User can edit project details (name, description, color, icon) — via ProjectSettingsModal
 - [x] User can archive/delete projects
 - [x] Archived projects are hidden from main list
 
@@ -189,26 +189,28 @@ Add priority levels, labels/tags, and due date features.
 ### Tasks
 
 #### Backend / Supabase
-- [ ] Add `priority` field (P0, P1, P2, P3)
-- [ ] Create `labels` table
-- [ ] Create `task_labels` junction table
-- [x] Add `due_date` field (reminders not implemented)
+- [x] Add `priority` field (P0, P1, P2, P3) — migration 20260625000000
+- [x] Create `labels` table — migration 20260625000000
+- [x] Create `task_labels` junction table — migration 20260625000000
+- [x] Add `due_date` field
 
 #### Frontend
-- [ ] Add priority selector (P0-P3 with colors)
-- [ ] Create Label manager (create/edit/delete labels)
-- [ ] Add multi-select for task labels
+- [x] Add priority selector (P0-P3 with colors red/orange/yellow/green) — TaskModal.jsx
+- [x] Create Label manager (create/edit/delete labels per project) — LabelManager.jsx
+- [x] Add multi-select for task labels — TaskModal.jsx (toggle buttons with color)
+- [x] Add label chips on TaskCard — colored background + white text
+- [x] Add priority badge on TaskCard — colored dot + label (Critical/High/Medium/Low)
 - [x] Add date picker for due date (native `<input type="date">`)
 - [x] Highlight overdue tasks
 - [x] Show due date on TaskCard
 
 ### Acceptance Criteria
-- [ ] User can set priority (P0 red, P1 orange, etc.)
-- [ ] User can create custom labels
-- [ ] User can assign multiple labels to a task
+- [x] User can set priority (P0 red, P1 orange, P2 yellow, P3 green)
+- [x] User can create custom labels
+- [x] User can assign multiple labels to a task
 - [x] User can set due date
 - [x] Overdue tasks show red warning
-- [ ] Filters work with priority and labels
+- [~] Filters work with priority and labels (RPC exists: get_filtered_tasks; frontend filter UI pending)
 
 ### Dependencies
 - Issue #4 (Task CRUD)
@@ -231,22 +233,23 @@ Add task assignment to team members and task dependencies.
 
 #### Backend / Supabase
 - [x] Add `assignee` field to tasks table
-- [ ] Create `task_dependencies` table
-- [ ] Create API: assignTask, getDependencies, checkBlockedTasks
+- [x] Create `task_dependencies` table — migration 20260625000000
+- [x] Create API: assignTask (via generic updateTask), getDependencies (via check_blocked_tasks RPC), checkBlockedTasks RPC
+- [x] Add circular dependency prevention trigger — check_circular_dependency()
 
 #### Frontend
 - [x] Add assignee selector (team members list)
 - [x] Show avatar of assignee on TaskCard
-- [ ] Create dependency picker UI
-- [ ] Show dependency lines in Gantt (prepare for M4.2)
-- [ ] Block status change if blocked by incomplete task
+- [x] Create dependency picker UI — TaskModal.jsx ("Blocked by" multi-select of project tasks)
+- [x] Show blocked badge on TaskCard ("Blocked by X" with lock icon)
+- [ ] Prevent completing blocked tasks (call checkBlockedTasks RPC before status → done in updateTask)
 
 ### Acceptance Criteria
 - [x] User can assign task to any project member
 - [x] Assigned user sees task in their dashboard
-- [ ] User can set task dependencies (Task A blocks Task B)
-- [ ] UI shows blocked tasks
-- [ ] Cannot complete blocked tasks
+- [x] User can set task dependencies (via add_task_dependency RPC)
+- [x] UI shows blocked tasks (badge on TaskCard)
+- [ ] Cannot complete blocked tasks (need to wire checkBlockedTasks in useBoard.updateTask)
 
 ### Dependencies
 - Issue #3 (Project Members)
@@ -273,9 +276,9 @@ Create the main Kanban board view with all features.
 - [x] Integrate drag & drop (from M3.2)
 - [x] Add column task counters
 - [x] Add "Add Task" button to each column
-- [ ] Add quick filters (show/hide columns)
+- [x] Add quick filters (show/hide columns) — toggle buttons in Board
 - [x] Make responsive (columns stack on mobile)
-- [ ] Add loading skeleton
+- [x] Add loading skeleton (CardSkeleton + SidebarStatsSkeleton)
 
 ### Acceptance Criteria
 - [x] Kanban board is the default dashboard view
@@ -382,14 +385,14 @@ Create a table/list view with advanced filtering and sorting.
 ### Tasks
 
 #### Backend / Supabase
-- [ ] Add filtering support to getTasks API
-- [ ] Add sorting parameters (order_by, order_direction)
+- [x] Add filtering support via get_filtered_tasks RPC (status, priority, assignee, date range, labels)
+- [x] Add sorting parameters (order_by, order_direction) in get_filtered_tasks RPC
 
 #### Frontend
-- [ ] Create ListView component (table/grid)
-- [ ] Add filter sidebar/panel
+- [x] Create ListView component (table with title, status, priority, assignee, due_date)
+- [ ] Add filter sidebar/panel (frontend filter UI for the RPC)
 - [ ] Filters: status, priority, assignee, label, due date range
-- [ ] Add sorting by any column
+- [ ] Add sorting by any column (click table header)
 - [ ] Save filter preferences (localStorage or DB)
 - [ ] Toggle between compact and detailed view
 
@@ -459,11 +462,10 @@ Allow users to export task data to Excel and PDF.
 ### Tasks
 
 #### Frontend
-- [ ] Install SheetJS (xlsx) for Excel export
-- [ ] Install jsPDF + html2canvas for PDF export
-- [ ] Create Export button with menu (Excel/PDF)
-- [ ] Export current filtered view to Excel
-- [ ] Export current filtered view to PDF
+- [x] Install jsPDF (already in package.json)
+- [x] Create ExportMenu dropdown (PDF / CSV)
+- [x] Export current filtered view to PDF (jsPDF table with columns: title, status, priority, assignee, due_date)
+- [x] Export current filtered view to CSV (downloadable .csv file)
 - [ ] Add option to select columns to export
 - [ ] Format dates and priorities correctly in exports
 
@@ -493,22 +495,22 @@ Admin-only features for system management.
 ### Tasks
 
 #### Backend / Supabase
-- [ ] Create `system_logs` table
-- [ ] Create `logActivity` function (from your skill)
-- [ ] Create backup function (export all project data)
+- [x] Create `system_logs` table — migration 20260625000000
+- [x] Create `logActivity` RPC
+- [x] Create backup function (export_all_data RPC — returns JSON with projects + tasks + labels + members)
 - [ ] Add system configuration table
 
 #### Frontend
 - [x] Create Admin Panel (only visible to Admins)
 - [ ] Add Log viewer page (filter by user, action, date)
-- [ ] Add Export Backup button (download all data as JSON)
+- [ ] Add Export Backup button (download all data as JSON via export_all_data RPC)
 - [ ] Add Restore from Backup (upload JSON)
 - [ ] Add System Settings page (configurable options)
 
 ### Acceptance Criteria
 - [x] Only Admins can access admin panel
-- [ ] Logs show user actions (login, create task, delete, etc.)
-- [ ] Admin can export full database backup
+- [ ] Logs show user actions (login, create task, delete, etc.) — log_activity RPC exists but frontend log viewer pending
+- [ ] Admin can export full database backup — export_all_data RPC exists but frontend button pending
 - [ ] Admin can restore from backup
 - [ ] System settings persist after restart
 
@@ -533,28 +535,29 @@ Final touches before submission.
 ### Tasks
 
 #### Testing
-- [x] Write unit tests for critical functions (89 tests passing, components + hooks + i18n)
+- [x] Write unit tests for critical functions (82 tests passing, 18 test files: components + hooks + i18n + API integration)
 - [ ] Cross-browser testing (Chrome, Firefox, Safari)
 - [ ] Mobile testing (iOS, Android)
 - [ ] Performance testing (>200 tasks)
 
 #### Polish
-- [ ] Add loading states everywhere
-- [ ] Add error boundaries
-- [ ] Add 404 page
-- [ ] Add empty states (no tasks, no projects)
-- [ ] Add animations (fade, slide)
-- [x] Dark mode (bonus) — Already implemented via useTheme() + CSS vars
+- [~] Add loading states (Board skeletons done; other areas may be pending)
+- [x] Add error boundaries (ErrorBoundary wrapping Board + Sidebar)
+- [x] Add 404 page (NotFound.jsx)
+- [x] Add empty states (EmptyState wired in Board and Sidebar)
+- [x] Add animations (fade, slide — glass morphism + animate-pop-in classes)
+- [x] Dark mode — Already implemented via useTheme() + CSS vars
 
 #### Deployment
-- [ ] Deploy frontend to Vercel
-- [ ] Configure environment variables
+- [ ] Deploy frontend to Vercel (guide exists in docs/deploy.md)
+- [ ] Configure environment variables (docs/deploy.md covers this)
 - [ ] Set up custom domain (optional)
-- [ ] Verify Supabase is production ready
+- [ ] Verify Supabase is production ready (checklist in docs/deploy.md)
 
 #### Documentation
 - [x] Update README with setup instructions
-- [x] Add API documentation
+- [x] Add API documentation (docs/api.md)
+- [x] Add deploy guide (docs/deploy.md — local, production, branches, data migration)
 - [ ] Add user manual
 - [ ] Prepare presentation slides
 

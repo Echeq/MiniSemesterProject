@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard'
@@ -5,8 +6,10 @@ import TaskCard from './TaskCard'
 const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
 
-export default function Column({ status, tasks, onTaskClick }) {
+function Column({ status, tasks, onTaskClick }) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
+
+  const sortableIds = useMemo(() => tasks.map((t) => t.id), [tasks])
 
   return (
     <div
@@ -23,7 +26,7 @@ export default function Column({ status, tasks, onTaskClick }) {
           </span>
         </div>
       </div>
-      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto p-2.5">
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task} onClick={onTaskClick} />
@@ -38,3 +41,5 @@ export default function Column({ status, tasks, onTaskClick }) {
     </div>
   )
 }
+
+export default memo(Column)

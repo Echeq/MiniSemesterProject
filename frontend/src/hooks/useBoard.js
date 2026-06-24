@@ -37,10 +37,17 @@ export function useBoard(projectId = 'all') {
     [projectId],
   )
 
-  // Fetch task IDs in scope then batch-fetch labels + dependency counts
+  // Skip enrichment queries when the task set hasn't changed
+  const lastTaskIdsRef = useRef([])
+
   function enrichTasksData(tasksArray) {
     if (!tasksArray || tasksArray.length === 0) return tasksArray
     const ids = tasksArray.map((t) => t.id)
+    const prev = lastTaskIdsRef.current
+    if (ids.length === prev.length && ids.every((id, i) => id === prev[i])) {
+      return tasksArray
+    }
+    lastTaskIdsRef.current = ids
 
     Promise.all([
       supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
@@ -89,40 +96,70 @@ export function useBoard(projectId = 'all') {
 
   useEffect(() => {
     refetch()
+    const pending = []
+    let rafId = null
+
+    function flush() {
+      rafId = null
+      if (pending.length === 0) return
+      const batch = pending.splice(0)
+      const latest = new Map()
+      for (const p of batch) {
+        const id = p.eventType === 'DELETE' ? p.old.id : p.new.id
+        latest.set(id, p)
+      }
+      for (const [, p] of latest) {
+        if (p.eventType === 'DELETE') {
+          setTasks((prev) => prev.filter((t) => t.id !== p.old.id))
+          continue
+        }
+        const taskProjectId = p.new.project_id ?? null
+        const inScope =
+          projectId === 'all' ? true
+          : projectId === null ? taskProjectId == null
+          : taskProjectId === projectId
+        if (!inScope) {
+          setTasks((prev) => prev.filter((t) => t.id !== p.new.id))
+          continue
+        }
+        supabase
+          .from('tasks')
+          .select(TASK_SELECT)
+          .eq('id', p.new.id)
+          .single()
+          .then(({ data }) => {
+            if (!data) return
+            setTasks((prev) => {
+              const rest = prev.filter((t) => t.id !== data.id)
+              if (!matchesScope(data)) return rest
+              return insertTask(rest, data)
+            })
+            if (p.eventType === 'INSERT') {
+              const s = data.status
+              if (data.position > maxPositions.current[s]) {
+                maxPositions.current[s] = data.position
+              }
+            }
+          })
+      }
+    }
+
     const channel = supabase
       .channel('board')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tasks' },
         (payload) => {
-          if (payload.eventType === 'DELETE') {
-            setTasks((prev) => prev.filter((t) => t.id !== payload.old.id))
-            return
-          }
-          supabase
-            .from('tasks')
-            .select(TASK_SELECT)
-            .eq('id', payload.new.id)
-            .single()
-            .then(({ data }) => {
-              if (!data) return
-              setTasks((prev) => {
-                const rest = prev.filter((t) => t.id !== data.id)
-                if (!matchesScope(data)) return rest
-                return insertTask(rest, data)
-              })
-              if (payload.eventType === 'INSERT') {
-                const s = data.status
-                if (data.position > maxPositions.current[s]) {
-                  maxPositions.current[s] = data.position
-                }
-              }
-            })
+          pending.push(payload)
+          if (!rafId) rafId = requestAnimationFrame(flush)
         },
       )
       .subscribe()
-    return () => supabase.removeChannel(channel)
-  }, [refetch, matchesScope])
+    return () => {
+      supabase.removeChannel(channel)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [refetch, matchesScope, projectId])
 
   const logActivity = useCallback(async (action, targetType, targetId, metadata) => {
     try {

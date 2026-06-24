@@ -83,7 +83,7 @@ export default function ExportMenu({ tasks = [] }) {
 
   function handlePDF() {
     setOpen(false)
-    generatePDF(tasks)
+    requestAnimationFrame(() => generatePDF(tasks))
   }
 
   function handleCSV() {

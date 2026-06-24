@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Avatar from './Avatar'
 import EmptyState from './EmptyState'
 import CreateProjectModal from './CreateProjectModal'
@@ -47,26 +47,48 @@ export default function Sidebar({
   const [showCreate, setShowCreate] = useState(false)
   const [settingsProject, setSettingsProject] = useState(null)
 
-  const active = projects.filter((p) => p.status === 'active')
-  const archived = projects.filter((p) => p.status === 'archived')
+  const active = useMemo(() => projects.filter((p) => p.status === 'active'), [projects])
+  const archived = useMemo(() => projects.filter((p) => p.status === 'archived'), [projects])
 
-  const today = todayStr()
-  const in7 = in7Str()
-  const mineCount = stats.filter((t) => t.assignee === currentUserId).length
-  const overdueCount = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date < today).length
-  const dueSoonCount = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= today && t.due_date <= in7).length
+  const today = useMemo(() => todayStr(), [])
+  const in7 = useMemo(() => in7Str(), [])
 
-  function projProgress(id) {
-    const rows = stats.filter((t) => t.project_id === id)
-    const total = rows.length
-    const done = rows.filter((r) => r.status === 'done').length
-    return { total, pct: total ? Math.round((done / total) * 100) : 0 }
-  }
+  const { mineCount, overdueCount, dueSoonCount } = useMemo(() => {
+    const todayVal = todayStr()
+    const in7Val = in7Str()
+    const mine = stats.filter((t) => t.assignee === currentUserId).length
+    const overdue = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date < todayVal).length
+    const dueSoon = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= todayVal && t.due_date <= in7Val).length
+    return { mineCount: mine, overdueCount: overdue, dueSoonCount: dueSoon }
+  }, [stats, currentUserId])
 
-  const onlineMembers = members
-    .map((m) => ({ ...m, online: onlineIds?.has(m.id) }))
-    .sort((a, b) => Number(b.online) - Number(a.online))
-  const onlineCount = onlineMembers.filter((m) => m.online).length
+  const progressMap = useMemo(() => {
+    const map = new Map()
+    for (const t of stats) {
+      let entry = map.get(t.project_id)
+      if (!entry) {
+        entry = { total: 0, done: 0 }
+        map.set(t.project_id, entry)
+      }
+      entry.total++
+      if (t.status === 'done') entry.done++
+    }
+    for (const [id, entry] of map) {
+      entry.pct = entry.total ? Math.round((entry.done / entry.total) * 100) : 0
+    }
+    return map
+  }, [stats])
+
+  const onlineMembers = useMemo(
+    () => members
+      .map((m) => ({ ...m, online: onlineIds?.has(m.id) }))
+      .sort((a, b) => Number(b.online) - Number(a.online)),
+    [members, onlineIds],
+  )
+  const onlineCount = useMemo(
+    () => onlineMembers.filter((m) => m.online).length,
+    [onlineMembers],
+  )
 
   return (
     <aside className="glass hidden w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150 sm:flex">
@@ -110,7 +132,7 @@ export default function Sidebar({
           )}
 
           {active.map((p) => {
-            const prog = projProgress(p.id)
+            const prog = progressMap.get(p.id) ?? { total: 0, pct: 0 }
             return (
               <div key={p.id} className="rounded-md">
                 <div className="group flex items-center">

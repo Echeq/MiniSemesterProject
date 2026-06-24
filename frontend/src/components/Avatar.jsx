@@ -7,10 +7,15 @@ const GRADIENTS = [
   'from-rose-500 to-red-600',
 ]
 
+const _gradientCache = new Map()
+
 function pickGradient(seed = '') {
+  if (_gradientCache.has(seed)) return _gradientCache.get(seed)
   let hash = 0
   for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash)
-  return GRADIENTS[Math.abs(hash) % GRADIENTS.length]
+  const result = GRADIENTS[Math.abs(hash) % GRADIENTS.length]
+  _gradientCache.set(seed, result)
+  return result
 }
 
 const SIZES = { xs: 'h-6 w-6 text-[10px]', sm: 'h-8 w-8 text-xs', md: 'h-10 w-10 text-sm', lg: 'h-16 w-16 text-xl' }

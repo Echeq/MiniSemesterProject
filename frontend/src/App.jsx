@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
 import { useBoard } from './hooks/useBoard'
@@ -100,6 +100,8 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
+  const handleTaskClick = useCallback((task) => setModal(task), [])
+
   const logActivity = useMemo(() => ({
     log: async (action, targetType, targetId, metadata) => {
       try { await supabase.rpc('log_activity', { p_action: action, p_target_type: targetType, p_target_id: targetId, p_metadata: metadata || {} }) } catch {}
@@ -116,6 +118,11 @@ function BoardPage({ session, theme, toggleTheme }) {
     if (v === 'due') return tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= today && t.due_date <= in7)
     return tasks
   }, [tasks, isView, scope, userId])
+
+  const memoBanner = useMemo(
+    () => <ViewBanner scope={scope} count={viewTasks.length} />,
+    [scope, viewTasks.length],
+  )
 
   const projectActions = useMemo(
     () => ({
@@ -194,9 +201,9 @@ function BoardPage({ session, theme, toggleTheme }) {
           <Board
             tasks={viewTasks}
             updateTask={updateTask}
-            onTaskClick={(task) => setModal(task)}
+            onTaskClick={handleTaskClick}
             hideEmptyColumns={isView}
-            banner={<ViewBanner scope={scope} count={viewTasks.length} />}
+            banner={memoBanner}
             showListView={showListView}
             loading={loading}
           />
