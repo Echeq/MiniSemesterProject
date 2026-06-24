@@ -203,6 +203,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             updateTask={updateTask}
             onTaskClick={handleTaskClick}
             onAddTask={(status) => setModal({ defaultStatus: status })}
+            labels={labels}
             hideEmptyColumns={isView}
             banner={memoBanner}
             showListView={showListView}

@@ -15,18 +15,37 @@ import EmptyState from './EmptyState'
 import ListView from './ListView'
 import { CardSkeleton } from './Skeleton'
 
-export default function Board({ tasks, updateTask, onTaskClick, onAddTask, hideEmptyColumns = false, banner = null, showListView = false, loading = false }) {
+const PRIORITIES = ['P0', 'P1', 'P2', 'P3']
+const PRIORITY_LABEL = { P0: 'Critical', P1: 'High', P2: 'Medium', P3: 'Low' }
+const PRIORITY_COLOR = { P0: '#ef4444', P1: '#f59e0b', P2: '#eab308', P3: '#10b981' }
+const COL_DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
+
+export default function Board({ tasks, updateTask, onTaskClick, onAddTask, labels = [], hideEmptyColumns = false, banner = null, showListView = false, loading = false }) {
   const [activeTask, setActiveTask] = useState(null)
   const [visibleCols, setVisibleCols] = useState(STATUSES)
+  const [priorityFilter, setPriorityFilter] = useState('')
+  const [labelFilter, setLabelFilter] = useState(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 6 },
-    }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
   )
 
+  // Apply priority + label filters before distributing to columns.
+  const filteredTasks = useMemo(() => {
+    let result = tasks
+    if (priorityFilter) result = result.filter((t) => t.priority === priorityFilter)
+    if (labelFilter) result = result.filter((t) => t.labels?.some((l) => l.id === labelFilter))
+    return result
+  }, [tasks, priorityFilter, labelFilter])
+
   const byStatus = useMemo(
+    () => Object.fromEntries(STATUSES.map((s) => [s, filteredTasks.filter((t) => t.status === s)])),
+    [filteredTasks],
+  )
+
+  // Unfiltered counts for the column toggle badges.
+  const rawByStatus = useMemo(
     () => Object.fromEntries(STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)])),
     [tasks],
   )
@@ -43,6 +62,11 @@ export default function Board({ tasks, updateTask, onTaskClick, onAddTask, hideE
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
     )
   }
+
+  // Reset label filter when the label list changes (e.g. project switch).
+  useEffect(() => {
+    if (labelFilter && !labels.some((l) => l.id === labelFilter)) setLabelFilter(null)
+  }, [labels, labelFilter])
 
   const tasksRef = useRef(tasks)
   useEffect(() => { tasksRef.current = tasks }, [tasks])
@@ -94,8 +118,10 @@ export default function Board({ tasks, updateTask, onTaskClick, onAddTask, hideE
   }
 
   if (showListView) {
-    return <ListView tasks={tasks} onTaskClick={onTaskClick} />
+    return <ListView tasks={filteredTasks} onTaskClick={onTaskClick} />
   }
+
+  const hasActiveFilter = priorityFilter || labelFilter
 
   return (
     <DndContext
@@ -107,23 +133,93 @@ export default function Board({ tasks, updateTask, onTaskClick, onAddTask, hideE
     >
       <div className="flex min-h-0 flex-1 flex-col">
         {!hideEmptyColumns && !banner && (
-          <div className="flex items-center gap-2 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
-            <span className="text-xs font-medium text-[var(--fg-muted)]">Columns:</span>
-            {STATUSES.map((s) => {
-              const active = visibleCols.includes(s)
-              const dot = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
-              return (
-                <button key={s} onClick={() => toggleCol(s)}
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition ${
-                    active ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
+            {/* Column toggles */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[var(--fg-muted)]">Columns:</span>
+              {STATUSES.map((s) => {
+                const active = visibleCols.includes(s)
+                return (
+                  <button key={s} onClick={() => toggleCol(s)}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition ${
+                      active ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
+                    }`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: COL_DOT[s] }} />
+                    {s === 'todo' ? 'To Do' : s === 'doing' ? 'Doing' : 'Done'}
+                    <span className="text-[var(--fg-subtle)]">({rawByStatus[s].length})</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Priority filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[var(--fg-muted)]">Priority:</span>
+              <button
+                onClick={() => setPriorityFilter('')}
+                className={`rounded-full px-2 py-0.5 text-xs font-medium transition ${
+                  !priorityFilter ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
+                }`}
+              >
+                All
+              </button>
+              {PRIORITIES.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPriorityFilter((prev) => prev === p ? '' : p)}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition"
+                  style={
+                    priorityFilter === p
+                      ? { background: `color-mix(in srgb, ${PRIORITY_COLOR[p]} 20%, transparent)`, color: PRIORITY_COLOR[p] }
+                      : { color: 'var(--fg-subtle)' }
+                  }
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: PRIORITY_COLOR[p] }} />
+                  {PRIORITY_LABEL[p]}
+                </button>
+              ))}
+            </div>
+
+            {/* Label filter — only shown when the current project has labels */}
+            {labels.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-[var(--fg-muted)]">Label:</span>
+                <button
+                  onClick={() => setLabelFilter(null)}
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium transition ${
+                    !labelFilter ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
                   }`}
                 >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot[s] }} />
-                  {s === 'todo' ? 'To Do' : s === 'doing' ? 'Doing' : 'Done'}
-                  <span className="text-[var(--fg-subtle)]">({byStatus[s].length})</span>
+                  All
                 </button>
-              )
-            })}
+                {labels.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => setLabelFilter((prev) => prev === l.id ? null : l.id)}
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition"
+                    style={
+                      labelFilter === l.id
+                        ? { background: l.color, color: '#fff' }
+                        : { color: 'var(--fg-subtle)' }
+                    }
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: l.color }} />
+                    {l.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Clear all filters shortcut */}
+            {hasActiveFilter && (
+              <button
+                onClick={() => { setPriorityFilter(''); setLabelFilter(null) }}
+                className="ml-auto text-xs text-[var(--fg-muted)] hover:text-[var(--fg)] transition"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
         {visibleStatuses.length === 0 ? (

@@ -184,6 +184,7 @@ export function useBoard(projectId = 'all') {
       }).select('id').single()
       if (error) throw error
       if (data) logActivity('task_created', 'tasks', data.id, { title, status, priority, project_id })
+      return data?.id
     },
     [logActivity],
   )

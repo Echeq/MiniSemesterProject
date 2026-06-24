@@ -89,7 +89,10 @@ export default function TaskModal({
           if (!existingDeps.includes(id)) await onAddDependency(task.id, id)
         }
       } else {
-        await onCreate(fields)
+        const newId = await onCreate(fields)
+        if (newId) {
+          for (const id of selectedLabels) await onAddLabels(newId, id)
+        }
       }
       onClose()
     } catch (err) {
@@ -164,7 +167,7 @@ export default function TaskModal({
           </label>
         </div>
 
-        {editing && availableLabels.length > 0 && (
+        {availableLabels.length > 0 && (
           <div className="mb-4">
             <span className={labelCls}>Labels</span>
             <div className="flex flex-wrap gap-1.5">
