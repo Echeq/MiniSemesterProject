@@ -14,10 +14,26 @@ insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
 
-create policy "Avatar images are publicly readable"
-  on storage.objects for select
-  using (bucket_id = 'avatars');
+-- Public read policy (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Avatar images are publicly readable'
+      AND cmd = 'SELECT'
+      AND roles = '{public}'
+  ) THEN
+    CREATE POLICY "Avatar images are publicly readable"
+      ON storage.objects FOR SELECT
+      USING (bucket_id = 'avatars');
+  END IF;
+END
+$$;
 
+-- Upload policy (keep existing if-not-exists, idempotent)
 create policy if not exists "Users can upload their own avatar"
   on storage.objects for insert
   to authenticated
@@ -26,18 +42,34 @@ create policy if not exists "Users can upload their own avatar"
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
-create policy "Users can replace their own avatar"
-  on storage.objects for update
-  to authenticated
-  using (
-    bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = (select auth.uid())::text
-  )
-  with check (
-    bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = (select auth.uid())::text
-  );
+-- Replace policy (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can replace their own avatar'
+      AND cmd = 'UPDATE'
+      AND roles = '{authenticated}'
+  ) THEN
+    CREATE POLICY "Users can replace their own avatar"
+      ON storage.objects FOR UPDATE
+      TO authenticated
+      USING (
+        bucket_id = 'avatars'
+        and (storage.foldername(name))[1] = (select auth.uid())::text
+      )
+      WITH CHECK (
+        bucket_id = 'avatars'
+        and (storage.foldername(name))[1] = (select auth.uid())::text
+      );
+  END IF;
+END
+$$;
 
+-- Delete policy (keep existing if-not-exists, idempotent)
 create policy if not exists "Users can delete their own avatar"
   on storage.objects for delete
   to authenticated

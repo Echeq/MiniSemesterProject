@@ -57,7 +57,7 @@ Supabase CLI (from root or `supabase/`):
 - **`created_by` immutable** via column-level grants (migration `20260612120000`). Updatable: `title, description, status, due_date, position, assignee, project_id`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
 - **RLS**: All queries run as the signed-in user. Admins see all; members see assigned only; unknown see none.
-- **RPCs**: `admin_set_role(target_user uuid, new_role app_role)`, `set_project_status(target_project uuid, new_status project_status)`, `delete_own_account()`, `is_admin()`.
+- **RPCs**: `admin_set_role(target_user uuid, new_role app_role)`, `set_project_status(target_project uuid, new_status project_status)`, `delete_own_account()`, `delete_account()` (legacy wrapper calling `delete_own_account()`), `is_admin()`.
 - **Realtime**: `supabase.channel('board')` subscribes to `tasks` table changes. Re-fetches row with assignee join on INSERT/UPDATE before merging.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 — incompatible majors, import carefully.
 

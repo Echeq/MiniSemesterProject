@@ -11,35 +11,91 @@ values (
 )
 on conflict (id) do nothing;
 
--- Allow authenticated users to upload their own avatar
-create policy "Users can upload their own avatar"
-  on storage.objects for insert
-  to authenticated
-  with check (
-    bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+-- Allow authenticated users to upload their own avatar (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can upload their own avatar'
+      AND cmd = 'INSERT'
+      AND roles = '{authenticated}'
+  ) THEN
+    CREATE POLICY "Users can upload their own avatar"
+      ON storage.objects FOR INSERT
+      TO authenticated
+      WITH CHECK (
+        bucket_id = 'avatars'
+        AND (storage.foldername(name))[1] = auth.uid()::text
+      );
+  END IF;
+END
+$$;
 
--- Allow authenticated users to update their own avatar
-create policy "Users can update their own avatar"
-  on storage.objects for update
-  to authenticated
-  using (
-    bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+-- Allow authenticated users to update their own avatar (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can update their own avatar'
+      AND cmd = 'UPDATE'
+      AND roles = '{authenticated}'
+  ) THEN
+    CREATE POLICY "Users can update their own avatar"
+      ON storage.objects FOR UPDATE
+      TO authenticated
+      USING (
+        bucket_id = 'avatars'
+        AND (storage.foldername(name))[1] = auth.uid()::text
+      );
+  END IF;
+END
+$$;
 
--- Allow public read access (bucket is public)
-create policy "Anyone can view avatars"
-  on storage.objects for select
-  to public
-  using (bucket_id = 'avatars');
+-- Allow public read access (bucket is public) (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Anyone can view avatars'
+      AND cmd = 'SELECT'
+      AND roles = '{public}'
+  ) THEN
+    CREATE POLICY "Anyone can view avatars"
+      ON storage.objects FOR SELECT
+      TO public
+      USING (bucket_id = 'avatars');
+  END IF;
+END
+$$;
 
--- Allow users to delete their own avatar
-create policy "Users can delete their own avatar"
-  on storage.objects for delete
-  to authenticated
-  using (
-    bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+-- Allow users to delete their own avatar (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can delete their own avatar'
+      AND cmd = 'DELETE'
+      AND roles = '{authenticated}'
+  ) THEN
+    CREATE POLICY "Users can delete their own avatar"
+      ON storage.objects FOR DELETE
+      TO authenticated
+      USING (
+        bucket_id = 'avatars'
+        AND (storage.foldername(name))[1] = auth.uid()::text
+      );
+  END IF;
+END
+$$;
