@@ -8,6 +8,7 @@ import { useMembers } from './hooks/useMembers'
 import { useTheme } from './hooks/useTheme'
 import { useTaskStats } from './hooks/useTaskStats'
 import { usePresence } from './hooks/usePresence'
+import { useLabels } from './hooks/useLabels'
 import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -17,6 +18,7 @@ import ProfileModal from './components/ProfileModal'
 import AdminModal from './components/AdminModal'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
+import LabelManager from './components/LabelManager'
 
 function MissingEnv() {
   return (
@@ -79,24 +81,31 @@ function ViewBanner({ scope, count }) {
 function BoardPage({ session, theme, toggleTheme }) {
   const userId = session.user.id
   const { profile, refetch: refetchProfile, isAdmin } = useProfile(session)
-  const { projects, createProject, setStatus, deleteProject } = useProjects()
+  const { projects, loading: projectsLoading, createProject, updateProject, setStatus, deleteProject } = useProjects()
   const { members } = useMembers()
   const stats = useTaskStats()
   const onlineIds = usePresence(session, profile)
 
-  // scope: 'all' | null (shared) | 'view:*' (smart view) | project object
   const [scope, setScope] = useState('all')
   const isProject = scope !== null && typeof scope === 'object'
   const isView = typeof scope === 'string' && scope.startsWith('view:')
-  // Smart views span every project, so we fetch the full board ('all').
   const projectId = isProject ? scope.id : scope === null ? null : 'all'
 
-  const { tasks, loading, error, createTask, updateTask, deleteTask } = useBoard(projectId)
-  const [modal, setModal] = useState(null) // null | 'new' | task object
-  const [panel, setPanel] = useState(null) // null | 'account' | 'admin'
+  const { tasks, loading, error, createTask, updateTask, deleteTask, addLabel, removeLabel, addDependency, removeDependency } = useBoard(projectId)
+  const [modal, setModal] = useState(null)
+  const [panel, setPanel] = useState(null)
   const [showInsights, setShowInsights] = useState(true)
+  const [showListView, setShowListView] = useState(false)
+  const [showLabelManager, setShowLabelManager] = useState(false)
 
-  // Apply smart-view filtering client-side over the full board.
+  const { labels } = useLabels(isProject ? scope.id : null)
+
+  const logActivity = useMemo(() => ({
+    log: async (action, targetType, targetId, metadata) => {
+      try { await supabase.rpc('log_activity', { p_action: action, p_target_type: targetType, p_target_id: targetId, p_metadata: metadata || {} }) } catch {}
+    }
+  }), [])
+
   const viewTasks = useMemo(() => {
     if (!isView) return tasks
     const today = new Date().toISOString().slice(0, 10)
@@ -109,14 +118,26 @@ function BoardPage({ session, theme, toggleTheme }) {
   }, [tasks, isView, scope, userId])
 
   const projectActions = useMemo(
-    () => ({ create: createProject, setStatus, delete: deleteProject }),
-    [createProject, setStatus, deleteProject],
+    () => ({
+      create: async (fields) => {
+        await createProject(fields)
+        logActivity.log('project_created', 'projects', null, fields)
+      },
+      update: updateProject,
+      setStatus: async (id, status) => {
+        await setStatus(id, status)
+        logActivity.log(status === 'archived' ? 'project_archived' : 'project_restored', 'projects', id, {})
+      },
+      delete: async (id) => {
+        await deleteProject(id)
+        logActivity.log('project_deleted', 'projects', id, {})
+      },
+    }),
+    [createProject, updateProject, setStatus, deleteProject, logActivity],
   )
 
-  // If the open project disappears (deleted), fall back to "all".
   const validScope = isProject && !projects.some((p) => p.id === scope.id) ? 'all' : scope
   if (validScope !== scope) setScope(validScope)
-  // Keep the open project object fresh (e.g. archived flag) after refetches.
   const liveScope = isProject ? projects.find((p) => p.id === scope.id) ?? scope : scope
 
   const defaultProjectId = isProject ? scope.id : null
@@ -130,29 +151,36 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <Sidebar
-        projects={projects}
-        scope={liveScope}
-        onSelectScope={setScope}
-        projectActions={projectActions}
-        isAdmin={isAdmin}
-        onOpenAdmin={() => setPanel('admin')}
-        members={members}
-        onlineIds={onlineIds}
-        stats={stats}
-        currentUserId={userId}
-      />
+      <ErrorBoundary>
+        <Sidebar
+          projects={projects}
+          scope={liveScope}
+          onSelectScope={setScope}
+          projectActions={projectActions}
+          isAdmin={isAdmin}
+          onOpenAdmin={() => setPanel('admin')}
+          members={members}
+          onlineIds={onlineIds}
+          stats={stats}
+          currentUserId={userId}
+          loadingProjects={projectsLoading}
+        />
+      </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           title={scopeLabel}
           archived={isProject && liveScope.status === 'archived'}
           taskCount={viewTasks.length}
+          tasks={viewTasks}
           theme={theme}
           onToggleTheme={toggleTheme}
           showInsights={showInsights}
           onToggleInsights={() => setShowInsights((s) => !s)}
+          showListView={showListView}
+          onToggleView={() => setShowListView((s) => !s)}
           onNewTask={() => setModal('new')}
+          onOpenLabelManager={isProject ? () => setShowLabelManager(true) : null}
           session={session}
           profile={profile}
           isAdmin={isAdmin}
@@ -162,19 +190,17 @@ function BoardPage({ session, theme, toggleTheme }) {
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
-        {loading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <p className="text-sm text-[var(--fg-muted)]">Loading board…</p>
-          </div>
-        ) : (
+        <ErrorBoundary>
           <Board
             tasks={viewTasks}
             updateTask={updateTask}
             onTaskClick={(task) => setModal(task)}
             hideEmptyColumns={isView}
             banner={<ViewBanner scope={scope} count={viewTasks.length} />}
+            showListView={showListView}
+            loading={loading}
           />
-        )}
+        </ErrorBoundary>
       </div>
 
       {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} />}
@@ -185,10 +211,23 @@ function BoardPage({ session, theme, toggleTheme }) {
           members={members}
           projects={projects}
           defaultProjectId={defaultProjectId}
+          labels={labels}
+          allTasks={tasks}
           onCreate={createTask}
           onUpdate={updateTask}
           onDelete={deleteTask}
+          onAddLabels={addLabel}
+          onRemoveLabel={removeLabel}
+          onAddDependency={addDependency}
+          onRemoveDependency={removeDependency}
           onClose={() => setModal(null)}
+        />
+      )}
+
+      {showLabelManager && isProject && (
+        <LabelManager
+          projectId={scope.id}
+          onClose={() => setShowLabelManager(false)}
         />
       )}
 

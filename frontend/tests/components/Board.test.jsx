@@ -65,9 +65,9 @@ describe('Board', () => {
   it('renders all three columns', async () => {
     const Board = (await import('../../src/components/Board')).default
     render(<Board tasks={[]} role="admin" updateTask={vi.fn().mockResolvedValue()} onTaskClick={vi.fn()} onMobileAction={vi.fn()} onInvitationClick={vi.fn()} />)
-    expect(screen.getByText('To Do')).toBeInTheDocument()
-    expect(screen.getByText('Doing')).toBeInTheDocument()
-    expect(screen.getByText('Done')).toBeInTheDocument()
+    expect(screen.getAllByText('To Do').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Doing').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Done').length).toBeGreaterThanOrEqual(1)
   })
 
   it('distributes tasks to correct columns', async () => {

@@ -22,7 +22,10 @@ describe('useBoard', () => {
     const { useBoard } = await import('../../src/hooks/useBoard')
     const { result } = renderHook(() => useBoard())
     await waitFor(() => expect(result.current.loading).toBe(false))
-    expect(result.current.tasks).toEqual(fakeTasks)
+    await waitFor(() => {
+      expect(result.current.tasks[0]).toMatchObject({ id: 't1', title: 'Task A', status: 'todo' })
+      expect(result.current.tasks[1]).toMatchObject({ id: 't2', title: 'Task B', status: 'doing' })
+    })
     expect(mockSupabase.from).toHaveBeenCalledWith('tasks')
   })
 
@@ -62,7 +65,7 @@ describe('useBoard', () => {
     const { useBoard } = await import('../../src/hooks/useBoard')
     const { result } = renderHook(() => useBoard())
     await waitFor(() => expect(result.current.loading).toBe(false))
-    const insertBuilder = createMockBuilder({ data: null, error: null })
+    const insertBuilder = createMockBuilder({ data: { id: 'new-id' }, error: null })
     mockSupabase.from.mockReturnValue(insertBuilder)
     await act(async () => {
       await result.current.createTask({ title: 'New', description: '', status: 'todo' })

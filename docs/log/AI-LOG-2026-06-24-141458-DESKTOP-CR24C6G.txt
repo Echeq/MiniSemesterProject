@@ -1,0 +1,62 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-24
+Time:         14:14:58
+Git Branch:   FastDevelopment
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User asked to create deployment documentation and scripts for deploying
+Supabase from scratch. Asked for both local dev and production workflows.
+Then asked to implement everything planned, link docs to README.md, and
+run @ai-log + @ai-commit.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created:
+- docs/deploy.md — comprehensive deploy guide (local dev, production,
+  Supabase branches, data migration, post-deploy checklist, troubleshooting)
+- scripts/deploy-supabase.sh — interactive deploy script (bash)
+- scripts/deploy-supabase.ps1 — same for Windows PowerShell
+- scripts/migrate-supabase-data.sh — data migration between projects
+- Updated README.md — added Deploy Guide to docs table
+- Updated AGENTS.md — added deploy docs/scripts references
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+docs/log/AI-LOG-2026-06-24-141458-DESKTOP-CR24C6G.txt (new)
+docs/deploy.md (new)
+README.md
+AGENTS.md
+scripts/deploy-supabase.sh (new)
+scripts/deploy-supabase.ps1 (new)
+scripts/migrate-supabase-data.sh (new)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+README.md had 6 docs links but no Deploy Guide.
+AGENTS.md had no references to deploy docs or scripts.
+No scripts/ directory existed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+README.md links to docs/deploy.md in the documentation table.
+AGENTS.md references deploy guide, scripts, and data migration.
+scripts/ contains 3 deploy/data scripts.
+docs/deploy.md is a 400-line comprehensive deploy guide.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

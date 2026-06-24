@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../api/supabaseClient'
 
-// `*` keeps the raw `assignee` uuid column (used for the "My tasks" filter);
-// the joined profile is aliased separately so it doesn't shadow that column.
 const TASK_SELECT =
   '*, assignee_profile:profiles!tasks_assignee_fkey(display_name, avatar_url)'
 
@@ -15,7 +13,6 @@ export function positionBetween(above, below) {
   return 1024
 }
 
-// Ordered insert into a sorted array (avoids filter+sort on every merge).
 function insertTask(tasks, task) {
   for (let i = 0; i < tasks.length; i++) {
     if (task.position < tasks[i].position) {
@@ -25,13 +22,10 @@ function insertTask(tasks, task) {
   return [...tasks, task]
 }
 
-// projectId: a project's id to scope the board to it, or null for the shared
-// board (tasks with no project_id), or 'all' to show every task.
 export function useBoard(projectId = 'all') {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  // Cache max position per status column so createTask avoids a full filter+map.
   const maxPositions = useRef({ todo: 0, doing: 0, done: 0 })
 
   const matchesScope = useCallback(
@@ -42,6 +36,35 @@ export function useBoard(projectId = 'all') {
     },
     [projectId],
   )
+
+  // Fetch task IDs in scope then batch-fetch labels + dependency counts
+  function enrichTasksData(tasksArray) {
+    if (!tasksArray || tasksArray.length === 0) return tasksArray
+    const ids = tasksArray.map((t) => t.id)
+
+    Promise.all([
+      supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
+      supabase.from('task_dependencies').select('task_id, depends_on_id').in('task_id', ids),
+    ]).then(([labelsRes, depsRes]) => {
+      const labelMap = {}
+      ;(labelsRes.data || []).forEach((tl) => {
+        if (!labelMap[tl.task_id]) labelMap[tl.task_id] = []
+        labelMap[tl.task_id].push(tl.label)
+      })
+      const depCountMap = {}
+      ;(depsRes.data || []).forEach((td) => {
+        depCountMap[td.task_id] = (depCountMap[td.task_id] || 0) + 1
+      })
+      setTasks((prev) =>
+        prev.map((t) => ({
+          ...t,
+          labels: labelMap[t.id] || [],
+          blocked_by: depCountMap[t.id] || 0,
+        })),
+      )
+    }).catch(() => {})
+    return tasksArray
+  }
 
   const refetch = useCallback(() => {
     setLoading(true)
@@ -54,7 +77,7 @@ export function useBoard(projectId = 'all') {
         if (error) setError(error.message)
         else {
           setTasks(data)
-          // Seed the max-position cache from the fetched data.
+          enrichTasksData(data)
           for (const s of STATUSES) {
             const col = data.filter((t) => t.status === s)
             maxPositions.current[s] = col.length ? col[col.length - 1].position : 0
@@ -76,8 +99,6 @@ export function useBoard(projectId = 'all') {
             setTasks((prev) => prev.filter((t) => t.id !== payload.old.id))
             return
           }
-          // INSERT/UPDATE payloads lack the joined assignee profile, so
-          // refetch the single row with the join before merging it in.
           supabase
             .from('tasks')
             .select(TASK_SELECT)
@@ -87,13 +108,9 @@ export function useBoard(projectId = 'all') {
               if (!data) return
               setTasks((prev) => {
                 const rest = prev.filter((t) => t.id !== data.id)
-                // Respect the active project scope so cards don't leak across
-                // boards when their project_id changes via realtime.
                 if (!matchesScope(data)) return rest
-                // Ordered insert instead of filter+sort.
                 return insertTask(rest, data)
               })
-              // Update max-position cache for newly inserted tasks.
               if (payload.eventType === 'INSERT') {
                 const s = data.status
                 if (data.position > maxPositions.current[s]) {
@@ -107,43 +124,94 @@ export function useBoard(projectId = 'all') {
     return () => supabase.removeChannel(channel)
   }, [refetch, matchesScope])
 
+  const logActivity = useCallback(async (action, targetType, targetId, metadata) => {
+    try {
+      await supabase.rpc('log_activity', { p_action: action, p_target_type: targetType, p_target_id: targetId, p_metadata: metadata || {} })
+    } catch {}
+  }, [])
+
   const createTask = useCallback(
-    async ({ title, description, due_date, status = 'todo', assignee = null, project_id = null }) => {
+    async ({ title, description, due_date, status = 'todo', priority = null, assignee = null, project_id = null }) => {
       const { data: { user } } = await supabase.auth.getUser()
-      // Use cached max position per column instead of filtering the full array.
       const position = maxPositions.current[status] + 1024
-      const { error } = await supabase.from('tasks').insert({
+      const { data, error } = await supabase.from('tasks').insert({
         title,
         description,
         due_date: due_date || null,
         status,
+        priority,
         position,
         created_by: user.id,
         assignee: assignee || null,
         project_id: project_id || null,
-      })
+      }).select('id').single()
       if (error) throw error
+      if (data) logActivity('task_created', 'tasks', data.id, { title, status, priority, project_id })
     },
-    [],
+    [logActivity],
   )
 
   const updateTask = useCallback(async (id, fields) => {
     setTasks((prev) => {
-      // Only sort when position or status changed — editing title/description
-      // doesn't affect ordering, so skip the O(n log n) sort.
       const needsSort = 'position' in fields || 'status' in fields
       const next = prev.map((t) => (t.id === id ? { ...t, ...fields } : t))
       return needsSort ? next.sort((a, b) => a.position - b.position) : next
     })
     const { error } = await supabase.from('tasks').update(fields).eq('id', id)
     if (error) throw error
-  }, [])
+    logActivity('task_updated', 'tasks', id, fields)
+  }, [logActivity])
 
   const deleteTask = useCallback(async (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id))
     const { error } = await supabase.from('tasks').delete().eq('id', id)
     if (error) throw error
+    logActivity('task_deleted', 'tasks', id, {})
+  }, [logActivity])
+
+  const addLabel = useCallback(async (taskId, labelId) => {
+    const { error } = await supabase.from('task_labels').insert({ task_id: taskId, label_id: labelId })
+    if (error) throw error
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t
+        const newLabel = { id: labelId }
+        return { ...t, labels: [...(t.labels || []), newLabel] }
+      }),
+    )
   }, [])
 
-  return { tasks, loading, error, createTask, updateTask, deleteTask }
+  const removeLabel = useCallback(async (taskId, labelId) => {
+    const { error } = await supabase.from('task_labels').delete().match({ task_id: taskId, label_id: labelId })
+    if (error) throw error
+    setTasks((prev) =>
+      prev.map((t) => (t.id !== taskId ? t : { ...t, labels: (t.labels || []).filter((l) => l.id !== labelId) })),
+    )
+  }, [])
+
+  const addDependency = useCallback(async (taskId, dependsOnId) => {
+    const { error } = await supabase.rpc('add_task_dependency', {
+      p_task_id: taskId,
+      p_depends_on_id: dependsOnId,
+    })
+    if (error) throw error
+    setTasks((prev) =>
+      prev.map((t) => (t.id !== taskId ? t : { ...t, blocked_by: (t.blocked_by || 0) + 1 })),
+    )
+  }, [])
+
+  const removeDependency = useCallback(async (taskId, dependsOnId) => {
+    const { error } = await supabase
+      .from('task_dependencies')
+      .delete()
+      .match({ task_id: taskId, depends_on_id: dependsOnId })
+    if (error) throw error
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id !== taskId ? t : { ...t, blocked_by: Math.max(0, (t.blocked_by || 0) - 1) },
+      ),
+    )
+  }, [])
+
+  return { tasks, loading, error, createTask, updateTask, deleteTask, addLabel, removeLabel, addDependency, removeDependency }
 }
