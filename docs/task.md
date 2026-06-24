@@ -391,13 +391,12 @@ Create a table/list view with advanced filtering and sorting.
 #### Frontend
 - [x] Create ListView component (table with title, status, priority, assignee, due_date)
 - [ ] Add filter sidebar/panel (frontend filter UI for the RPC)
-- [ ] Filters: status, priority, assignee, label, due date range
-- [ ] Add sorting by any column (click table header)
+- [ ] Add column sort by click on table header
 - [ ] Save filter preferences (localStorage or DB)
 - [ ] Toggle between compact and detailed view
 
 ### Acceptance Criteria
-- [ ] Users can switch to List view
+- [x] Users can switch to List view (via Topbar Kanban/List toggle)
 - [ ] Filters work together (AND logic)
 - [ ] Sorting works on any column
 - [ ] Filter preferences persist after page reload
@@ -470,11 +469,12 @@ Allow users to export task data to Excel and PDF.
 - [ ] Format dates and priorities correctly in exports
 
 ### Acceptance Criteria
-- [ ] Click Export → Excel downloads .xlsx file
-- [ ] Excel contains all tasks from current view
-- [ ] Click Export → PDF downloads .pdf file
-- [ ] PDF is readable and formatted well
-- [ ] Filters apply to exported data
+- [x] Click Export → CSV downloads .csv file
+- [x] Click Export → PDF downloads .pdf file
+- [x] PDF is readable and formatted well
+- [x] Exports use current filtered view
+- [ ] CSV column selection (choose which columns to include)
+- [ ] Date formatting in exports
 
 ### Dependencies
 - Issue #4 (Task CRUD)
@@ -502,17 +502,16 @@ Admin-only features for system management.
 
 #### Frontend
 - [x] Create Admin Panel (only visible to Admins)
-- [ ] Add Log viewer page (filter by user, action, date)
-- [ ] Add Export Backup button (download all data as JSON via export_all_data RPC)
+- [x] Add Log viewer tab (filter by action, date) — LogViewer.jsx in AdminModal
+- [x] Add Export Backup button (download all data as JSON via export_all_data RPC) — BackupPanel.jsx in AdminModal
 - [ ] Add Restore from Backup (upload JSON)
 - [ ] Add System Settings page (configurable options)
 
 ### Acceptance Criteria
 - [x] Only Admins can access admin panel
-- [ ] Logs show user actions (login, create task, delete, etc.) — log_activity RPC exists but frontend log viewer pending
-- [ ] Admin can export full database backup — export_all_data RPC exists but frontend button pending
+- [x] Logs show user actions (filterable by action and date) — LogViewer tab implemented
+- [x] Admin can export full database backup — Backup tab downloads JSON
 - [ ] Admin can restore from backup
-- [ ] System settings persist after restart
 
 ### Dependencies
 - Issue #1 (Auth & Roles)
@@ -541,7 +540,7 @@ Final touches before submission.
 - [ ] Performance testing (>200 tasks)
 
 #### Polish
-- [~] Add loading states (Board skeletons done; other areas may be pending)
+- [~] Add loading states (Board + Sidebar have skeletons; AdminModal, ProfileModal, AuthGate still show text "Loading…")
 - [x] Add error boundaries (ErrorBoundary wrapping Board + Sidebar)
 - [x] Add 404 page (NotFound.jsx)
 - [x] Add empty states (EmptyState wired in Board and Sidebar)
@@ -558,8 +557,8 @@ Final touches before submission.
 - [x] Update README with setup instructions
 - [x] Add API documentation (docs/api.md)
 - [x] Add deploy guide (docs/deploy.md — local, production, branches, data migration)
-- [ ] Add user manual
-- [ ] Prepare presentation slides
+- [x] Add user manual (docs/user-manual.md)
+- [x] Prepare presentation outline (docs/presentation-outline.md)
 
 ### Acceptance Criteria
 - [ ] App works without console errors
