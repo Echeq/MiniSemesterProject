@@ -17,7 +17,7 @@ function daysFromToday(dateStr) {
   return Math.round((d - today) / 86400000)
 }
 
-function InsightsPanel({ tasks, scopeLabel }) {
+function InsightsPanel({ tasks, scopeLabel, onClose }) {
   const stats = useMemo(() => {
     const counts = { todo: 0, doing: 0, done: 0 }
     let overdue = 0
@@ -62,9 +62,14 @@ function InsightsPanel({ tasks, scopeLabel }) {
 
   return (
     <aside className="glass hidden w-80 flex-shrink-0 flex-col overflow-y-auto border-l border-[var(--glass-border)] xl:flex">
-      <div className="border-b border-[var(--glass-border)] px-5 py-4">
-        <h2 className="text-sm font-semibold">Insights</h2>
-        <p className="mt-0.5 truncate text-xs text-[var(--fg-muted)]">{scopeLabel}</p>
+      <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-5 py-4">
+        <div>
+          <h2 className="text-sm font-semibold">Insights</h2>
+          <p className="mt-0.5 truncate text-xs text-[var(--fg-muted)]">{scopeLabel}</p>
+        </div>
+        <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[var(--fg-muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]" aria-label="Close insights" title="Close insights">
+          <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" /></svg>
+        </button>
       </div>
 
       {stats.total === 0 ? (

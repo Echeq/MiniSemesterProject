@@ -33,7 +33,7 @@ function DueBadge({ due_date, status }) {
 
 const BLOCKED_ICON = 'M4 4a4 4 0 0 1 8 0v2h.25A1.75 1.75 0 0 1 14 7.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4zm1.5 2h5V4a2.5 2.5 0 0 0-5 0z'
 
-function TaskCard({ task, onClick, overlay = false }) {
+function TaskCard({ task, onClick, overlay = false, editors }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     disabled: overlay,
@@ -41,6 +41,7 @@ function TaskCard({ task, onClick, overlay = false }) {
   const style = overlay ? undefined : { transform: CSS.Transform.toString(transform), transition }
   const hasLabels = task.labels && task.labels.length > 0
   const blockedCount = task.blocked_by || 0
+  const editingNames = editors?.get(task.id)
 
   return (
     <div
@@ -86,13 +87,19 @@ function TaskCard({ task, onClick, overlay = false }) {
           ))}
         </div>
       )}
-      {(task.due_date || task.assignee || blockedCount > 0) && (
+      {(task.due_date || task.assignee || blockedCount > 0 || editingNames) && (
         <div className="mt-2.5 flex items-center gap-2 border-t border-[var(--border-muted)] pt-2.5">
           <DueBadge due_date={task.due_date} status={task.status} />
           {blockedCount > 0 && (
             <span className="inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--danger)' }}>
               <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor"><path d={BLOCKED_ICON} /></svg>
               Blocked by {blockedCount}
+            </span>
+          )}
+          {editingNames && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent)]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)]" />
+              Editing…
             </span>
           )}
           {task.assignee_profile?.display_name && (

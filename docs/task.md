@@ -431,7 +431,7 @@ Implement real-time updates using Supabase Realtime.
 - [x] Handle task.updated event (update in place)
 - [x] Handle task.deleted event (remove from list)
 - [x] Add online members indicator (`usePresence` hook)
-- [ ] Add "Someone is editing" indicator (optional)
+- [x] Add "Someone is editing" indicator (blinking dot + "Editing…" on TaskCard via Realtime presence)
 - [x] Handle offline/reconnect gracefully (Supabase Realtime built-in)
 
 ### Acceptance Criteria

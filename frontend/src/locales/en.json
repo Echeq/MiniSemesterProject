@@ -7,7 +7,7 @@
     "email": "Email",
     "password": "Password",
     "signInToBoard": "Sign in to your board",
-    "createAccount": "Create an account",
+    "createAccount": "Create your account",
     "noAccount": "Don't have an account? Sign up",
     "hasAccount": "Already have an account? Sign in",
     "checkEmail": "Check your email to confirm your account, then sign in."
@@ -105,6 +105,7 @@
     "en": "English",
     "es": "Español",
     "zh": "中文",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "switcher": "Language"
   }
 }

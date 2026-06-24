@@ -8,7 +8,21 @@ const mockSupabase = createMockSupabase()
 vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key) => ({
+      'auth.signIn': 'Sign in',
+      'auth.signUp': 'Sign up',
+      'auth.signOut': 'Sign out',
+      'auth.displayName': 'Display name',
+      'auth.email': 'Email',
+      'auth.password': 'Password',
+      'auth.signInToBoard': 'Sign in to your board',
+      'auth.createAccount': 'Create your account',
+      'auth.noAccount': "Don't have an account? Sign up",
+      'auth.hasAccount': 'Already have an account? Sign in',
+      'auth.checkEmail': 'Check your email to confirm your account, then sign in.',
+    }[key] || key),
+  }),
 }))
 
 describe('AuthForm', () => {
@@ -96,7 +110,7 @@ describe('AuthForm', () => {
     await userEvent.type(screen.getByLabelText('Password'), 'pass123')
     await userEvent.click(screen.getByText('Sign up'))
     await waitFor(() => {
-      expect(screen.getByText('Account created. If email confirmation is on, check your inbox — otherwise just sign in.')).toBeInTheDocument()
+      expect(screen.getByText('Check your email to confirm your account, then sign in.')).toBeInTheDocument()
     })
   })
 

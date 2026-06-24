@@ -15,7 +15,7 @@ import EmptyState from './EmptyState'
 import ListView from './ListView'
 import { CardSkeleton } from './Skeleton'
 
-export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null, showListView = false, loading = false }) {
+export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null, showListView = false, loading = false, editors }) {
   const [activeTask, setActiveTask] = useState(null)
   const [visibleCols, setVisibleCols] = useState(STATUSES)
 
@@ -146,6 +146,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
                   status={status}
                   tasks={byStatus[status]}
                   onTaskClick={onTaskClick}
+                  editors={editors}
                 />
               ))}
             </div>

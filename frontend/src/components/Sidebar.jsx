@@ -43,6 +43,7 @@ const Sidebar = memo(function Sidebar({
   stats = [],
   currentUserId,
   loadingProjects = false,
+  editors,
 }) {
   const [showCreate, setShowCreate] = useState(false)
   const [settingsProject, setSettingsProject] = useState(null)
@@ -79,11 +80,17 @@ const Sidebar = memo(function Sidebar({
     return map
   }, [stats])
 
+  const editingNames = useMemo(() => {
+    const names = new Set()
+    if (editors) for (const [, editorList] of editors) editorList.forEach((n) => names.add(n))
+    return names
+  }, [editors])
+
   const onlineMembers = useMemo(
     () => members
-      .map((m) => ({ ...m, online: onlineIds?.has(m.id) }))
+      .map((m) => ({ ...m, online: onlineIds?.has(m.id), editing: editingNames.has(m.display_name) }))
       .sort((a, b) => Number(b.online) - Number(a.online)),
-    [members, onlineIds],
+    [members, onlineIds, editingNames],
   )
   const onlineCount = useMemo(
     () => onlineMembers.filter((m) => m.online).length,
@@ -196,8 +203,8 @@ const Sidebar = memo(function Sidebar({
               <div className="flex items-center justify-between px-2 pb-1 pt-3">
                 <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Team</span>
                 {onlineCount > 0 && (
-                  <span className="flex items-center gap-1 text-[10px] font-medium text-[var(--done)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--done)]" /> {onlineCount} online
+                  <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--online)' }}>
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--online)]" /> {onlineCount} online
                   </span>
                 )}
               </div>
@@ -205,10 +212,15 @@ const Sidebar = memo(function Sidebar({
                 <div key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
                   <span className="relative flex-shrink-0">
                     <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
+                    {m.editing && (
+                      <span className="absolute -right-1 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[var(--bg)]" style={{ background: 'var(--doing)' }} title="Editing a task">
+                        <svg className="h-2 w-2 text-white" viewBox="0 0 16 16" fill="currentColor"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25a1.75 1.75 0 0 1 .445-.758Z" /></svg>
+                      </span>
+                    )}
                     <span
                       className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
-                      style={{ background: m.online ? 'var(--done)' : 'var(--fg-subtle)' }}
-                      title={m.online ? 'Online' : 'Offline'}
+                      style={{ background: m.online ? 'var(--online)' : 'var(--fg-subtle)' }}
+                      title={m.editing ? 'Editing a task' : m.online ? 'Online' : 'Offline'}
                     />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm">

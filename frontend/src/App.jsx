@@ -8,6 +8,7 @@ import { useMembers } from './hooks/useMembers'
 import { useTheme } from './hooks/useTheme'
 import { useTaskStats } from './hooks/useTaskStats'
 import { usePresence } from './hooks/usePresence'
+import { useTaskEditing } from './hooks/useTaskEditing'
 import { useLabels } from './hooks/useLabels'
 import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
@@ -86,6 +87,8 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { members } = useMembers()
   const stats = useTaskStats()
   const onlineIds = usePresence(session, profile)
+  const profileName = profile?.display_name || session.user.email
+  const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
   const [scope, setScope] = useState('all')
   const isProject = scope !== null && typeof scope === 'object'
@@ -101,7 +104,7 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
-  const handleTaskClick = useCallback((task) => setModal(task), [])
+  const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
   const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
   const handleToggleView = useCallback(() => setShowListView((s) => !s), [])
   const handleNewTask = useCallback(() => setModal('new'), [])
@@ -109,7 +112,7 @@ function BoardPage({ session, theme, toggleTheme }) {
   const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
   const handleOpenAccount = useCallback(() => setPanel('account'), [])
   const handleOpenAdmin = useCallback(() => setPanel('admin'), [])
-  const handleCloseModal = useCallback(() => setModal(null), [])
+  const handleCloseModal = useCallback(() => { setModal(null); stopEditing() }, [stopEditing])
   const handleClosePanel = useCallback(() => setPanel(null), [])
 
   const logActivity = useMemo(() => ({
@@ -178,6 +181,7 @@ function BoardPage({ session, theme, toggleTheme }) {
           onOpenAdmin={() => setPanel('admin')}
           members={members}
           onlineIds={onlineIds}
+          editors={editors}
           stats={stats}
           currentUserId={userId}
           loadingProjects={projectsLoading}
@@ -216,11 +220,12 @@ function BoardPage({ session, theme, toggleTheme }) {
             banner={memoBanner}
             showListView={showListView}
             loading={loading}
+            editors={editors}
           />
         </ErrorBoundary>
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} />}
+      {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
 
       <Suspense fallback={null}>
         {modal && (
