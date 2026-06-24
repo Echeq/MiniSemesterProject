@@ -202,6 +202,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             tasks={viewTasks}
             updateTask={updateTask}
             onTaskClick={handleTaskClick}
+            onAddTask={(status) => setModal({ defaultStatus: status })}
             hideEmptyColumns={isView}
             banner={memoBanner}
             showListView={showListView}
@@ -214,7 +215,8 @@ function BoardPage({ session, theme, toggleTheme }) {
 
       {modal && (
         <TaskModal
-          task={modal === 'new' ? null : modal}
+          task={modal === 'new' || modal?.defaultStatus ? null : modal}
+          defaultStatus={modal?.defaultStatus}
           members={members}
           projects={projects}
           defaultProjectId={defaultProjectId}

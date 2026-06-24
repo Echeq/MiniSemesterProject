@@ -6,7 +6,7 @@ import TaskCard from './TaskCard'
 const LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
 
-function Column({ status, tasks, onTaskClick }) {
+function Column({ status, tasks, onTaskClick, onAddTask }) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
   const sortableIds = useMemo(() => tasks.map((t) => t.id), [tasks])
@@ -25,6 +25,17 @@ function Column({ status, tasks, onTaskClick }) {
             {tasks.length}
           </span>
         </div>
+        {onAddTask && (
+          <button
+            onClick={() => onAddTask(status)}
+            title={`Add task to ${LABELS[status]}`}
+            className="rounded p-1 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" />
+            </svg>
+          </button>
+        )}
       </div>
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto p-2.5">

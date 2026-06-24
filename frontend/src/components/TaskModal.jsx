@@ -16,6 +16,7 @@ export default function TaskModal({
   members = [],
   projects = [],
   defaultProjectId = null,
+  defaultStatus = 'todo',
   labels = [],
   allTasks = [],
   onCreate,
@@ -31,7 +32,7 @@ export default function TaskModal({
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
-  const [status, setStatus] = useState(task?.status ?? 'todo')
+  const [status, setStatus] = useState(task?.status ?? defaultStatus)
   const [priority, setPriority] = useState(task?.priority ?? '')
   const [assignee, setAssignee] = useState(task?.assignee ?? '')
   const [projectId, setProjectId] = useState(task?.project_id ?? defaultProjectId ?? '')
