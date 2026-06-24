@@ -48,7 +48,13 @@
     "editAction": "Edit",
     "moveTo": "Pindahkan ke",
     "deleteTask": "Hapus tugas",
-    "readOnly": "Tugas ini hanya baca. Hubungi admin Anda untuk perubahan."
+    "readOnly": "Tugas ini hanya baca. Hubungi admin Anda untuk perubahan.",
+    "priority": "Prioritas",
+    "project": "Proyek",
+    "labels": "Label",
+    "blockedBy": "Diblokir oleh",
+    "noPriority": "Tidak ada",
+    "sharedBoard": "Papan bersama"
   },
   "profile": {
     "title": "Pengaturan Profil",
@@ -79,7 +85,9 @@
     "deleteWarning": "Ini akan menghapus akun Anda dan semua data terkait secara permanen. Tindakan ini tidak dapat dibatalkan.",
     "deleteConfirmLabel": "Saya mengerti, hapus akun saya",
     "deleteConfirmAction": "Hapus akun saya",
-    "deleting": "Menghapus…"
+    "deleting": "Menghapus…",
+    "accountSettings": "Pengaturan akun",
+    "adminPanel": "Panel admin"
   },
   "invite": {
     "title": "Undang anggota",
@@ -105,6 +113,7 @@
     "en": "English",
     "es": "Español",
     "zh": "中文",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "switcher": "Bahasa"
   }
 }

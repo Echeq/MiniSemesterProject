@@ -48,7 +48,13 @@
     "editAction": "Editar",
     "moveTo": "Mover a",
     "deleteTask": "Eliminar tarea",
-    "readOnly": "Esta tarea es solo de lectura. Contacta a tu administrador para cambios."
+    "readOnly": "Esta tarea es solo de lectura. Contacta a tu administrador para cambios.",
+    "priority": "Prioridad",
+    "project": "Proyecto",
+    "labels": "Etiquetas",
+    "blockedBy": "Bloqueado por",
+    "noPriority": "Ninguna",
+    "sharedBoard": "Tablero compartido"
   },
   "profile": {
     "title": "Configuración de perfil",
@@ -79,7 +85,9 @@
     "deleteWarning": "Esto eliminará permanentemente tu cuenta y todos los datos asociados. No se puede deshacer.",
     "deleteConfirmLabel": "Entiendo, eliminar mi cuenta",
     "deleteConfirmAction": "Eliminar mi cuenta",
-    "deleting": "Eliminando…"
+    "deleting": "Eliminando…",
+    "accountSettings": "Configuración de cuenta",
+    "adminPanel": "Panel de administración"
   },
   "invite": {
     "title": "Invitar miembro",
@@ -105,6 +113,7 @@
     "en": "English",
     "es": "Español",
     "zh": "中文",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "switcher": "Idioma"
   }
 }

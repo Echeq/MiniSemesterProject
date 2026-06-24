@@ -48,7 +48,13 @@
     "editAction": "编辑",
     "moveTo": "移动到",
     "deleteTask": "删除任务",
-    "readOnly": "此任务为只读。请联系管理员进行更改。"
+    "readOnly": "此任务为只读。请联系管理员进行更改。",
+    "priority": "优先级",
+    "project": "项目",
+    "labels": "标签",
+    "blockedBy": "被以下任务阻塞",
+    "noPriority": "无",
+    "sharedBoard": "共享看板"
   },
   "profile": {
     "title": "个人设置",
@@ -79,7 +85,9 @@
     "deleteWarning": "这将永久删除您的账号及所有相关数据，此操作不可撤销。",
     "deleteConfirmLabel": "我了解，删除我的账号",
     "deleteConfirmAction": "删除我的账号",
-    "deleting": "删除中…"
+    "deleting": "删除中…",
+    "accountSettings": "账户设置",
+    "adminPanel": "管理面板"
   },
   "invite": {
     "title": "邀请成员",
@@ -105,6 +113,7 @@
     "en": "English",
     "es": "Español",
     "zh": "中文",
-    "id": "Bahasa Indonesia"
+    "id": "Bahasa Indonesia",
+    "switcher": "语言"
   }
 }

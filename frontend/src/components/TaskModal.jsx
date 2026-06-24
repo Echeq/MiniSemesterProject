@@ -1,10 +1,10 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { STATUSES } from '../hooks/useBoard'
 import Modal from './Modal'
 
-const STATUS_LABELS = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const PRIORITIES = [
-  { value: '', label: 'None' },
+  { value: '', label: 'None', color: null },
   { value: 'P0', label: 'P0 Critical', color: '#ef4444' },
   { value: 'P1', label: 'P1 High', color: '#f59e0b' },
   { value: 'P2', label: 'P2 Medium', color: '#eab308' },
@@ -28,6 +28,9 @@ export default function TaskModal({
   onRemoveDependency,
   onClose,
 }) {
+  const { t } = useTranslation()
+  const STATUS_LABELS = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
+
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
@@ -116,25 +119,25 @@ export default function TaskModal({
   const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--fg)]'
 
   return (
-    <Modal title={editing ? 'Edit task' : 'New task'} onClose={onClose}>
+    <Modal title={editing ? t('task.edit') : t('task.new')} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <label className="mb-3 block">
-          <span className={labelCls}>Title</span>
-          <input type="text" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder="What needs doing?" />
+          <span className={labelCls}>{t('task.title')}</span>
+          <input type="text" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder={t('task.title')} />
         </label>
 
         <label className="mb-3 block">
-          <span className={labelCls}>Description</span>
-          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder="Add more detail…" />
+          <span className={labelCls}>{t('task.description')}</span>
+          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder={t('task.description')} />
         </label>
 
         <div className="mb-3 flex gap-3">
           <label className="flex-1">
-            <span className={labelCls}>Due date</span>
+            <span className={labelCls}>{t('task.dueDate')}</span>
             <input type="date" value={dueDate ?? ''} onChange={(e) => setDueDate(e.target.value)} className="input" />
           </label>
           <label className="flex-1">
-            <span className={labelCls}>Status</span>
+            <span className={labelCls}>{t('task.status')}</span>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
               {STATUSES.map((s) => (
                 <option key={s} value={s} disabled={s === 'done' && (task?.blocked_by || 0) > 0}>
@@ -144,7 +147,7 @@ export default function TaskModal({
             </select>
             {editing && (task?.blocked_by || 0) > 0 && (
               <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
-                Blocked by {task.blocked_by} incomplete task{task.blocked_by !== 1 ? 's' : ''} — resolve dependencies first.
+                {t('task.blockedBy')} {task.blocked_by} incomplete task{task.blocked_by !== 1 ? 's' : ''} — resolve dependencies first.
               </p>
             )}
           </label>
@@ -152,15 +155,15 @@ export default function TaskModal({
 
         <div className="mb-3 flex gap-3">
           <label className="flex-1">
-            <span className={labelCls}>Priority</span>
+            <span className={labelCls}>{t('task.priority')}</span>
             <select value={priority} onChange={(e) => setPriority(e.target.value)} className="input">
               {PRIORITIES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
           </label>
           <label className="flex-1">
-            <span className={labelCls}>Assignee</span>
+            <span className={labelCls}>{t('task.assignee')}</span>
             <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="input">
-              <option value="">Unassigned</option>
+              <option value="">{t('task.unassigned')}</option>
               {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
             </select>
           </label>
@@ -168,9 +171,9 @@ export default function TaskModal({
 
         <div className="mb-5 flex gap-3">
           <label className="flex-1">
-            <span className={labelCls}>Project</span>
+            <span className={labelCls}>{t('task.project')}</span>
             <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="input">
-              <option value="">Shared board</option>
+              <option value="">{t('task.sharedBoard')}</option>
               {projects.filter((p) => p.status === 'active').map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
@@ -178,7 +181,7 @@ export default function TaskModal({
 
         {availableLabels.length > 0 && (
           <div className="mb-4">
-            <span className={labelCls}>Labels</span>
+            <span className={labelCls}>{t('task.labels')}</span>
             <div className="flex flex-wrap gap-1.5">
               {availableLabels.map((l) => (
                 <button key={l.id} type="button" onClick={() => toggleLabel(l.id)}
@@ -201,7 +204,7 @@ export default function TaskModal({
 
         {editing && projectTasks.length > 0 && (
           <div className="mb-4">
-            <span className={labelCls}>Blocked by</span>
+            <span className={labelCls}>{t('task.blockedBy')}</span>
             <div className="flex flex-wrap gap-1.5">
               {projectTasks.map((t) => (
                 <button key={t.id} type="button" onClick={() => toggleDependency(t.id)}
@@ -223,11 +226,11 @@ export default function TaskModal({
 
         <div className="flex items-center justify-between">
           {editing ? (
-            <button type="button" onClick={handleDelete} disabled={busy} className="btn btn-danger">Delete</button>
+            <button type="button" onClick={handleDelete} disabled={busy} className="btn btn-danger">{t('task.delete')}</button>
           ) : <span />}
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="btn btn-default">Cancel</button>
-            <button type="submit" disabled={busy} className="btn btn-primary">{editing ? 'Save' : 'Create'}</button>
+            <button type="button" onClick={onClose} className="btn btn-default">{t('task.cancel')}</button>
+            <button type="submit" disabled={busy} className="btn btn-primary">{editing ? t('task.save') : t('task.create')}</button>
           </div>
         </div>
       </form>

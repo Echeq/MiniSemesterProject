@@ -48,7 +48,13 @@
     "editAction": "Edit",
     "moveTo": "Move to",
     "deleteTask": "Delete task",
-    "readOnly": "This task is read-only. Contact your admin for changes."
+    "readOnly": "This task is read-only. Contact your admin for changes.",
+    "priority": "Priority",
+    "project": "Project",
+    "labels": "Labels",
+    "blockedBy": "Blocked by",
+    "noPriority": "None",
+    "sharedBoard": "Shared board"
   },
   "profile": {
     "title": "Profile Settings",
@@ -79,7 +85,9 @@
     "deleteWarning": "This will permanently delete your account and all associated data. This cannot be undone.",
     "deleteConfirmLabel": "I understand, delete my account",
     "deleteConfirmAction": "Delete my account",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "accountSettings": "Account settings",
+    "adminPanel": "Admin panel"
   },
   "invite": {
     "title": "Invite member",
