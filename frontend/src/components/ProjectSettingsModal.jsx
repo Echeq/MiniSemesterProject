@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 
 const PRESET_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4']
@@ -12,6 +13,7 @@ const PRESET_ICONS = [
 ]
 
 export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description || '')
   const [color, setColor] = useState(project.color || '#6366f1')
@@ -35,20 +37,20 @@ export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
   }
 
   return (
-    <Modal title="Project settings" subtitle={project.name} onClose={onClose}>
+    <Modal title={t('project.settingsTitle')} subtitle={project.name} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Name</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.name')}</span>
           <input type="text" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} className="input" />
         </label>
 
         <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Description</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.description')}</span>
           <textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" />
         </label>
 
         <div className="mb-3">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Color</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.color')}</span>
           <div className="flex gap-2">
             {PRESET_COLORS.map((c) => (
               <button key={c} type="button" onClick={() => setColor(c)}
@@ -60,7 +62,7 @@ export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
         </div>
 
         <div className="mb-4">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Icon</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.icon')}</span>
           <div className="flex flex-wrap gap-2">
             {PRESET_ICONS.map((icn) => (
               <button key={icn.key} type="button" onClick={() => setIcon(icn.key)}
@@ -76,8 +78,8 @@ export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
         {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
         <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn btn-default">Cancel</button>
-          <button type="submit" disabled={busy} className="btn btn-primary">Save</button>
+          <button type="button" onClick={onClose} className="btn btn-default">{t('project.cancel')}</button>
+          <button type="submit" disabled={busy} className="btn btn-primary">{t('project.save')}</button>
         </div>
       </form>
     </Modal>

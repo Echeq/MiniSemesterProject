@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Avatar from './Avatar'
 import EmptyState from './EmptyState'
 import CreateProjectModal from './CreateProjectModal'
@@ -45,6 +46,7 @@ const Sidebar = memo(function Sidebar({
   loadingProjects = false,
   editors,
 }) {
+  const { t } = useTranslation()
   const [showCreate, setShowCreate] = useState(false)
   const [settingsProject, setSettingsProject] = useState(null)
 
@@ -118,29 +120,29 @@ const Sidebar = memo(function Sidebar({
 
       {loadingProjects ? <SidebarStatsSkeleton /> : (
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-          <SectionLabel>Boards</SectionLabel>
+          <SectionLabel>{t('sidebar.boards')}</SectionLabel>
           <button onClick={() => onSelectScope('all')} className={`nav-item ${scope === 'all' ? 'active' : ''}`}>
-            <Icon path={ICONS.inbox} /> All tasks
+            <Icon path={ICONS.inbox} /> {t('sidebar.allTasks')}
           </button>
           <button onClick={() => onSelectScope(null)} className={`nav-item ${scope === null ? 'active' : ''}`}>
-            <Icon path={ICONS.globe} /> Shared board
+            <Icon path={ICONS.globe} /> {t('sidebar.sharedBoard')}
           </button>
 
-          <SectionLabel>Views</SectionLabel>
-          <ViewItem icon={ICONS.person} label="My tasks" count={mineCount} active={scope === 'view:mine'} onClick={() => onSelectScope('view:mine')} />
-          <ViewItem icon={ICONS.clock} label="Due soon" count={dueSoonCount} accent="var(--doing)" active={scope === 'view:due'} onClick={() => onSelectScope('view:due')} />
-          <ViewItem icon={ICONS.alert} label="Overdue" count={overdueCount} accent="var(--danger)" active={scope === 'view:overdue'} onClick={() => onSelectScope('view:overdue')} />
+          <SectionLabel>{t('sidebar.views')}</SectionLabel>
+          <ViewItem icon={ICONS.person} label={t('sidebar.myTasks')} count={mineCount} active={scope === 'view:mine'} onClick={() => onSelectScope('view:mine')} />
+          <ViewItem icon={ICONS.clock} label={t('sidebar.dueSoon')} count={dueSoonCount} accent="var(--doing)" active={scope === 'view:due'} onClick={() => onSelectScope('view:due')} />
+          <ViewItem icon={ICONS.alert} label={t('sidebar.overdue')} count={overdueCount} accent="var(--danger)" active={scope === 'view:overdue'} onClick={() => onSelectScope('view:overdue')} />
 
           <div className="flex items-center justify-between px-2 pb-1 pt-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Projects</span>
-            <button onClick={() => setShowCreate(true)} title="New project" className="rounded p-0.5 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('sidebar.projects')}</span>
+            <button onClick={() => setShowCreate(true)} title={t('sidebar.newProject')} className="rounded p-0.5 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]">
               <Icon path={ICONS.plus} className="h-3.5 w-3.5" />
             </button>
           </div>
 
           {active.length === 0 && !loadingProjects && (
             <div className="px-1 py-2">
-              <EmptyState icon="project" title="No projects" description="Create one to start organizing tasks." />
+              <EmptyState icon="project" title={t('sidebar.noProjects')} description={t('sidebar.noProjectsDesc')} />
             </div>
           )}
 
@@ -156,15 +158,15 @@ const Sidebar = memo(function Sidebar({
                     </span>
                   </button>
                   <div className="flex flex-shrink-0 opacity-0 transition group-hover:opacity-100">
-                    <button title="Settings" onClick={() => setSettingsProject(p)} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--fg)]">
+                    <button title={t('sidebar.settings')} onClick={() => setSettingsProject(p)} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--fg)]">
                       <Icon path={ICONS.gear} className="h-3.5 w-3.5" />
                     </button>
                     {isAdmin && (
                       <>
-                        <button title="Archive" onClick={() => projectActions.setStatus(p.id, 'archived').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--doing)]">
+                        <button title={t('sidebar.archive')} onClick={() => projectActions.setStatus(p.id, 'archived').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--doing)]">
                           <Icon path={ICONS.archive} className="h-3.5 w-3.5" />
                         </button>
-                        <button title="Delete" onClick={() => window.confirm(`Delete "${p.name}"? Its tasks are deleted too.`) && projectActions.delete(p.id).catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--danger)]">
+                        <button title={t('sidebar.delete')} onClick={() => window.confirm(t('sidebar.deleteProjectConfirm', { name: p.name })) && projectActions.delete(p.id).catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--danger)]">
                           <Icon path={ICONS.trash} className="h-3.5 w-3.5" />
                         </button>
                       </>
@@ -185,7 +187,7 @@ const Sidebar = memo(function Sidebar({
 
           {archived.length > 0 && (
             <>
-              <SectionLabel>Archived</SectionLabel>
+              <SectionLabel>{t('sidebar.archived')}</SectionLabel>
               {archived.map((p) => (
                 <div key={p.id} className="group flex items-center">
                   <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 text-[var(--fg-muted)] ${scope?.id === p.id ? 'active' : ''}`}>
@@ -195,7 +197,7 @@ const Sidebar = memo(function Sidebar({
                     </span>
                   </button>
                   {isAdmin && (
-                    <button title="Restore" onClick={() => projectActions.setStatus(p.id, 'active').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] opacity-0 transition hover:text-[var(--done)] group-hover:opacity-100">
+                    <button title={t('sidebar.restore')} onClick={() => projectActions.setStatus(p.id, 'active').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] opacity-0 transition hover:text-[var(--done)] group-hover:opacity-100">
                       <Icon path={ICONS.restore} className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -207,10 +209,10 @@ const Sidebar = memo(function Sidebar({
           {members.length > 0 && (
             <>
               <div className="flex items-center justify-between px-2 pb-1 pt-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Team</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('sidebar.team')}</span>
                 {onlineCount > 0 && (
                   <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--online)' }}>
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--online)]" /> {onlineCount} online
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--online)]" /> {onlineCount} {t('sidebar.online')}
                   </span>
                 )}
               </div>
@@ -219,21 +221,21 @@ const Sidebar = memo(function Sidebar({
                   <span className="relative flex-shrink-0">
                     <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
                     {m.editing && (
-                      <span className="absolute -right-1 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[var(--bg)]" style={{ background: 'var(--doing)' }} title="Editing a task">
+                      <span className="absolute -right-1 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[var(--bg)]" style={{ background: 'var(--doing)' }} title={t('sidebar.editingTask')}>
                         <svg className="h-2 w-2 text-white" viewBox="0 0 16 16" fill="currentColor"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25a1.75 1.75 0 0 1 .445-.758Z" /></svg>
                       </span>
                     )}
                     <span
                       className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
                       style={{ background: m.online ? 'var(--online)' : 'var(--fg-subtle)' }}
-                      title={m.editing ? 'Editing a task' : m.online ? 'Online' : 'Offline'}
+                      title={m.editing ? t('sidebar.editingTask') : m.online ? t('sidebar.onlineStatus') : t('sidebar.offlineStatus')}
                     />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm">
                     {m.display_name}
-                    {m.id === currentUserId && <span className="text-xs text-[var(--fg-subtle)]"> (you)</span>}
+                    {m.id === currentUserId && <span className="text-xs text-[var(--fg-subtle)]"> ({t('sidebar.you')})</span>}
                   </span>
-                  {m.role === 'admin' && <span className="text-[10px] font-semibold text-[var(--accent)]">admin</span>}
+                  {m.role === 'admin' && <span className="text-[10px] font-semibold text-[var(--accent)]">{t('admin.admin')}</span>}
                 </div>
               ))}
             </>
@@ -246,7 +248,7 @@ const Sidebar = memo(function Sidebar({
           <div className="divider mx-3" />
           <div className="p-3">
             <button onClick={onOpenAdmin} className="nav-item">
-              <Icon path={ICONS.shield} /> Admin panel
+              <Icon path={ICONS.shield} /> {t('sidebar.adminPanel')}
             </button>
           </div>
         </>

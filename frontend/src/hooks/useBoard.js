@@ -175,11 +175,20 @@ export function useBoard(projectId = 'all') {
       }).select('id').single()
       if (error) throw error
       if (data) logActivity('task_created', 'tasks', data.id, { title, status, priority, project_id })
+      return data?.id
     },
     [logActivity],
   )
 
   const updateTask = useCallback(async (id, fields) => {
+    if (fields.status === 'done') {
+      const { data: blockers, error: rpcErr } = await supabase.rpc('check_blocked_tasks', { p_task_id: id })
+      if (rpcErr) throw rpcErr
+      if (blockers && blockers.length > 0) {
+        const titles = blockers.map((b) => b.title).join(', ')
+        throw new Error(`Blocked by incomplete tasks: ${titles}`)
+      }
+    }
     setTasks((prev) => {
       const needsSort = 'position' in fields || 'status' in fields
       const next = prev.map((t) => (t.id === id ? { ...t, ...fields } : t))

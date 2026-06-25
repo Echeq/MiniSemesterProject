@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
 import { useBoard } from './hooks/useBoard'
@@ -14,6 +15,7 @@ import AuthForm from './components/AuthForm'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import Board from './components/Board'
+import FilterPanel from './components/FilterPanel'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -21,6 +23,8 @@ const TaskModal = lazy(() => import('./components/TaskModal'))
 const ProfileModal = lazy(() => import('./components/ProfileModal'))
 const AdminModal = lazy(() => import('./components/AdminModal'))
 const LabelManager = lazy(() => import('./components/LabelManager'))
+const GanttView = lazy(() => import('./components/GanttView'))
+const DataSphere = lazy(() => import('./components/DataSphere'))
 
 function MissingEnv() {
   return (
@@ -37,31 +41,26 @@ function MissingEnv() {
   )
 }
 
-const VIEW_LABELS = { 'view:mine': 'My tasks', 'view:due': 'Due soon', 'view:overdue': 'Overdue' }
 
 // Contextual message shown only on the Due soon / Overdue tabs.
 function ViewBanner({ scope, count }) {
+  const { t } = useTranslation()
   if (scope !== 'view:due' && scope !== 'view:overdue') return null
   const overdue = scope === 'view:overdue'
   const has = count > 0
-  const plural = count === 1 ? 'task' : 'tasks'
 
   let color, title, msg, icon
   if (overdue) {
     color = has ? 'var(--danger)' : 'var(--done)'
-    title = has ? `${count} overdue ${plural}` : "You're all caught up"
-    msg = has
-      ? 'These tasks are past their due date — reschedule them or mark them done.'
-      : 'Nothing is overdue right now. Great work! 🎉'
+    title = has ? (count === 1 ? t('view.overdueTask', { count }) : t('view.overdueTaskPlural', { count })) : t('view.allCaughtUp')
+    msg = has ? t('view.overdueDesc') : t('view.nothingOverdue')
     icon = has
       ? 'M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0M9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0'
       : 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'
   } else {
     color = has ? 'var(--doing)' : 'var(--fg-muted)'
-    title = has ? `${count} ${plural} due soon` : 'Nothing due soon'
-    msg = has
-      ? 'Due within the next 7 days — plan ahead to stay on track.'
-      : 'No tasks are due in the next 7 days.'
+    title = has ? (count === 1 ? t('view.dueSoonTask', { count }) : t('view.dueSoonTaskPlural', { count })) : t('view.nothingDueSoon')
+    msg = has ? t('view.dueSoonDesc') : t('view.nothingDueSoonDesc')
     icon = 'M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13m.75 3.25v3.19l2.03 2.03a.75.75 0 1 1-1.06 1.06L7.22 9.78a.75.75 0 0 1-.22-.53V4.75a.75.75 0 0 1 1.5 0'
   }
 
@@ -81,6 +80,7 @@ function ViewBanner({ scope, count }) {
 }
 
 function BoardPage({ session, theme, toggleTheme }) {
+  const { t } = useTranslation()
   const userId = session.user.id
   const { profile, refetch: refetchProfile, isAdmin } = useProfile(session)
   const { projects, loading: projectsLoading, createProject, updateProject, setStatus, deleteProject } = useProjects()
@@ -99,14 +99,15 @@ function BoardPage({ session, theme, toggleTheme }) {
   const [modal, setModal] = useState(null)
   const [panel, setPanel] = useState(null)
   const [showInsights, setShowInsights] = useState(true)
-  const [showListView, setShowListView] = useState(false)
+  const [activeView, setActiveView] = useState('kanban')
   const [showLabelManager, setShowLabelManager] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({ status: [], priority: [], assignee: '', labelIds: [], dueFrom: '', dueTo: '' })
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
   const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
   const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
-  const handleToggleView = useCallback(() => setShowListView((s) => !s), [])
   const handleNewTask = useCallback(() => setModal('new'), [])
   const handleOpenLabelManager = useCallback(() => setShowLabelManager(true), [])
   const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
@@ -132,9 +133,21 @@ function BoardPage({ session, theme, toggleTheme }) {
     return tasks
   }, [tasks, isView, scope, userId])
 
+  const filteredViewTasks = useMemo(() => {
+    let result = viewTasks
+    const { status, priority, assignee, labelIds, dueFrom, dueTo } = filters
+    if (status.length > 0) result = result.filter((t) => status.includes(t.status))
+    if (priority.length > 0) result = result.filter((t) => priority.includes(t.priority || ''))
+    if (assignee) result = result.filter((t) => t.assignee === assignee)
+    if (labelIds.length > 0) result = result.filter((t) => labelIds.some((id) => t.labels?.some((l) => l.id === id)))
+    if (dueFrom) result = result.filter((t) => t.due_date && t.due_date >= dueFrom)
+    if (dueTo) result = result.filter((t) => t.due_date && t.due_date <= dueTo)
+    return result
+  }, [viewTasks, filters])
+
   const memoBanner = useMemo(
-    () => <ViewBanner scope={scope} count={viewTasks.length} />,
-    [scope, viewTasks.length],
+    () => <ViewBanner scope={scope} count={filteredViewTasks.length} />,
+    [scope, filteredViewTasks.length],
   )
 
   const projectActions = useMemo(
@@ -161,12 +174,13 @@ function BoardPage({ session, theme, toggleTheme }) {
   const liveScope = isProject ? projects.find((p) => p.id === scope.id) ?? scope : scope
 
   const defaultProjectId = isProject ? scope.id : null
+  const VIEW_LABELS = { 'view:mine': t('sidebar.myTasks'), 'view:due': t('sidebar.dueSoon'), 'view:overdue': t('sidebar.overdue') }
   const scopeLabel = isProject
     ? liveScope.name
     : scope === null
-      ? 'Shared board'
+      ? t('sidebar.sharedBoard')
       : scope === 'all'
-        ? 'All tasks'
+        ? t('sidebar.allTasks')
         : VIEW_LABELS[scope]
 
   return (
@@ -192,16 +206,19 @@ function BoardPage({ session, theme, toggleTheme }) {
         <Topbar
           title={scopeLabel}
           archived={isProject && liveScope.status === 'archived'}
-          taskCount={viewTasks.length}
-          tasks={viewTasks}
+          taskCount={filteredViewTasks.length}
+          tasks={filteredViewTasks}
           theme={theme}
           onToggleTheme={toggleTheme}
           showInsights={showInsights}
           onToggleInsights={handleToggleInsights}
-          showListView={showListView}
-          onToggleView={handleToggleView}
+          activeView={activeView}
+          onSetView={setActiveView}
           onNewTask={handleNewTask}
           onOpenLabelManager={isProject ? handleOpenLabelManager : null}
+          showFilters={showFilters}
+          onToggleFilters={() => setShowFilters((s) => !s)}
+          filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
           session={session}
           profile={profile}
           isAdmin={isAdmin}
@@ -211,26 +228,46 @@ function BoardPage({ session, theme, toggleTheme }) {
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
-        <ErrorBoundary>
-          <Board
-            tasks={viewTasks}
-            updateTask={updateTask}
-            onTaskClick={handleTaskClick}
-            hideEmptyColumns={isView}
-            banner={memoBanner}
-            showListView={showListView}
-            loading={loading}
-            editors={editors}
+        {showFilters && (
+          <FilterPanel
+            filters={filters}
+            onChange={setFilters}
+            members={members}
+            labels={labels}
           />
+        )}
+
+        <ErrorBoundary>
+          {activeView === 'gantt' ? (
+            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} /></Suspense>
+          ) : activeView === 'sphere' ? (
+            <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
+          ) : (
+            <Board
+              tasks={filteredViewTasks}
+              allViewTasks={viewTasks}
+              updateTask={updateTask}
+              onTaskClick={handleTaskClick}
+              onAddTask={(status) => setModal({ defaultStatus: status })}
+              labels={labels}
+              hideEmptyColumns={isView}
+              banner={memoBanner}
+              activeView={activeView}
+              loading={loading}
+              members={members}
+              editors={editors}
+            />
+          )}
         </ErrorBoundary>
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={viewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
+      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
 
       <Suspense fallback={null}>
         {modal && (
           <TaskModal
-            task={modal === 'new' ? null : modal}
+            task={modal === 'new' || modal?.defaultStatus ? null : modal}
+            defaultStatus={modal?.defaultStatus}
             members={members}
             projects={projects}
             defaultProjectId={defaultProjectId}
@@ -296,7 +333,7 @@ function AuthGate({ theme, toggleTheme }) {
   if (loading) {
     return (
       <div className="flex min-h-full items-center justify-center">
-        <p className="text-sm text-[var(--fg-muted)]">Loading…</p>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
       </div>
     )
   }

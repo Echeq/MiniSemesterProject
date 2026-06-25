@@ -2,6 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => ({
+      'project.settingsTitle': 'Project settings', 'project.name': 'Name', 'project.description': 'Description',
+      'project.color': 'Color', 'project.icon': 'Icon', 'project.save': 'Save', 'project.cancel': 'Cancel',
+    }[key] ?? key),
+  }),
+}))
+
 const mockProject = { id: 'p1', name: 'Test Project', description: 'A test', color: '#6366f1', icon: 'project' }
 
 describe('ProjectSettingsModal', () => {

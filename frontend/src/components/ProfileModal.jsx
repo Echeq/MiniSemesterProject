@@ -1,26 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 import Modal from './Modal'
 import Avatar from './Avatar'
 
-const STATUS = {
-  todo: { label: 'To Do', color: 'var(--todo)' },
-  doing: { label: 'Doing', color: 'var(--doing)' },
-  done: { label: 'Done', color: 'var(--done)' },
+function Spinner() {
+  return (
+    <div className="flex items-center justify-center py-6">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+    </div>
+  )
 }
 
 export default function ProfileModal({ session, profile, stats = [], onSaved, onGoToMyTasks, onClose }) {
+  const { t } = useTranslation()
   const [tab, setTab] = useState('overview')
   const name = profile?.display_name || session.user.email
+
+  const STATUS = {
+    todo: { label: t('board.todo'), color: 'var(--todo)' },
+    doing: { label: t('board.inProgress'), color: 'var(--doing)' },
+    done: { label: t('board.done'), color: 'var(--done)' },
+  }
 
   return (
     <Modal title={name} subtitle={session.user.email} onClose={onClose} maxWidth="max-w-lg">
       <div className="mb-4 flex gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
-        <Tab active={tab === 'overview'} onClick={() => setTab('overview')}>Overview</Tab>
-        <Tab active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</Tab>
+        <Tab active={tab === 'overview'} onClick={() => setTab('overview')}>{t('profile.overview')}</Tab>
+        <Tab active={tab === 'settings'} onClick={() => setTab('settings')}>{t('profile.settings')}</Tab>
       </div>
       {tab === 'overview' ? (
-        <Overview session={session} profile={profile} stats={stats} onGoToMyTasks={onGoToMyTasks} onClose={onClose} />
+        <Overview session={session} profile={profile} stats={stats} status={STATUS} onGoToMyTasks={onGoToMyTasks} onClose={onClose} />
       ) : (
         <Settings session={session} profile={profile} onSaved={onSaved} />
       )}
@@ -41,7 +51,8 @@ function Tab({ active, onClick, children }) {
   )
 }
 
-function Overview({ session, profile, stats, onGoToMyTasks, onClose }) {
+function Overview({ session, profile, stats, status: STATUS, onGoToMyTasks, onClose }) {
+  const { t } = useTranslation()
   const userId = session.user.id
   const [joined, setJoined] = useState(null)
   const [active, setActive] = useState([])
@@ -110,7 +121,7 @@ function Overview({ session, profile, stats, onGoToMyTasks, onClose }) {
 
       <section>
         <div className="mb-2 flex items-end justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Your progress</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('profile.yourProgress')}</h3>
           <span className="text-sm text-[var(--fg-muted)]">{counts.done}/{total} complete</span>
         </div>
         <div className="mb-1 flex items-baseline gap-2">
@@ -133,15 +144,15 @@ function Overview({ session, profile, stats, onGoToMyTasks, onClose }) {
       </section>
 
       <section className="grid grid-cols-3 gap-2">
-        <Stat label="Assigned" value={total} />
-        <Stat label="Overdue" value={overdue} color="var(--danger)" />
-        <Stat label="Due ≤7d" value={dueSoon} color="var(--doing)" />
+        <Stat label={t('profile.assigned')} value={total} />
+        <Stat label={t('profile.overdue')} value={overdue} color="var(--danger)" />
+        <Stat label={t('profile.dueWeek')} value={dueSoon} color="var(--doing)" />
       </section>
 
       <section>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Active work</h3>
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('profile.activeWork')}</h3>
         {loading ? (
-          <p className="py-3 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+          <Spinner />
         ) : active.length === 0 ? (
           <p className="rounded-lg border border-dashed border-[var(--glass-border)] py-4 text-center text-sm text-[var(--fg-muted)]">
             No open tasks assigned to you. 🎉
@@ -182,6 +193,7 @@ function Stat({ label, value, color }) {
 }
 
 function Settings({ session, profile, onSaved }) {
+  const { t } = useTranslation()
   const userId = session.user.id
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
@@ -292,7 +304,7 @@ function Settings({ session, profile, onSaved }) {
         <Avatar name={displayName} url={avatarUrl} size="lg" ring />
         <div>
           <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="btn btn-default">
-            {uploading ? 'Uploading…' : 'Change avatar'}
+            {uploading ? t('profile.uploading') : t('profile.changeAvatar')}
           </button>
           <p className="mt-1 text-xs text-[var(--fg-subtle)]">PNG or JPG.</p>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
@@ -301,47 +313,47 @@ function Settings({ session, profile, onSaved }) {
 
       <form onSubmit={saveProfile} className="mb-5">
         <label className="block">
-          <span className={labelCls}>Display name</span>
+          <span className={labelCls}>{t('profile.displayName')}</span>
           <div className="flex gap-2">
             <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} className="input" />
-            <button disabled={busy} className="btn btn-primary">Save</button>
+            <button disabled={busy} className="btn btn-primary">{t('profile.save')}</button>
           </div>
         </label>
       </form>
 
       <form onSubmit={changeEmail} className="mb-6">
         <label className="block">
-          <span className={labelCls}>New email</span>
+          <span className={labelCls}>{t('profile.newEmail')}</span>
           <div className="flex gap-2">
             <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
-            <button disabled={busy || !newEmail} className="btn btn-default">Update</button>
+            <button disabled={busy || !newEmail} className="btn btn-default">{t('profile.updating')}</button>
           </div>
         </label>
       </form>
 
       <form onSubmit={changePassword} className="mb-6">
         <label className="block">
-          <span className={labelCls}>New password</span>
+          <span className={labelCls}>{t('profile.newPassword')}</span>
           <div className="flex gap-2">
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input" />
-            <button disabled={busy || !password} className="btn btn-default">Update</button>
+            <button disabled={busy || !password} className="btn btn-default">{t('profile.updating')}</button>
           </div>
         </label>
       </form>
 
       <div className="rounded-md border p-4" style={{ borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
-        <p className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>Danger zone</p>
-        <p className="mt-1 text-xs text-[var(--fg-muted)]">Permanently delete your account and all data you own. Blocked if you're the only admin.</p>
+        <p className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>{t('profile.dangerZone')}</p>
+        <p className="mt-1 text-xs text-[var(--fg-muted)]">{t('profile.dangerWarning')}</p>
         {deleteConfirm ? (
           <div className="mt-3 space-y-2">
-            <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Are you sure? This cannot be undone.</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>{t('profile.deleteWarning')}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">Cancel</button>
-              <button type="button" onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? 'Deleting…' : 'Confirm delete'}</button>
+              <button type="button" onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">{t('profile.cancel')}</button>
+              <button type="button" onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? t('profile.deleting') : t('profile.deleteConfirmAction')}</button>
             </div>
           </div>
         ) : (
-          <button type="button" onClick={() => setDeleteConfirm(true)} className="btn btn-danger mt-3">Delete my account</button>
+          <button type="button" onClick={() => setDeleteConfirm(true)} className="btn btn-danger mt-3">{t('profile.deleteAccount')}</button>
         )}
       </div>
     </div>

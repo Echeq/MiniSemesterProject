@@ -1,11 +1,10 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Avatar from './Avatar'
 
-const STATUS_LABEL = { todo: 'To Do', doing: 'Doing', done: 'Done' }
 const STATUS_VAR = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
-const PRIORITY_LABEL = { P0: 'Critical', P1: 'High', P2: 'Medium', P3: 'Low' }
 const PRIORITY_COLOR = { P0: '#ef4444', P1: '#f59e0b', P2: '#eab308', P3: '#10b981' }
 
 function formatDate(d) {
@@ -34,6 +33,10 @@ function DueBadge({ due_date, status }) {
 const BLOCKED_ICON = 'M4 4a4 4 0 0 1 8 0v2h.25A1.75 1.75 0 0 1 14 7.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4zm1.5 2h5V4a2.5 2.5 0 0 0-5 0z'
 
 function TaskCard({ task, onClick, overlay = false, editors }) {
+  const { t } = useTranslation()
+  const STATUS_LABEL = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
+  const PRIORITY_LABEL = { P0: t('filter.p0'), P1: t('filter.p1'), P2: t('filter.p2'), P3: t('filter.p3') }
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     disabled: overlay,
@@ -93,13 +96,13 @@ function TaskCard({ task, onClick, overlay = false, editors }) {
           {blockedCount > 0 && (
             <span className="inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--danger)' }}>
               <svg className="h-3 w-3" viewBox="0 0 16 16" fill="currentColor"><path d={BLOCKED_ICON} /></svg>
-              Blocked by {blockedCount}
+              {t('task.blockedByCount', { count: blockedCount })}
             </span>
           )}
           {editingNames && (
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent)]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)]" />
-              Editing…
+              {t('task.editing')}
             </span>
           )}
           {task.assignee_profile?.display_name && (

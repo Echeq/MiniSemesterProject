@@ -2,7 +2,17 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key, opts) => {
+      const map = {
+        'filter.p0': 'Critical', 'filter.p1': 'High', 'filter.p2': 'Medium', 'filter.p3': 'Low',
+        'board.todo': 'To Do', 'board.inProgress': 'In progress', 'board.done': 'Done',
+      }
+      if (key === 'task.blockedByCount') return `Blocked by ${opts?.count ?? ''}`
+      if (key === 'task.editing') return 'Editing…'
+      return map[key] ?? key
+    },
+  }),
 }))
 
 vi.mock('@dnd-kit/sortable', () => ({

@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => ({ 'export.button': 'Export', 'export.excel': 'Export Excel', 'export.pdf': 'Export PDF', 'export.csv': 'Export CSV' }[key] ?? key),
+  }),
+}))
+
 const mockTasks = [
   { id: 't1', title: 'Task A', status: 'todo', priority: 'P1', due_date: '2026-07-01', assignee_profile: null },
   { id: 't2', title: 'Task B', status: 'done', priority: null, due_date: null, assignee_profile: { display_name: 'Alice' } },

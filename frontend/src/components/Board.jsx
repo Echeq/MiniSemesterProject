@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   DragOverlay,
@@ -15,15 +16,29 @@ import EmptyState from './EmptyState'
 import ListView from './ListView'
 import { CardSkeleton } from './Skeleton'
 
-export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns = false, banner = null, showListView = false, loading = false, editors }) {
+const COL_DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
+
+export default function Board({
+  tasks,
+  allViewTasks,
+  updateTask,
+  onTaskClick,
+  onAddTask,
+  labels = [],
+  hideEmptyColumns = false,
+  banner = null,
+  activeView = 'kanban',
+  loading = false,
+  members = [],
+  editors,
+}) {
+  const { t } = useTranslation()
   const [activeTask, setActiveTask] = useState(null)
   const [visibleCols, setVisibleCols] = useState(STATUSES)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 6 },
-    }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
   )
 
   const byStatus = useMemo(() => {
@@ -34,6 +49,11 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     }
     return grouped
   }, [tasks])
+
+  const rawByStatus = useMemo(
+    () => Object.fromEntries(STATUSES.map((s) => [s, (allViewTasks ?? tasks).filter((t) => t.status === s)])),
+    [allViewTasks, tasks],
+  )
 
   const visibleStatuses = useMemo(
     () => hideEmptyColumns
@@ -83,6 +103,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     const position = positionBetween(above, below)
 
     if (targetStatus === task.status && position === task.position) return
+    if (targetStatus === 'done' && (task.blocked_by || 0) > 0) return
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }, [updateTask])
 
@@ -99,8 +120,8 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     )
   }
 
-  if (showListView) {
-    return <ListView tasks={tasks} onTaskClick={onTaskClick} />
+  if (activeView === 'list') {
+    return <ListView tasks={tasks} onTaskClick={onTaskClick} members={members} labels={labels} />
   }
 
   return (
@@ -113,23 +134,24 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     >
       <div className="flex min-h-0 flex-1 flex-col">
         {!hideEmptyColumns && !banner && (
-          <div className="flex items-center gap-2 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
-            <span className="text-xs font-medium text-[var(--fg-muted)]">Columns:</span>
-            {STATUSES.map((s) => {
-              const active = visibleCols.includes(s)
-              const dot = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
-              return (
-                <button key={s} onClick={() => toggleCol(s)}
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition ${
-                    active ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
-                  }`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot[s] }} />
-                  {s === 'todo' ? 'To Do' : s === 'doing' ? 'Doing' : 'Done'}
-                  <span className="text-[var(--fg-subtle)]">({byStatus[s].length})</span>
-                </button>
-              )
-            })}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-[var(--fg-muted)]">{t('filter.columns')}:</span>
+              {STATUSES.map((s) => {
+                const active = visibleCols.includes(s)
+                return (
+                  <button key={s} onClick={() => toggleCol(s)}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition ${
+                      active ? 'bg-[var(--surface-hover)] text-[var(--fg)]' : 'text-[var(--fg-subtle)]'
+                    }`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: COL_DOT[s] }} />
+                    {s === 'todo' ? t('board.todo') : s === 'doing' ? t('board.inProgress') : t('board.done')}
+                    <span className="text-[var(--fg-subtle)]">({rawByStatus[s].length})</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
         {visibleStatuses.length === 0 ? (
@@ -138,7 +160,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
               <div className="w-full max-w-lg">{banner}</div>
             </div>
           ) : (
-            <EmptyState icon="search" title="No tasks found" description="No tasks match this view. Try a different filter or create a new task." />
+            <EmptyState icon="search" title={t('filter.noTasksFound')} description={t('filter.noTasksDesc')} />
           )
         ) : (
           <>
@@ -150,6 +172,7 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
                   status={status}
                   tasks={byStatus[status]}
                   onTaskClick={onTaskClick}
+                  onAddTask={onAddTask}
                   editors={editors}
                 />
               ))}

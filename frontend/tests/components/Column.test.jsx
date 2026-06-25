@@ -3,7 +3,9 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (k) => ({ 'board.todo': 'To Do', 'board.inProgress': 'In progress', 'board.done': 'Done', 'board.noTasks': 'No tasks yet' }[k] ?? k),
+  }),
 }))
 
 vi.mock('@dnd-kit/core', () => ({
@@ -52,7 +54,7 @@ describe('Column', () => {
   it('shows no-tasks placeholder when empty', async () => {
     const Column = (await import('../../src/components/Column')).default
     render(<Column status="todo" tasks={[]} onTaskClick={vi.fn()} />)
-    expect(screen.getByText('Drop tasks here')).toBeInTheDocument()
+    expect(screen.getByText('No tasks yet')).toBeInTheDocument()
   })
 
   it('renders task cards for non-empty column', async () => {
