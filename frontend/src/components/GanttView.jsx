@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Gantt from 'frappe-gantt'
 import '../gantt.css'
@@ -17,56 +17,73 @@ function toGanttDate(iso) {
 }
 
 function toISODate(ganttDate) {
-  // frappe-gantt returns date strings like "2026-06-25 00:00:00"
   return String(ganttDate).slice(0, 10)
 }
 
 export default function GanttView({ tasks, onTaskClick, updateTask }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const containerRef = useRef(null)
   const ganttRef = useRef(null)
+  const [zoom, setZoom] = useState('Week')
   const zoomRef = useRef('Week')
+  const tasksRef = useRef(tasks)
+  const prevLangRef = useRef(i18n.language)
 
-  const ganttTasks = tasks
-    .filter((t) => t.due_date)
-    .map((t) => {
-      const end = t.due_date
+  useEffect(() => { tasksRef.current = tasks }, [tasks])
+
+  const ganttTasks = useMemo(() => tasks
+    .filter((task) => task.due_date)
+    .map((task) => {
+      const end = task.due_date
       const startDate = new Date(end)
       startDate.setDate(startDate.getDate() - 3)
       const start = startDate.toISOString().slice(0, 10)
       return {
-        id: t.id,
-        name: t.title,
+        id: task.id,
+        name: task.title,
         start: toGanttDate(start),
         end: toGanttDate(end),
-        progress: t.status === 'done' ? 100 : t.status === 'doing' ? 50 : 0,
-        custom_class: t.status === 'done' ? 'gantt-done' : t.status === 'doing' ? 'gantt-doing' : '',
+        progress: task.status === 'done' ? 100 : task.status === 'doing' ? 50 : 0,
+        custom_class: task.status === 'done' ? 'gantt-done' : task.status === 'doing' ? 'gantt-doing' : '',
       }
-    })
+    }), [tasks])
 
   useEffect(() => {
     if (!containerRef.current || ganttTasks.length === 0) return
 
+    const langChanged = prevLangRef.current !== i18n.language
+    prevLangRef.current = i18n.language
+
+    if (ganttRef.current && !langChanged) {
+      ganttRef.current.refresh(ganttTasks)
+      return
+    }
+
+    containerRef.current.innerHTML = ''
     ganttRef.current = new Gantt(containerRef.current, ganttTasks, {
       view_mode: zoomRef.current,
       date_format: 'YYYY/MM/DD',
+      today_button: false,
+      language: i18n.language,
       on_click: (ganttTask) => {
-        const orig = tasks.find((t) => t.id === ganttTask.id)
+        const orig = tasksRef.current.find((task) => task.id === ganttTask.id)
         if (orig) onTaskClick?.(orig)
       },
       on_date_change: (ganttTask, start, end) => {
         const newDueDate = toISODate(end)
-        if (updateTask) {
-          updateTask(ganttTask.id, { due_date: newDueDate }).catch(() => {})
-        }
+        if (updateTask) updateTask(ganttTask.id, { due_date: newDueDate }).catch(() => {})
       },
       on_progress_change: () => {},
-      on_view_change: (mode) => { zoomRef.current = mode },
+      on_view_change: (mode) => {
+        const name = mode?.name ?? mode
+        setZoom(name)
+        zoomRef.current = name
+      },
     })
 
     return () => { ganttRef.current = null }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ganttTasks.length])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ganttTasks, i18n.language])
 
   if (ganttTasks.length === 0) {
     return (
@@ -78,9 +95,14 @@ export default function GanttView({ tasks, onTaskClick, updateTask }) {
     )
   }
 
-  function setZoom(mode) {
+  function changeZoom(mode) {
+    setZoom(mode)
     zoomRef.current = mode
     ganttRef.current?.change_view_mode(mode)
+  }
+
+  function scrollToToday() {
+    ganttRef.current?.scroll_current()
   }
 
   function exportPNG() {
@@ -112,15 +134,27 @@ export default function GanttView({ tasks, onTaskClick, updateTask }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Toolbar */}
       <div className="flex items-center gap-1.5 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
         <span className="text-xs font-medium text-[var(--fg-muted)]">{t('gantt.zoom')}:</span>
         {ZOOM_MODES.map((m) => (
-          <button key={m.key} onClick={() => setZoom(m.key)}
-            className="rounded-full px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition">
+          <button
+            key={m.key}
+            onClick={() => changeZoom(m.key)}
+            className={`rounded-full px-2 py-0.5 text-xs font-medium transition ${
+              zoom === m.key
+                ? 'bg-[var(--accent)] !text-white'
+                : 'text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]'
+            }`}
+          >
             {t(m.tKey)}
           </button>
         ))}
+        <button
+          onClick={scrollToToday}
+          className="rounded-full px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
+        >
+          {t('gantt.today')}
+        </button>
         <button
           onClick={exportPNG}
           className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
