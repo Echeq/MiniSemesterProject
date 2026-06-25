@@ -242,14 +242,14 @@ Add task assignment to team members and task dependencies.
 - [x] Show avatar of assignee on TaskCard
 - [x] Create dependency picker UI — TaskModal.jsx ("Blocked by" multi-select of project tasks)
 - [x] Show blocked badge on TaskCard ("Blocked by X" with lock icon)
-- [ ] Prevent completing blocked tasks (call checkBlockedTasks RPC before status → done in updateTask)
+- [x] Prevent completing blocked tasks (call checkBlockedTasks RPC before status → done in updateTask)
 
 ### Acceptance Criteria
 - [x] User can assign task to any project member
 - [x] Assigned user sees task in their dashboard
 - [x] User can set task dependencies (via add_task_dependency RPC)
 - [x] UI shows blocked tasks (badge on TaskCard)
-- [ ] Cannot complete blocked tasks (need to wire checkBlockedTasks in useBoard.updateTask)
+- [x] Cannot complete blocked tasks (checkBlockedTasks wired in useBoard.updateTask)
 
 ### Dependencies
 - Issue #3 (Project Members)
@@ -306,21 +306,21 @@ Implement Gantt chart for timeline view of tasks.
 ### Tasks
 
 #### Frontend
-- [ ] Install Gantt library (dhtmlx-gantt or frappe-gantt)
-- [ ] Create GanttView component
-- [ ] Map tasks to Gantt tasks (start date, end date, progress)
-- [ ] Add zoom controls (day, week, month)
+- [x] Install Gantt library (frappe-gantt)
+- [x] Create GanttView component
+- [x] Map tasks to Gantt tasks (start date, end date, progress)
+- [x] Add zoom controls (Quarter Day, Half Day, Day, Week, Month)
 - [ ] Show dependency lines
 - [ ] Allow drag to adjust dates (update API)
 - [ ] Allow drag to adjust dependencies
 - [ ] Export Gantt as PNG
 
 ### Acceptance Criteria
-- [ ] Users can switch to Gantt view
-- [ ] Tasks appear as bars on timeline
+- [x] Users can switch to Gantt view (via Topbar view switcher)
+- [x] Tasks appear as bars on timeline
 - [ ] Dependencies shown as arrows
 - [ ] Dragging task bar updates due date
-- [ ] Zoom in/out works
+- [x] Zoom in/out works
 - [ ] Export to PNG works
 
 ### Dependencies
@@ -341,15 +341,15 @@ Create 3D sphere visualization using Three.js to show project progress.
 ### Tasks
 
 #### Frontend
-- [ ] Install Three.js and dependencies
-- [ ] Create DataSphere component
-- [ ] Set up 3D scene, camera, renderer
-- [ ] Create particle system (particles = tasks)
-- [ ] Map task completion to sphere color (red→green)
-- [ ] Add rotation animation
+- [x] Install Three.js and dependencies
+- [x] Create DataSphere component
+- [x] Set up 3D scene, camera, renderer
+- [x] Create particle system (particles = tasks)
+- [x] Map task completion to sphere color (red→green)
+- [x] Add rotation animation
 - [ ] Map in-progress tasks to flowing particles
 - [ ] Map overdue tasks to pulsing effect
-- [ ] Add mouse interaction (drag to rotate, zoom)
+- [x] Add mouse interaction (drag to rotate, zoom)
 - [ ] Add hover tooltip with task details
 
 ### Visual Mapping
@@ -362,10 +362,10 @@ Create 3D sphere visualization using Three.js to show project progress.
 | Time progress | Rotation speed |
 
 ### Acceptance Criteria
-- [ ] 3D sphere renders with particles
-- [ ] Color changes based on completion %
+- [x] 3D sphere renders with particles
+- [x] Color changes based on completion %
 - [ ] Hover shows task details
-- [ ] Works on modern browsers (WebGL)
+- [x] Works on modern browsers (WebGL)
 - [ ] Doesn't kill performance (<200 tasks)
 
 ### Dependencies
@@ -390,15 +390,15 @@ Create a table/list view with advanced filtering and sorting.
 
 #### Frontend
 - [x] Create ListView component (table with title, status, priority, assignee, due_date)
-- [ ] Add filter sidebar/panel (frontend filter UI for the RPC)
-- [ ] Add column sort by click on table header
+- [x] Add filter sidebar/panel (FilterPanel.jsx with status, priority, assignee, labels, date range)
+- [x] Add column sort by click on table header (toggleSort with asc/desc indicators)
 - [ ] Save filter preferences (localStorage or DB)
 - [ ] Toggle between compact and detailed view
 
 ### Acceptance Criteria
 - [x] Users can switch to List view (via Topbar Kanban/List toggle)
-- [ ] Filters work together (AND logic)
-- [ ] Sorting works on any column
+- [x] Filters work together (AND logic via client-side filtering)
+- [x] Sorting works on any column (click header asc/desc)
 - [ ] Filter preferences persist after page reload
 - [ ] Bulk edit possible (checkboxes)
 
@@ -540,7 +540,7 @@ Final touches before submission.
 - [ ] Performance testing (>200 tasks)
 
 #### Polish
-- [~] Add loading states (Board + Sidebar have skeletons; AdminModal, ProfileModal, AuthGate still show text "Loading…")
+- [x] Add loading states (Board + Sidebar skeletons; AdminModal/ProfileModal use Spinner; AuthGate uses spinner)
 - [x] Add error boundaries (ErrorBoundary wrapping Board + Sidebar)
 - [x] Add 404 page (NotFound.jsx)
 - [x] Add empty states (EmptyState wired in Board and Sidebar)

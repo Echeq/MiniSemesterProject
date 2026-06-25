@@ -53,6 +53,6 @@ npm run dev
 
 | Role | Member |
 |---|---|
-| Frontend Lead & UI Specialist | @goanarbolkong |
-| Backend Lead & API Architect | @MemerZxZ |
+| Frontend & Backend Lead, API Architect | @goanarbolkong |
+| Frontend & Backend Support, Mobile Developer | @MemerZxZ |
 | Project Manager & Fullstack QA | @Echeq |

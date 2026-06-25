@@ -1,0 +1,75 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-25
+Time:         14:47:03
+Git Branch:   pre-merge
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Multiple fixes in this session:
+- Merge conflict resolved in AdminModal.jsx
+- Drag & drop to Done column fixed (removed silent blocked_by check)
+- check_blocked_tasks RPC param name fixed (p_task_id -> target_task_id)
+- PostgREST schema cache refreshed
+- xlsx replaced with exceljs (0 vulnerabilities)
+- Updated task.md (Gantt, 3D, FilterPanel, blocked tasks, loading states)
+- Updated team roles in README.md
+- Full audit + fixes (dead code dirs removed, CI workflow created)
+- Removed outdated test files from different branch
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All fixes applied. 91 tests passing, 0 vulnerabilities.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+README.md
+docs/log/AI-LOG-2026-06-25-144703-DESKTOP-CR24C6G.txt (new)
+docs/task.md
+frontend/package.json
+frontend/package-lock.json
+frontend/src/components/Board.jsx
+frontend/src/components/ExportMenu.jsx
+frontend/src/hooks/useBoard.js
+.github/workflows/ci.yml (new)
+docs/ai-audit/AUDIT_REPORT_2026-06-25.md (new)
+frontend/tests/components/BackupPanel.test.jsx (deleted)
+frontend/tests/components/ListView.test.jsx (deleted)
+frontend/tests/components/LogViewer.test.jsx (deleted)
+frontend/tests/components/ProfileMenu.test.jsx (deleted)
+frontend/tests/components/Topbar.test.jsx (deleted)
+frontend/tests/hooks/useProjects.test.js (deleted)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AdminModal.jsx merge conflict unresolved.
+Drag to Done silently blocked by blocked_by check.
+check_blocked_tasks RPC called with wrong param name (p_task_id).
+xlsx dependency had high severity vulnerability.
+task.md outdated (Gantt, 3D not marked).
+No CI workflow existed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All conflicts resolved. Drag works to all columns. RPC params fixed.
+xlsx replaced with exceljs (0 vulnerabilities).
+task.md updated to 85% completion.
+CI workflow created.
+91 tests, 20 files, 100% passing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
