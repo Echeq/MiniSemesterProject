@@ -73,6 +73,8 @@ Supabase CLI (from root or `supabase/`):
 - `docs/deploy.md` — full deploy guide (local, production, branches, data migration)
 - `scripts/deploy-supabase.sh` / `.ps1` — interactive deploy scripts
 - `scripts/migrate-supabase-data.sh` — copy data between projects
+- `scripts/test-performance.sh` — 120-task performance test
+- `docs/reference/performance-testing.md` — performance test guide + results
 - `docs/guide/ai.md` — OpenCode workflow details
 
 ## Setup gotchas

@@ -26,10 +26,14 @@ export default function Board({ tasks, updateTask, onTaskClick, hideEmptyColumns
     }),
   )
 
-  const byStatus = useMemo(
-    () => Object.fromEntries(STATUSES.map((s) => [s, tasks.filter((t) => t.status === s)])),
-    [tasks],
-  )
+  const byStatus = useMemo(() => {
+    const grouped = { todo: [], doing: [], done: [] }
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i]
+      if (grouped[t.status]) grouped[t.status].push(t)
+    }
+    return grouped
+  }, [tasks])
 
   const visibleStatuses = useMemo(
     () => hideEmptyColumns
