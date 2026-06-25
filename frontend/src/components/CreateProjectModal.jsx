@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 
 const PRESET_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4']
@@ -12,6 +13,7 @@ const PRESET_ICONS = [
 ]
 
 export default function CreateProjectModal({ onCreate, onClose }) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#6366f1')
@@ -35,20 +37,20 @@ export default function CreateProjectModal({ onCreate, onClose }) {
   }
 
   return (
-    <Modal title="New project" onClose={onClose}>
+    <Modal title={t('project.newTitle')} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Name</span>
-          <input type="text" required maxLength={120} autoFocus value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Project name" />
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.name')}</span>
+          <input type="text" required maxLength={120} autoFocus value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder={t('project.namePlaceholder')} />
         </label>
 
         <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Description (optional)</span>
-          <textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder="What is this project about?" />
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.descriptionOptional')}</span>
+          <textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder={t('project.descPlaceholder')} />
         </label>
 
         <div className="mb-3">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Color</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.color')}</span>
           <div className="flex gap-2">
             {PRESET_COLORS.map((c) => (
               <button key={c} type="button" onClick={() => setColor(c)}
@@ -60,7 +62,7 @@ export default function CreateProjectModal({ onCreate, onClose }) {
         </div>
 
         <div className="mb-4">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Icon</span>
+          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.icon')}</span>
           <div className="flex flex-wrap gap-2">
             {PRESET_ICONS.map((icn) => (
               <button key={icn.key} type="button" onClick={() => setIcon(icn.key)}
@@ -76,8 +78,8 @@ export default function CreateProjectModal({ onCreate, onClose }) {
         {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
         <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn btn-default">Cancel</button>
-          <button type="submit" disabled={busy} className="btn btn-primary">Create project</button>
+          <button type="button" onClick={onClose} className="btn btn-default">{t('project.cancel')}</button>
+          <button type="submit" disabled={busy} className="btn btn-primary">{t('project.create')}</button>
         </div>
       </form>
     </Modal>

@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key) => ({
+      'board.todo': 'To Do', 'board.inProgress': 'In progress', 'board.done': 'Done',
+      'board.noTasks': 'No tasks yet', 'filter.columns': 'Columns', 'filter.noTasksFound': 'No tasks found',
+      'filter.noTasksDesc': 'No tasks match this view.',
+    }[key] ?? key),
+  }),
 }))
 
 vi.mock('../../src/hooks/useIsMobile', () => ({
@@ -66,7 +72,7 @@ describe('Board', () => {
     const Board = (await import('../../src/components/Board')).default
     render(<Board tasks={[]} role="admin" updateTask={vi.fn().mockResolvedValue()} onTaskClick={vi.fn()} onMobileAction={vi.fn()} onInvitationClick={vi.fn()} />)
     expect(screen.getAllByText('To Do').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Doing').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('In progress').length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText('Done').length).toBeGreaterThanOrEqual(1)
   })
 

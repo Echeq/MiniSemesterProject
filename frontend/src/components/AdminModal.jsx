@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
 import Avatar from './Avatar'
 import { useMembers } from '../hooks/useMembers'
@@ -6,15 +7,24 @@ import { useInvitations } from '../hooks/useInvitations'
 import LogViewer from './LogViewer'
 import BackupPanel from './BackupPanel'
 
+function Spinner() {
+  return (
+    <div className="flex items-center justify-center py-6">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+    </div>
+  )
+}
+
 export default function AdminModal({ session, onClose }) {
+  const { t } = useTranslation()
   const [tab, setTab] = useState('members')
   return (
-    <Modal title="Admin panel" subtitle="Manage your team" onClose={onClose} maxWidth="max-w-lg">
+    <Modal title={t('admin.title')} subtitle={t('admin.subtitle')} onClose={onClose} maxWidth="max-w-lg">
       <div className="mb-4 flex flex-wrap gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
-        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>Members</TabButton>
-        <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>Invitations</TabButton>
-        <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>Logs</TabButton>
-        <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>Backup</TabButton>
+        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('admin.members')}</TabButton>
+        <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>{t('admin.invitations')}</TabButton>
+        <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs')}</TabButton>
+        <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>{t('admin.backup')}</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
       {tab === 'invites' && <Invites />}
@@ -44,6 +54,7 @@ function rolePill(role) {
 }
 
 function Members({ session }) {
+  const { t } = useTranslation()
   const { members, loading, setRole } = useMembers()
   const [busyId, setBusyId] = useState(null)
 
@@ -58,7 +69,7 @@ function Members({ session }) {
     }
   }
 
-  if (loading) return <p className="py-6 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+  if (loading) return <Spinner />
 
   return (
     <div className="max-h-80 space-y-1.5 overflow-y-auto">
@@ -69,7 +80,7 @@ function Members({ session }) {
             <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
-                {m.display_name} {isSelf && <span className="text-xs text-[var(--fg-subtle)]">(you)</span>}
+                {m.display_name} {isSelf && <span className="text-xs text-[var(--fg-subtle)]">({t('sidebar.you')})</span>}
               </p>
             </div>
             <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold" style={rolePill(m.role)}>{m.role}</span>
@@ -79,7 +90,7 @@ function Members({ session }) {
               title={isSelf ? "You can't change your own role" : ''}
               className="btn btn-default !py-1 !text-xs"
             >
-              {m.role === 'admin' ? 'Demote' : 'Promote'}
+              {m.role === 'admin' ? t('admin.demote') : t('admin.promote')}
             </button>
           </div>
         )
@@ -89,6 +100,7 @@ function Members({ session }) {
 }
 
 function Invites() {
+  const { t } = useTranslation()
   const { invitations, loading, invite, revoke } = useInvitations()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('member')
@@ -114,10 +126,10 @@ function Invites() {
       <form onSubmit={send} className="mb-3 flex gap-2">
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@example.com" className="input" />
         <select value={role} onChange={(e) => setRole(e.target.value)} className="input w-28">
-          <option value="member">Member</option>
-          <option value="admin">Admin</option>
+          <option value="member">{t('admin.member')}</option>
+          <option value="admin">{t('admin.admin')}</option>
         </select>
-        <button disabled={busy} className="btn btn-primary">Invite</button>
+        <button disabled={busy} className="btn btn-primary">{busy ? t('admin.inviting') : t('admin.invite')}</button>
       </form>
       {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
       <p className="mb-3 text-xs text-[var(--fg-muted)]">
@@ -125,9 +137,9 @@ function Invites() {
       </p>
 
       {loading ? (
-        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+        <Spinner />
       ) : invitations.length === 0 ? (
-        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">No invitations yet.</p>
+        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">{t('admin.noInvitations')}</p>
       ) : (
         <div className="max-h-64 space-y-1.5 overflow-y-auto">
           {invitations.map((inv) => (
@@ -138,7 +150,7 @@ function Invites() {
               </div>
               <StatusPill status={inv.status} />
               {inv.status === 'pending' && (
-                <button onClick={() => revoke(inv.id).catch((e) => alert(e.message))} className="btn btn-danger !py-1 !text-xs">Revoke</button>
+                <button onClick={() => revoke(inv.id).catch((e) => alert(e.message))} className="btn btn-danger !py-1 !text-xs">{t('admin.revoke')}</button>
               )}
             </div>
           ))}

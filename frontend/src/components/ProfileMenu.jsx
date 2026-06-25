@@ -9,6 +9,7 @@ const LANGUAGES = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
   { code: 'zh', label: '中文', flag: '🇨🇳' },
   { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'ar', label: 'العربية', flag: '🇸🇦' },
 ]
 
 export default function ProfileMenu({ profile, email, isAdmin, onOpenAccount, onOpenAdmin }) {
@@ -30,7 +31,7 @@ export default function ProfileMenu({ profile, email, isAdmin, onOpenAccount, on
       </button>
 
       {open && (
-        <div className="menu absolute right-0 z-50 mt-2 w-64 p-2 animate-pop-in">
+        <div className="menu absolute end-0 z-50 mt-2 w-64 p-2 animate-pop-in">
           <div className="flex items-center gap-3 px-2 py-2">
             <Avatar name={name} url={profile?.avatar_url} size="md" />
             <div className="min-w-0">

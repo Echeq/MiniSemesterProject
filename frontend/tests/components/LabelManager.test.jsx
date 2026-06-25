@@ -28,7 +28,14 @@ const mockSupabase = {
 vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key) => ({
+      'label.manageTitle': 'Manage labels', 'label.manageSubtitle': 'Create, edit, or delete labels for this project',
+      'label.none': 'No labels yet. Create one below.', 'label.deleteConfirm': 'Delete this label? It will be removed from all tasks.',
+      'label.namePlaceholder': 'Label name', 'label.add': 'Add label',
+      'label.edit': 'Edit', 'label.cancel': 'Cancel', 'label.save': 'Save', 'label.delete': 'Delete',
+    }[key] ?? key),
+  }),
 }))
 
 describe('LabelManager', () => {

@@ -1,14 +1,10 @@
 import { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import Avatar from './Avatar'
 
 const R = 54
 const STROKE = 13
 const C = 2 * Math.PI * R
-const SEG = [
-  { key: 'done', label: 'Done', color: 'var(--done)' },
-  { key: 'doing', label: 'Doing', color: 'var(--doing)' },
-  { key: 'todo', label: 'To Do', color: 'var(--todo)' },
- ]
 
 function daysFromToday(dateStr) {
   const today = new Date()
@@ -18,6 +14,14 @@ function daysFromToday(dateStr) {
 }
 
 function InsightsPanel({ tasks, scopeLabel, onClose }) {
+  const { t } = useTranslation()
+
+  const SEG = [
+    { key: 'done', label: t('board.done'), color: 'var(--done)' },
+    { key: 'doing', label: t('board.inProgress'), color: 'var(--doing)' },
+    { key: 'todo', label: t('board.todo'), color: 'var(--todo)' },
+  ]
+
   const stats = useMemo(() => {
     const counts = { todo: 0, doing: 0, done: 0 }
     let overdue = 0
@@ -31,7 +35,7 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
         if (d < 0) overdue++
         else if (d <= 7) dueSoon++
       }
-      const name = t.assignee_profile?.display_name ?? 'Unassigned'
+      const name = t.assignee_profile?.display_name ?? '__unassigned__'
       const prev = contrib.get(name) ?? { name, url: t.assignee_profile?.avatar_url ?? null, count: 0 }
       prev.count++
       contrib.set(name, prev)
@@ -58,16 +62,17 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
       acc += frac
       return arc
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stats])
 
   return (
     <aside className="glass hidden w-80 flex-shrink-0 flex-col overflow-y-auto border-l border-[var(--glass-border)] xl:flex">
       <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-5 py-4">
         <div>
-          <h2 className="text-sm font-semibold">Insights</h2>
+          <h2 className="text-sm font-semibold">{t('insights.title')}</h2>
           <p className="mt-0.5 truncate text-xs text-[var(--fg-muted)]">{scopeLabel}</p>
         </div>
-        <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[var(--fg-muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]" aria-label="Close insights" title="Close insights">
+        <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[var(--fg-muted)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]" aria-label={t('task.close')} title={t('task.close')}>
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" /></svg>
         </button>
       </div>
@@ -77,8 +82,8 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--card)] text-[var(--fg-subtle)]">
             <svg className="h-6 w-6" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.75a.75.75 0 0 1 1.5 0V13.5h11.75a.75.75 0 0 1 0 1.5H2.25a.75.75 0 0 1-.75-.75Zm12.78 3.03-3.25 3.25a.75.75 0 0 1-1.06 0L8.5 6.06 5.78 8.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0L11 6.44l2.72-2.72a.75.75 0 1 1 1.06 1.06Z" /></svg>
           </div>
-          <p className="text-sm font-medium">No data yet</p>
-          <p className="mt-1 text-xs text-[var(--fg-muted)]">Add tasks to see progress and contributors here.</p>
+          <p className="text-sm font-medium">{t('insights.noData')}</p>
+          <p className="mt-1 text-xs text-[var(--fg-muted)]">{t('insights.noDataDesc')}</p>
         </div>
       ) : (
         <div className="space-y-6 p-5">
@@ -105,7 +110,7 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-bold leading-none">{stats.pctDone}%</span>
-                <span className="mt-1 text-xs text-[var(--fg-muted)]">complete</span>
+                <span className="mt-1 text-xs text-[var(--fg-muted)]">{t('insights.complete')}</span>
               </div>
             </div>
             <div className="mt-4 grid w-full grid-cols-3 gap-2">
@@ -123,18 +128,18 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
 
           {/* Attributes */}
           <section className="grid grid-cols-3 gap-2">
-            <Stat label="Total" value={stats.total} />
-            <Stat label="Overdue" value={stats.overdue} color="var(--danger)" />
-            <Stat label="Due ≤7d" value={stats.dueSoon} color="var(--doing)" />
+            <Stat label={t('insights.total')} value={stats.total} />
+            <Stat label={t('insights.overdue')} value={stats.overdue} color="var(--danger)" />
+            <Stat label={t('insights.dueWeek')} value={stats.dueSoon} color="var(--doing)" />
           </section>
 
           {/* Contributors */}
           <section>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Contributors</h3>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('insights.contributors')}</h3>
             <div className="space-y-2.5">
               {stats.contributors.map((c) => (
                 <div key={c.name} className="flex items-center gap-2.5">
-                  {c.name === 'Unassigned' ? (
+                  {c.name === '__unassigned__' ? (
                     <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-[var(--glass-border)] text-[var(--fg-subtle)]">
                       <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" /></svg>
                     </span>
@@ -143,7 +148,7 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-xs font-medium">{c.name}</span>
+                      <span className="truncate text-xs font-medium">{c.name === '__unassigned__' ? t('insights.unassigned') : c.name}</span>
                       <span className="text-xs text-[var(--fg-muted)]">{c.count}</span>
                     </div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[var(--glass-border)]">

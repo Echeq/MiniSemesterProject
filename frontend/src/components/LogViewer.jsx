@@ -1,24 +1,26 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 
-const ACTION_LABELS = {
-  task_created: 'Created task',
-  task_updated: 'Updated task',
-  task_deleted: 'Deleted task',
-  project_created: 'Created project',
-  project_archived: 'Archived project',
-  project_restored: 'Restored project',
-  project_deleted: 'Deleted project',
-  test_action: 'Test action',
+const ACTION_KEYS = {
+  task_created: 'log.taskCreated',
+  task_updated: 'log.taskUpdated',
+  task_deleted: 'log.taskDeleted',
+  project_created: 'log.projectCreated',
+  project_archived: 'log.projectArchived',
+  project_restored: 'log.projectRestored',
+  project_deleted: 'log.projectDeleted',
+  test_action: 'log.testAction',
 }
 
 export default function LogViewer() {
+  const { t } = useTranslation()
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [actionFilter, setActionFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
 
-  const actions = Object.keys(ACTION_LABELS)
+  const actions = Object.keys(ACTION_KEYS)
 
   const fetchLogs = useCallback(async () => {
     setLoading(true)
@@ -37,23 +39,23 @@ export default function LogViewer() {
     <div>
       <div className="mb-3 flex gap-2">
         <select value={actionFilter} onChange={(e) => setActionFilter(e.target.value)} className="input flex-1">
-          <option value="">All actions</option>
-          {actions.map((a) => <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>)}
+          <option value="">{t('admin.allActions')}</option>
+          {actions.map((a) => <option key={a} value={a}>{t(ACTION_KEYS[a])}</option>)}
         </select>
         <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="input w-40" title="Filter by date" />
       </div>
 
       {loading ? (
-        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">{t('log.loading')}</p>
       ) : logs.length === 0 ? (
-        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">No logs found.</p>
+        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">{t('log.noLogs')}</p>
       ) : (
         <div className="max-h-80 space-y-1.5 overflow-y-auto">
           {logs.map((log) => (
             <div key={log.id} className="rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
               <div className="flex items-center gap-2 text-xs">
                 <span className="rounded-full bg-[var(--surface-hover)] px-1.5 py-0.5 font-medium">
-                  {ACTION_LABELS[log.action] || log.action}
+                  {ACTION_KEYS[log.action] ? t(ACTION_KEYS[log.action]) : log.action}
                 </span>
                 <span className="text-[var(--fg-subtle)]">{log.target_type}</span>
                 <span className="ml-auto text-[var(--fg-muted)]">
@@ -63,7 +65,7 @@ export default function LogViewer() {
               <div className="mt-1 flex items-center gap-2">
                 {log.user_display_name && (
                   <span className="text-xs text-[var(--fg-muted)]">
-                    by {log.user_display_name}
+                    {t('log.by', { name: log.user_display_name })}
                   </span>
                 )}
                 {log.metadata && Object.keys(log.metadata).length > 0 && (

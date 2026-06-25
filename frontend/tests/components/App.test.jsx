@@ -21,6 +21,11 @@ vi.mock('react-i18next', () => ({
       'auth.hasAccount': 'Already have an account? Sign in',
       'auth.checkEmail': 'Check your email to confirm your account, then sign in.',
       'lang.switcher': 'Language',
+      'sidebar.allTasks': 'All tasks',
+      'sidebar.sharedBoard': 'Shared board',
+      'sidebar.myTasks': 'My tasks',
+      'sidebar.dueSoon': 'Due soon',
+      'sidebar.overdue': 'Overdue',
     }[key] || key),
   }),
 }))
@@ -75,7 +80,7 @@ describe('App', () => {
     mockSupabase.auth.getSession.mockReturnValue(new Promise(() => {}))
     const { default: App } = await import('../../src/App')
     render(<App />)
-    expect(screen.getByText('Loading…')).toBeInTheDocument()
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument()
   })
 
   it('renders AuthForm when no session', async () => {

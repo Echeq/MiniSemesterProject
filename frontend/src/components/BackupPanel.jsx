@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../api/supabaseClient'
 
 export default function BackupPanel() {
+  const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -28,12 +30,10 @@ export default function BackupPanel() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-[var(--fg-muted)]">
-        Download all project data as JSON. This includes projects, tasks, labels, and members.
-      </p>
+      <p className="text-sm text-[var(--fg-muted)]">{t('backup.description')}</p>
 
       <button onClick={handleExport} disabled={busy} className="btn btn-primary w-full justify-center">
-        {busy ? 'Exporting…' : 'Download backup (.json)'}
+        {busy ? t('backup.exporting') : t('backup.download')}
       </button>
 
       {error && (
