@@ -6,6 +6,7 @@ import { useMembers } from '../hooks/useMembers'
 import { useInvitations } from '../hooks/useInvitations'
 import LogViewer from './LogViewer'
 import BackupPanel from './BackupPanel'
+import RestorePanel from './RestorePanel'
 
 function Spinner() {
   return (
@@ -21,15 +22,17 @@ export default function AdminModal({ session, onClose }) {
   return (
     <Modal title={t('admin.title')} subtitle={t('admin.subtitle')} onClose={onClose} maxWidth="max-w-lg">
       <div className="mb-4 flex flex-wrap gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
-        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('admin.members')}</TabButton>
-        <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>{t('admin.invitations')}</TabButton>
-        <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs')}</TabButton>
-        <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>{t('admin.backup')}</TabButton>
+        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('admin.members') || 'Members'}</TabButton>
+        <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>{t('admin.invitations') || 'Invitations'}</TabButton>
+        <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs') || 'Logs'}</TabButton>
+        <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>{t('admin.backup') || 'Backup'}</TabButton>
+        <TabButton active={tab === 'restore'} onClick={() => setTab('restore')}>{t('admin.restore') || 'Restore'}</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
       {tab === 'invites' && <Invites />}
       {tab === 'logs' && <LogViewer />}
       {tab === 'backup' && <BackupPanel />}
+      {tab === 'restore' && <RestorePanel />}
     </Modal>
   )
 }

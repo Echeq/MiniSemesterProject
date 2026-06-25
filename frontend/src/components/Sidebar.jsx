@@ -59,9 +59,15 @@ const Sidebar = memo(function Sidebar({
   const { mineCount, overdueCount, dueSoonCount } = useMemo(() => {
     const todayVal = todayStr()
     const in7Val = in7Str()
-    const mine = stats.filter((t) => t.assignee === currentUserId).length
-    const overdue = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date < todayVal).length
-    const dueSoon = stats.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= todayVal && t.due_date <= in7Val).length
+    let mine = 0, overdue = 0, dueSoon = 0
+    for (let i = 0; i < stats.length; i++) {
+      const t = stats[i]
+      if (t.assignee === currentUserId) mine++
+      if (t.due_date && t.status !== 'done') {
+        if (t.due_date < todayVal) overdue++
+        else if (t.due_date <= in7Val) dueSoon++
+      }
+    }
     return { mineCount: mine, overdueCount: overdue, dueSoonCount: dueSoon }
   }, [stats, currentUserId])
 
