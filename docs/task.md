@@ -498,7 +498,7 @@ Admin-only features for system management.
 - [x] Create `system_logs` table — migration 20260625000000
 - [x] Create `logActivity` RPC
 - [x] Create backup function (export_all_data RPC — returns JSON with projects + tasks + labels + members)
-- [ ] Add system configuration table
+- [x] Add system configuration table (system_config key-value store with RLS)
 
 #### Frontend
 - [x] Create Admin Panel (only visible to Admins)

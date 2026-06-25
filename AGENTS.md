@@ -41,7 +41,7 @@ Supabase CLI (from root or `supabase/`):
 
 - **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Source is JSX (tsconfig is tooling-only typecheck).
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage, presence). No custom server.
-- **DB source of truth**: `supabase/migrations/` (SQL). 11 migrations from `20260612100000` → `20260625000003`.
+- **DB source of truth**: `supabase/migrations/` (SQL). 12 migrations from `20260612100000` → `20260625000004`.
 - **Supabase MCP applies migrations remotely** — it does NOT write to `supabase/migrations/`. After MCP migrations, run `supabase db pull` locally or copy the SQL into a file to prevent drift.
 - **Entry**: `src/main.jsx` → `App.jsx`. App renders a setup hint when `supabaseClient.js` exports `null` (env vars missing).
 - **Root `package.json`** is a dependency stub (only `@supabase/supabase-js`). All real dependencies in `frontend/`. Install from `frontend/`.
