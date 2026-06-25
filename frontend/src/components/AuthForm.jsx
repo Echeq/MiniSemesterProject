@@ -48,7 +48,7 @@ export default function AuthForm() {
               <path d="M4 7h6v13H4zM14 7h6v8h-6z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold">TaskFlow</h1>
+          <h1 className="text-2xl font-bold">PivotPoint</h1>
           <p className="mt-1 text-sm text-[var(--fg-muted)]">
             {mode === 'signin' ? t('auth.signInToBoard') : t('auth.createAccount')}
           </p>

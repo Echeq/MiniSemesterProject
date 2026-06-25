@@ -113,7 +113,7 @@ const Sidebar = memo(function Sidebar({
             <path d="M4 7h6v13H4zM14 7h6v8h-6z" />
           </svg>
         </div>
-        <span className="text-base font-bold">TaskFlow</span>
+        <span className="text-base font-bold">PivotPoint</span>
       </div>
 
       <div className="divider mx-3" />

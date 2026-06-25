@@ -1,4 +1,4 @@
-# AGENTS.md — MiniSemesterProject
+# AGENTS.md — PivotPoint
 
 ## AI Commands
 

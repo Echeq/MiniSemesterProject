@@ -1,6 +1,6 @@
-# MiniSemesterProject
+# PivotPoint
 
-> A real-time Kanban board built with **React 19** and **Supabase** — drag-and-drop task management with live updates across all clients.
+> A real-time Kanban board built with **React 19** and **Supabase** — drag-and-drop task management with live updates across all clients. Formerly MiniSemesterProject.
 
 ## Tech Stack
 

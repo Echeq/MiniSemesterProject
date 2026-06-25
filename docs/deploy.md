@@ -73,7 +73,7 @@ Recommended for local testing, preview environments, and onboarding.
 ## 2. Link and apply migrations
 
 ```bash
-cd MiniSemesterProject
+cd PivotPoint
 
 # Authenticate the CLI
 supabase login
