@@ -39,7 +39,7 @@ npm run dev
 ## Documentation
 
 | Page | What you'll find |
-|---|---|---|
+|---|---|
 | [Setup Guide](docs/setup.md) | Install dependencies, configure Supabase, run the project |
 | [Architecture](docs/architecture.md) | How React, Supabase Auth, Realtime, and the database connect |
 | [API Reference](docs/api.md) | Auth endpoints, task CRUD, realtime subscriptions, Thunder Client walkthrough |
@@ -47,7 +47,7 @@ npm run dev
 | [Deploy Guide](docs/deploy.md) | Deploy to a new Supabase project (local, production, branches, data migration) |
 | [Performance Testing](docs/reference/performance-testing.md) | 120-task performance test, optimizations, and measurement guide |
 | [Project Structure](docs/guide/structure.md) | Directory tree and what each folder does |
-| [AI Guide](docs/guide/ai.md) | OpenCode workflow, @ai-log, @ai-commit |
+| [AI Guide](https://github.com/Echeq/myAI-Skills) | OpenCode AI skills repository — @ai-log, @ai-commit, orchestrator, audit, docs |
 
 ## Team
 
