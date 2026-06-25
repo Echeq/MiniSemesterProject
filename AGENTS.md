@@ -1,4 +1,4 @@
-# AGENTS.md — MiniSemesterProject
+# AGENTS.md — PivotPoint
 
 ## AI Commands
 
@@ -34,8 +34,6 @@ Supabase CLI (from root or `supabase/`):
 | Path | Why |
 |---|---|
 | `backend/` | Orphaned NestJS scaffold — dist/, generated/, node_modules/, .env only |
-| `frontend/src/composables/` | Empty — Vue 3 remnant |
-| `frontend/src/assets/` | Empty — Vue 3 remnant |
 
 ## Architecture
 

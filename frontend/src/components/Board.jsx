@@ -103,7 +103,6 @@ export default function Board({
     const position = positionBetween(above, below)
 
     if (targetStatus === task.status && position === task.position) return
-    if (targetStatus === 'done' && (task.blocked_by || 0) > 0) return
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }, [updateTask])
 

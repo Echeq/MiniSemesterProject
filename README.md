@@ -1,6 +1,6 @@
-# MiniSemesterProject
+# PivotPoint
 
-> A real-time Kanban board built with **React 19** and **Supabase** — drag-and-drop task management with live updates across all clients.
+> A real-time Kanban board built with **React 19** and **Supabase** — drag-and-drop task management with live updates across all clients. Formerly MiniSemesterProject.
 
 ## Tech Stack
 
@@ -53,6 +53,6 @@ npm run dev
 
 | Role | Member |
 |---|---|
-| Frontend Lead & UI Specialist | @goanarbolkong |
-| Backend Lead & API Architect | @MemerZxZ |
+| Frontend & Backend Lead, API Architect | @goanarbolkong |
+| Frontend & Backend Support, Mobile Developer | @MemerZxZ |
 | Project Manager & Fullstack QA | @Echeq |

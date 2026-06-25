@@ -12,7 +12,7 @@
 
 ```bash
 git clone <repo-url>
-cd MiniSemesterProject/frontend
+cd PivotPoint/frontend
 npm install
 ```
 

@@ -182,7 +182,7 @@ export function useBoard(projectId = 'all') {
 
   const updateTask = useCallback(async (id, fields) => {
     if (fields.status === 'done') {
-      const { data: blockers, error: rpcErr } = await supabase.rpc('check_blocked_tasks', { p_task_id: id })
+      const { data: blockers, error: rpcErr } = await supabase.rpc('check_blocked_tasks', { target_task_id: id })
       if (rpcErr) throw rpcErr
       if (blockers && blockers.length > 0) {
         const titles = blockers.map((b) => b.title).join(', ')

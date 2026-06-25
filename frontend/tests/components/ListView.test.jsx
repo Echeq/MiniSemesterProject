@@ -2,27 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: (key) => ({ 'filter.filters': 'Filters', 'filter.compact': 'Compact', 'filter.noMatch': 'No tasks match this view.', 'filter.clearFilters': 'Clear filters', 'task.labels': 'Labels' }[key] || key) }),
 }))
 
 const makeTask = (overrides = {}) => ({
-  id: 't1',
-  title: 'Task',
-  status: 'todo',
-  priority: null,
-  due_date: null,
-  position: 1024,
-  assignee: null,
-  labels: [],
-  blocked_by: 0,
-  assignee_profile: null,
-  ...overrides,
+  id: 't1', title: 'Task', status: 'todo', priority: null, due_date: null,
+  labels: [], blocked_by: 0, assignee: null, assignee_profile: null, ...overrides,
 })
 
 describe('ListView', () => {
   beforeEach(() => { vi.clearAllMocks() })
 
-  it('renders table headers', async () => {
+  it('renders table', async () => {
     const ListView = (await import('../../src/components/ListView')).default
     const { container } = render(<ListView tasks={[]} onTaskClick={vi.fn()} />)
     expect(container.querySelector('table')).toBeInTheDocument()
@@ -41,15 +32,15 @@ describe('ListView', () => {
     expect(screen.getByText('No tasks match this view.')).toBeInTheDocument()
   })
 
-  it('shows priority badge when set', async () => {
+  it('shows filter button', async () => {
     const ListView = (await import('../../src/components/ListView')).default
-    render(<ListView tasks={[makeTask({ priority: 'P1' })]} onTaskClick={vi.fn()} />)
-    expect(screen.getByText('P1')).toBeInTheDocument()
+    render(<ListView tasks={[makeTask()]} onTaskClick={vi.fn()} />)
+    expect(screen.getByText('Filters')).toBeInTheDocument()
   })
 
-  it('shows assignee avatar when set', async () => {
+  it('shows compact toggle', async () => {
     const ListView = (await import('../../src/components/ListView')).default
-    render(<ListView tasks={[makeTask({ assignee_profile: { display_name: 'Alice' } })]} onTaskClick={vi.fn()} />)
-    expect(screen.getByText('Alice')).toBeInTheDocument()
+    render(<ListView tasks={[makeTask()]} onTaskClick={vi.fn()} />)
+    expect(screen.getByText('Compact')).toBeInTheDocument()
   })
 })

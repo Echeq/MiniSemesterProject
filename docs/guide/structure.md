@@ -1,7 +1,7 @@
 # Project Structure
 
 ```
-MiniSemesterProject/
+PivotPoint/
 ├── .opencode/                     # OpenCode AI config
 │   ├── scripts/                   #   PowerShell/Bash scripts for logging
 │   └── skills/                    #   ai-commit / ai-log-generate skills

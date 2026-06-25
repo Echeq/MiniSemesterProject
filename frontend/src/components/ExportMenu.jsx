@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { jsPDF } from 'jspdf'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 function csvEscape(val) {
   if (val == null) return ''
@@ -97,25 +97,47 @@ export default function ExportMenu({ tasks = [] }) {
     doc.save('tasks-export.pdf')
   }
 
-  function generateExcel() {
-    const data = tasks.map((task) => ({
-      [headers.title]: task.title || '',
-      [headers.status]: statusLabel[task.status] || task.status,
-      [headers.priority]: priorityLabel[task.priority] || task.priority || '',
-      [headers.assignee]: task.assignee_profile?.display_name || '',
-      [headers.dueDate]: task.due_date || '',
-      [headers.labels]: (task.labels || []).map((l) => l.name).join(', '),
-      [headers.description]: (task.description || '').replace(/\n/g, ' '),
-    }))
-    const ws = XLSX.utils.json_to_sheet(data)
-    ws['!cols'] = [{ wch: 40 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 12 }, { wch: 20 }, { wch: 50 }]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Tasks')
-    XLSX.writeFile(wb, 'tasks-export.xlsx')
+  async function generateExcel() {
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = 'TaskFlow'
+    workbook.created = new Date()
+    const ws = workbook.addWorksheet('Tasks')
+
+    ws.columns = [
+      { header: headers.title, key: 'title', width: 40 },
+      { header: headers.status, key: 'status', width: 12 },
+      { header: headers.priority, key: 'priority', width: 10 },
+      { header: headers.assignee, key: 'assignee', width: 20 },
+      { header: headers.dueDate, key: 'dueDate', width: 12 },
+      { header: headers.labels, key: 'labels', width: 20 },
+      { header: headers.description, key: 'description', width: 50 },
+    ]
+
+    tasks.forEach((task) => {
+      ws.addRow({
+        title: task.title || '',
+        status: statusLabel[task.status] || task.status,
+        priority: priorityLabel[task.priority] || task.priority || '',
+        assignee: task.assignee_profile?.display_name || '',
+        dueDate: task.due_date || '',
+        labels: (task.labels || []).map((l) => l.name).join(', '),
+        description: (task.description || '').replace(/\n/g, ' '),
+      })
+    })
+
+    ws.getRow(1).font = { bold: true }
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'tasks-export.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   function handlePDF() { setOpen(false); requestAnimationFrame(generatePDF) }
-  function handleExcel() { setOpen(false); requestAnimationFrame(generateExcel) }
+  async function handleExcel() { setOpen(false); await generateExcel() }
   function handleCSV() {
     setOpen(false)
     const csv = generateCSV()

@@ -1,4 +1,4 @@
-# TODO — MiniSemesterProject backend migration fixes
+# TODO — PivotPoint backend migration fixes
 
 - [x] Make avatar storage policies idempotent to prevent `supabase db reset` crash
   - [x] Update `supabase/migrations/20260612140000_avatars_storage.sql`
