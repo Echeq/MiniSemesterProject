@@ -286,7 +286,7 @@ Create the main Kanban board view with all features.
 - [x] Drag & drop works smoothly
 - [x] Mobile: columns stack vertically
 - [x] Clicking task opens edit modal
-- [ ] Performance is good (>100 tasks)
+- [x] Performance is good (>100 tasks) — single-pass reduce, lazy loading, memo, useCallback
 
 ### Dependencies
 - Issue #4 (Task CRUD)

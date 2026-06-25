@@ -21,6 +21,7 @@ supabase/.temp/
 
 # OpenCode local config
 .opencode/
+opencode.jsonc
 
 # OS
 .DS_Store

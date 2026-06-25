@@ -37,42 +37,6 @@ export function useBoard(projectId = 'all') {
     [projectId],
   )
 
-  // Skip enrichment queries when the task set hasn't changed
-  const lastTaskIdsRef = useRef([])
-
-  function enrichTasksData(tasksArray) {
-    if (!tasksArray || tasksArray.length === 0) return tasksArray
-    const ids = tasksArray.map((t) => t.id)
-    const prev = lastTaskIdsRef.current
-    if (ids.length === prev.length && ids.every((id, i) => id === prev[i])) {
-      return tasksArray
-    }
-    lastTaskIdsRef.current = ids
-
-    Promise.all([
-      supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
-      supabase.from('task_dependencies').select('task_id, depends_on_id').in('task_id', ids),
-    ]).then(([labelsRes, depsRes]) => {
-      const labelMap = {}
-      ;(labelsRes.data || []).forEach((tl) => {
-        if (!labelMap[tl.task_id]) labelMap[tl.task_id] = []
-        labelMap[tl.task_id].push(tl.label)
-      })
-      const depCountMap = {}
-      ;(depsRes.data || []).forEach((td) => {
-        depCountMap[td.task_id] = (depCountMap[td.task_id] || 0) + 1
-      })
-      setTasks((prev) =>
-        prev.map((t) => ({
-          ...t,
-          labels: labelMap[t.id] || [],
-          blocked_by: depCountMap[t.id] || 0,
-        })),
-      )
-    }).catch(() => {})
-    return tasksArray
-  }
-
   const refetch = useCallback(() => {
     setLoading(true)
     let query = supabase.from('tasks').select(TASK_SELECT)
@@ -83,9 +47,16 @@ export function useBoard(projectId = 'all') {
       .then(({ data, error }) => {
         if (error) setError(error.message)
         else {
-          const ids = data.map((t) => t.id)
-          lastTaskIdsRef.current = ids
           setTasks(data)
+          // Single-pass: seed max positions while iterating tasks
+          const maxes = { todo: 0, doing: 0, done: 0 }
+          for (let i = 0; i < data.length; i++) {
+            const t = data[i]
+            if (t.position > maxes[t.status]) maxes[t.status] = t.position
+          }
+          maxPositions.current = maxes
+
+          const ids = data.map((t) => t.id)
           // Batch enrich: labels and dependency counts
           Promise.all([
             supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
@@ -109,10 +80,6 @@ export function useBoard(projectId = 'all') {
               })),
             )
           }).catch(() => {})
-          for (const s of STATUSES) {
-            const col = data.filter((t) => t.status === s)
-            maxPositions.current[s] = col.length ? col[col.length - 1].position : 0
-          }
         }
         setLoading(false)
       })
