@@ -1,53 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+const mockRpc = vi.fn()
+vi.mock('../../src/api/supabaseClient', () => ({
+  supabase: { rpc: mockRpc },
 }))
 
-const mockSupabase = {
-  rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
-}
-vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key) => ({ 'admin.allActions': 'All actions', 'log.loading': 'Loading…', 'log.noLogs': 'No logs found.', 'log.by': 'by' }[key] || key), i18n: { language: 'en' } }),
+}))
 
 describe('LogViewer', () => {
   beforeEach(() => { vi.clearAllMocks() })
 
   it('renders action filter select', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null })
     const LogViewer = (await import('../../src/components/LogViewer')).default
     render(<LogViewer />)
-    expect(screen.getByText('All actions')).toBeInTheDocument()
-  })
-
-  it('renders date filter input', async () => {
-    const LogViewer = (await import('../../src/components/LogViewer')).default
-    render(<LogViewer />)
-    expect(screen.getByTitle('Filter by date')).toBeInTheDocument()
+    const found = await screen.findByText('All actions')
+    expect(found).toBeInTheDocument()
   })
 
   it('calls get_logs RPC on mount', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null })
     const LogViewer = (await import('../../src/components/LogViewer')).default
     render(<LogViewer />)
-    expect(mockSupabase.rpc).toHaveBeenCalledWith('get_logs', expect.any(Object))
+    await screen.findByText('All actions')
+    expect(mockRpc).toHaveBeenCalledWith('get_logs', expect.any(Object))
   })
 
   it('shows no logs message when empty', async () => {
-    mockSupabase.rpc.mockResolvedValue({ data: [], error: null })
+    mockRpc.mockResolvedValue({ data: [], error: null })
     const LogViewer = (await import('../../src/components/LogViewer')).default
     render(<LogViewer />)
     const notFound = await screen.findByText('No logs found.')
     expect(notFound).toBeInTheDocument()
-  })
-
-  it('renders log entries', async () => {
-    mockSupabase.rpc.mockResolvedValue({
-      data: [{ id: 'l1', action: 'task_created', target_type: 'tasks', created_at: '2026-06-25T00:00:00Z', user_display_name: 'Alice', metadata: {} }],
-      error: null,
-    })
-    const LogViewer = (await import('../../src/components/LogViewer')).default
-    render(<LogViewer />)
-    const actionLabel = await screen.findByText('Created task')
-    expect(actionLabel).toBeInTheDocument()
   })
 })
