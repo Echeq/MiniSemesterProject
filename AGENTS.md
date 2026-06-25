@@ -41,7 +41,7 @@ Supabase CLI (from root or `supabase/`):
 
 - **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Source is JSX (tsconfig is tooling-only typecheck).
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage, presence). No custom server.
-- **DB source of truth**: `supabase/migrations/` (SQL). 10 migrations from `20260612100000` → `20260625000002`.
+- **DB source of truth**: `supabase/migrations/` (SQL). 11 migrations from `20260612100000` → `20260625000003`.
 - **Supabase MCP applies migrations remotely** — it does NOT write to `supabase/migrations/`. After MCP migrations, run `supabase db pull` locally or copy the SQL into a file to prevent drift.
 - **Entry**: `src/main.jsx` → `App.jsx`. App renders a setup hint when `supabaseClient.js` exports `null` (env vars missing).
 - **Root `package.json`** is a dependency stub (only `@supabase/supabase-js`). All real dependencies in `frontend/`. Install from `frontend/`.
@@ -58,7 +58,7 @@ Supabase CLI (from root or `supabase/`):
 - **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
 - **RLS**: Admins see all tasks; members see assigned only; unknown see none.
-- **RPCs**: `admin_set_role(target_user uuid, new_role app_role)`, `set_project_status(target_project uuid, new_status project_status)`, `delete_own_account()`, `delete_account()` (legacy wrapper calling `delete_own_account()`), `is_admin()`.
+- **RPCs**: `admin_set_role(target_user uuid, new_role app_role)`, `set_project_status(target_project uuid, new_status project_status)`, `delete_own_account()`, `delete_account()` (legacy wrapper calling `delete_own_account()`), `is_admin()`, `restore_from_backup(data jsonb)`.
 - **Realtime**: `supabase.channel('board')` subscribes to `tasks` table changes. Re-fetches row with assignee join on INSERT/UPDATE before merging.
 - **Presence**: `usePresence(session, profile)` tracks online users via Supabase Realtime presence.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 — incompatible majors, import carefully.

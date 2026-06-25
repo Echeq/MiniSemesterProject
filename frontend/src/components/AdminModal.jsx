@@ -5,6 +5,7 @@ import { useMembers } from '../hooks/useMembers'
 import { useInvitations } from '../hooks/useInvitations'
 import LogViewer from './LogViewer'
 import BackupPanel from './BackupPanel'
+import RestorePanel from './RestorePanel'
 
 export default function AdminModal({ session, onClose }) {
   const [tab, setTab] = useState('members')
@@ -15,11 +16,13 @@ export default function AdminModal({ session, onClose }) {
         <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>Invitations</TabButton>
         <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>Logs</TabButton>
         <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>Backup</TabButton>
+        <TabButton active={tab === 'restore'} onClick={() => setTab('restore')}>Restore</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
       {tab === 'invites' && <Invites />}
       {tab === 'logs' && <LogViewer />}
       {tab === 'backup' && <BackupPanel />}
+      {tab === 'restore' && <RestorePanel />}
     </Modal>
   )
 }

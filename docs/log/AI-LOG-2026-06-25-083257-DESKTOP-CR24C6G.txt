@@ -1,0 +1,59 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    AI INTERACTION LOG                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+PC Name:      DESKTOP-CR24C6G
+Date:         2026-06-25
+Time:         08:32:57
+Git Branch:   dev-backend
+AI Tool:      OpenCode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Plan and execute backend + PM tasks:
+- Create restore_from_backup RPC
+- Update task.md with verified marks
+- Add Restore tab to AdminModal
+- Update AGENTS.md with new migration count and RPC
+- Run @ai-docs, @ai-log, @ai-commit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All tasks completed. Backend migration applied and saved locally.
+Restore tab with file upload UI added to AdminModal.
+task.md updated with verified checkmarks.
+82 tests still passing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE AFFECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AGENTS.md
+docs/task.md
+docs/log/AI-LOG-2026-06-25-083257-DESKTOP-CR24C6G.txt (new)
+frontend/src/components/AdminModal.jsx
+frontend/src/components/RestorePanel.jsx (new)
+supabase/migrations/20260625000003_restore_backup.sql (new)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE BEFORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AdminModal had 4 tabs (Members, Invitations, Logs, Backup).
+No restore functionality existed.
+task.md had restore/system settings as unchecked.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CODE AFTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+restore_from_backup RPC migrates projects + tasks + labels from JSON.
+AdminModal has 5 tabs including Restore with file upload UI.
+task.md marks restore, log viewer, backup, manual, slides as done.
+AGENTS.md updated to 11 migrations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
