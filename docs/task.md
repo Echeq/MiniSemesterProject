@@ -498,20 +498,20 @@ Admin-only features for system management.
 - [x] Create `system_logs` table — migration 20260625000000
 - [x] Create `logActivity` RPC
 - [x] Create backup function (export_all_data RPC — returns JSON with projects + tasks + labels + members)
-- [ ] Add system configuration table
+- [x] Add system configuration table (system_config key-value store with RLS)
 
 #### Frontend
 - [x] Create Admin Panel (only visible to Admins)
 - [x] Add Log viewer tab (filter by action, date) — LogViewer.jsx in AdminModal
 - [x] Add Export Backup button (download all data as JSON via export_all_data RPC) — BackupPanel.jsx in AdminModal
-- [ ] Add Restore from Backup (upload JSON)
+- [x] Add Restore from Backup (upload JSON via restore_from_backup RPC) — RestorePanel.jsx in AdminModal
 - [ ] Add System Settings page (configurable options)
 
 ### Acceptance Criteria
 - [x] Only Admins can access admin panel
 - [x] Logs show user actions (filterable by action and date) — LogViewer tab implemented
 - [x] Admin can export full database backup — Backup tab downloads JSON
-- [ ] Admin can restore from backup
+- [x] Admin can restore from backup — Restore tab uploads JSON
 
 ### Dependencies
 - Issue #1 (Auth & Roles)
