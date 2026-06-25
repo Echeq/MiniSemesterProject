@@ -91,7 +91,6 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
   const [scope, setScope] = useState('all')
-  const [mobileSidebar, setMobileSidebar] = useState(false)
   const isProject = scope !== null && typeof scope === 'object'
   const isView = typeof scope === 'string' && scope.startsWith('view:')
   const projectId = isProject ? scope.id : scope === null ? null : 'all'
@@ -106,8 +105,6 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { labels } = useLabels(isProject ? scope.id : null)
 
   const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
-  const handleToggleSidebar = useCallback(() => setMobileSidebar((s) => !s), [])
-  const handleSelectScope = useCallback((s) => { setScope(s); setMobileSidebar(false) }, [])
   const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
   const handleToggleView = useCallback(() => setShowListView((s) => !s), [])
   const handleNewTask = useCallback(() => setModal('new'), [])
@@ -178,7 +175,7 @@ function BoardPage({ session, theme, toggleTheme }) {
         <Sidebar
           projects={projects}
           scope={liveScope}
-          onSelectScope={handleSelectScope}
+          onSelectScope={setScope}
           projectActions={projectActions}
           isAdmin={isAdmin}
           onOpenAdmin={() => setPanel('admin')}
@@ -188,8 +185,6 @@ function BoardPage({ session, theme, toggleTheme }) {
           stats={stats}
           currentUserId={userId}
           loadingProjects={projectsLoading}
-          mobileOpen={mobileSidebar}
-          onCloseMobile={() => setMobileSidebar(false)}
         />
       </ErrorBoundary>
 
