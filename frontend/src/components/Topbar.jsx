@@ -40,6 +40,9 @@ const Topbar = memo(function Topbar({
   onSetView,
   onNewTask,
   onOpenLabelManager,
+  showFilters,
+  onToggleFilters,
+  filterCount = 0,
   session,
   profile,
   isAdmin,
@@ -92,6 +95,20 @@ const Topbar = memo(function Topbar({
         >
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.75a.75.75 0 0 0-1.5 0v11.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 0-1.5H1.5ZM4 9.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 4 9.5Zm3-2.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 1.5 0Zm2.75-2a.75.75 0 0 1 .75.75v6.25a.75.75 0 0 1-1.5 0V5.5a.75.75 0 0 1 .75-.75Zm3.75-1a.75.75 0 0 0-1.5 0v8.5a.75.75 0 0 0 1.5 0v-8.5Z" /></svg>
         </button>
+
+        {onToggleFilters && (
+          <button
+            type="button"
+            onClick={onToggleFilters}
+            title={t('filter.columns')}
+            className={`btn btn-default !px-2 ${showFilters || filterCount > 0 ? '!text-[var(--accent)] !border-[var(--accent)]' : ''}`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M.75 3h14.5a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1 0-1.5ZM3 7.75A.75.75 0 0 1 3.75 7h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 3 7.75m2.75 3.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5Z" />
+            </svg>
+            {filterCount > 0 && <span className="ml-1 text-xs">{filterCount}</span>}
+          </button>
+        )}
 
         {tasks.length > 0 && <ExportMenu tasks={tasks} />}
 

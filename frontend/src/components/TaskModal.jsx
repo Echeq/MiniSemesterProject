@@ -41,6 +41,7 @@ export default function TaskModal({
   const [selectedLabels, setSelectedLabels] = useState(task?.labels?.map((l) => l.id) ?? [])
   const [blockedBy, setBlockedBy] = useState(task?.depends_on?.map((d) => d.id) ?? [])
   const [error, setError] = useState(null)
+  const [blockerError, setBlockerError] = useState(null)
   const [busy, setBusy] = useState(false)
   const editing = Boolean(task)
 
@@ -62,6 +63,7 @@ export default function TaskModal({
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    setBlockerError(null)
     setBusy(true)
     try {
       const fields = {
@@ -99,7 +101,11 @@ export default function TaskModal({
       }
       onClose()
     } catch (err) {
-      setError(err.message)
+      if (err.message.startsWith('Blocked by')) {
+        setBlockerError(err.message)
+      } else {
+        setError(err.message)
+      }
       setBusy(false)
     }
   }
@@ -145,9 +151,14 @@ export default function TaskModal({
                 </option>
               ))}
             </select>
-            {editing && (task?.blocked_by || 0) > 0 && (
+            {editing && (task?.blocked_by || 0) > 0 && !blockerError && (
               <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
                 {t('task.blockedBy')} {task.blocked_by} incomplete task{task.blocked_by !== 1 ? 's' : ''} — resolve dependencies first.
+              </p>
+            )}
+            {blockerError && (
+              <p className="mt-1 rounded-md border px-2.5 py-1.5 text-xs" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
+                {blockerError}
               </p>
             )}
           </label>

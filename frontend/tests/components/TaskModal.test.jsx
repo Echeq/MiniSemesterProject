@@ -7,8 +7,18 @@ const mockSupabase = createMockSupabase()
 
 vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
 
+const TASK_TRANSLATIONS = {
+  'board.todo': 'To Do', 'board.inProgress': 'In progress', 'board.done': 'Done',
+  'task.new': 'New task', 'task.edit': 'Edit task', 'task.title': 'Title',
+  'task.description': 'Description', 'task.dueDate': 'Due date', 'task.status': 'Status',
+  'task.priority': 'Priority', 'task.assignee': 'Assignee', 'task.unassigned': '— Unassigned —',
+  'task.project': 'Project', 'task.sharedBoard': 'Shared board', 'task.labels': 'Labels',
+  'task.blockedBy': 'Blocked by', 'task.delete': 'Delete', 'task.deleteConfirm': 'Delete this task?',
+  'task.cancel': 'Cancel', 'task.save': 'Save', 'task.create': 'Create', 'task.close': 'Close',
+  'task.readOnly': 'This task is read-only. Contact your admin for changes.',
+}
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({ t: (key) => TASK_TRANSLATIONS[key] ?? key }),
 }))
 
 const fakeSession = { user: { id: 'uid', email: 'admin@test.com' } }
