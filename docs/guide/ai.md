@@ -4,7 +4,7 @@ This project uses **OpenCode** as the AI-powered CLI assistant.
 
 ## Configuration
 
-The project's OpenCode config is at `opencode.json` (root) with skills in `.opencode/skills/`. The AGENTS.md file provides workspace-level instructions.
+The project's OpenCode config is at `opencode.json` (root) with skills in `.agents/skills/`. The AGENTS.md file provides workspace-level instructions.
 
 ## Commands
 

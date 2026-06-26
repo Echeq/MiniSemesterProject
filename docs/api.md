@@ -2,7 +2,7 @@
 
 TaskFlow uses **Supabase** as its primary backend. All data access goes through the Supabase JavaScript client (`@supabase/supabase-js`), which wraps Supabase Auth, PostgREST (RESTful PostgreSQL), and Realtime WebSocket channels.
 
-We use **Thunder Client** (VS Code extension) for manual API testing — a pre-built collection is included at `docs/thunder-collection_TaskFlow-API.json`.
+We use **Thunder Client** (VS Code extension) for manual API testing — a pre-built collection is included at `docs/reference/thunder-collection_TaskFlow-API.json`.
 
 There is also a legacy NestJS scaffold (`backend/`) with no running services — ignore it.
 
@@ -342,12 +342,12 @@ All endpoints require headers: `apikey` (anon key) and `Authorization: Bearer {t
 
 ## Thunder Client Collection
 
-A Thunder Client collection is available at `docs/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, Profiles, Projects, and Project Members endpoints.
+A Thunder Client collection is available at `docs/reference/thunder-collection_TaskFlow-API.json`. It covers Auth, Tasks, Profiles, Projects, and Project Members endpoints.
 
 ### Setup
 
 1. Install **Thunder Client** VS Code extension
-2. Import `docs/thunder-collection_TaskFlow-API.json`
+2. Import `docs/reference/thunder-collection_TaskFlow-API.json`
 3. Create a **TaskFlow** environment with:
 
 | Variable | Value |
