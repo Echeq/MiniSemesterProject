@@ -11,10 +11,10 @@
 | Backend | **Supabase** (PostgreSQL + Auth + RLS + Realtime + Storage + Presence) |
 | Client SDK | `@supabase/supabase-js` |
 | Export | `jspdf` (PDF export available) |
-| i18n | i18next + react-i18next (en, es, id, zh) |
-| Testing | Vitest 4 (89 tests, jsdom) |
+| i18n | i18next + react-i18next (en, es, zh, id, ar) |
+| Testing | Vitest 4 (jsdom) |
 
-There is **no application server** — the React app talks directly to Supabase over PostgREST, Realtime, and Storage. All backend logic lives in SQL migrations under `supabase/migrations/` (9 files: tables, RLS policies, triggers, RPCs).
+There is **no application server** — the React app talks directly to Supabase over PostgREST, Realtime, and Storage. All backend logic lives in SQL migrations under `supabase/migrations/` (13 files: tables, RLS policies, triggers, RPCs).
 
 ## Project layout
 

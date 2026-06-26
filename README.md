@@ -40,6 +40,7 @@ npm run dev
 
 | Page | What you'll find |
 |---|---|
+| [Documentation Index](docs/INDEX.md) | Full categorized index of all docs |
 | [Setup Guide](docs/setup.md) | Install dependencies, configure Supabase, run the project |
 | [Architecture](docs/architecture.md) | How React, Supabase Auth, Realtime, and the database connect |
 | [API Reference](docs/api.md) | Auth endpoints, task CRUD, realtime subscriptions, Thunder Client walkthrough |

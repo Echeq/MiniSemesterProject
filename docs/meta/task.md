@@ -557,7 +557,7 @@ Final touches before submission.
 - [x] Update README with setup instructions
 - [x] Add API documentation (docs/api.md)
 - [x] Add deploy guide (docs/deploy.md — local, production, branches, data migration)
-- [x] Add user manual (docs/user-manual.md)
+- [x] Add user manual (docs/guide/user-manual.md)
 - [x] Prepare presentation outline (docs/presentation-outline.md)
 
 ### Acceptance Criteria
