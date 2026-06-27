@@ -9,6 +9,9 @@ dist/
 .env.local
 .env.*.local
 
+# Dead code: orphaned NestJS scaffold
+backend/
+
 # Supabase CLI local state
 supabase/.temp/
 .branches/

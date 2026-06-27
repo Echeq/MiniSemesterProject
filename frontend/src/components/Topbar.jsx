@@ -55,16 +55,13 @@ const Topbar = memo(function Topbar({
   return (
     <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
-        <h1 className="truncate text-base font-semibold">{title}</h1>
+        <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
         {archived && (
-          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)]">archived</span>
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)] max-sm:hidden">archived</span>
         )}
-        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)]">
+        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] max-sm:hidden">
           {taskCount}
         </span>
-      </div>
-
-      <div className="flex items-center gap-2.5">
         <button
           type="button"
           aria-label="Open sidebar"
@@ -74,6 +71,9 @@ const Topbar = memo(function Topbar({
         >
           <span aria-hidden="true">☰</span>
         </button>
+      </div>
+
+      <div className="flex items-center gap-2.5">
 
         {/* View switcher (desktop only) */}
         <div className="hidden items-center rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] p-0.5 sm:flex">

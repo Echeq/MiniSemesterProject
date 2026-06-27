@@ -238,40 +238,44 @@ function BoardPage({ session, theme, toggleTheme }) {
       </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
-          title={scopeLabel}
-          archived={isProject && liveScope.status === 'archived'}
-          taskCount={filteredViewTasks.length}
-          tasks={filteredViewTasks}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          showInsights={showInsights}
-          onToggleInsights={handleToggleInsights}
-          activeView={activeView}
-          onSetView={setActiveView}
-          onNewTask={handleNewTask}
-          onOpenLabelManager={isProject ? handleOpenLabelManager : null}
-          showFilters={showFilters}
-          onToggleFilters={() => setShowFilters((s) => !s)}
-          filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
-          session={session}
-          profile={profile}
-          isAdmin={isAdmin}
-          onOpenAccount={handleOpenAccount}
-          onOpenAdmin={handleOpenAdmin}
-        />
+        <div className="relative">
+          <Topbar
+            onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
+            title={scopeLabel}
+            archived={isProject && liveScope.status === 'archived'}
+            taskCount={filteredViewTasks.length}
+            tasks={filteredViewTasks}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            showInsights={showInsights}
+            onToggleInsights={handleToggleInsights}
+            activeView={activeView}
+            onSetView={setActiveView}
+            onNewTask={handleNewTask}
+            onOpenLabelManager={isProject ? handleOpenLabelManager : null}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters((s) => !s)}
+            filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
+            session={session}
+            profile={profile}
+            isAdmin={isAdmin}
+            onOpenAccount={handleOpenAccount}
+            onOpenAdmin={handleOpenAdmin}
+          />
+
+          {showFilters && (
+            <div className="absolute left-0 right-0 z-20">
+              <FilterPanel
+                filters={filters}
+                onChange={setFilters}
+                members={members}
+                labels={labels}
+              />
+            </div>
+          )}
+        </div>
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
-
-        {showFilters && (
-          <FilterPanel
-            filters={filters}
-            onChange={setFilters}
-            members={members}
-            labels={labels}
-          />
-        )}
 
         <ErrorBoundary>
           {activeView === 'gantt' ? (

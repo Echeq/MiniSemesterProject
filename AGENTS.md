@@ -11,7 +11,7 @@ Run from `frontend/`:
 
 | Command | Action |
 |---|---|
-| `npm run dev` | Vite dev (port 5173, `host: true` — LAN accessible) |
+| `npm run dev` | Vite dev (port 5173, `host: true`, `usePolling: true` — LAN accessible) |
 | `npm test` | Vitest (excludes `**/api.test.js`) |
 | `npm run test:watch` | Vitest watch |
 | `npm run build` | Vite production build |
@@ -33,7 +33,7 @@ Supabase CLI (from root or `supabase/`):
 
 | Path | Why |
 |---|---|
-| `backend/` | Orphaned NestJS scaffold — dist/, generated/, node_modules/, .env only |
+| `backend/` | Orphaned NestJS scaffold — only has `generated/prisma/` types (dead, tracked in git) |
 
 ## Architecture
 
@@ -54,8 +54,10 @@ Supabase CLI (from root or `supabase/`):
 - **Position system**: float8 `position`. `positionBetween()` at `frontend/src/hooks/useBoard.js:11`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 - **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
+- **Priority**: P0 (critical) / P1 (high) / P2 (medium) / P3 (low). Column is nullable text with a DB `CHECK` constraint. Filtered in `FilterPanel`, displayed in `TaskCard`.
+- **Labels + dependencies**: `labels`, `task_labels`, `task_dependencies` tables. `useBoard` provides `addLabel`, `removeLabel`, `addDependency`, `removeDependency`. Moving a task to `done` calls `check_blocked_tasks` RPC — throws if blockers remain.
 - **RLS**: Admins see all tasks; members see assigned only; unknown see none.
-- **RPCs**: `admin_set_role`, `set_project_status`, `delete_own_account`, `delete_account()` (legacy wrapper), `is_admin()`, `restore_from_backup(data jsonb)`, `log_activity`.
+- **RPCs**: `admin_set_role`, `set_project_status`, `delete_own_account`, `delete_account()` (legacy wrapper), `is_admin()`, `restore_from_backup(data jsonb)`, `log_activity`, `get_logs`, `get_profile_preferences`, `set_profile_preferences`, `check_blocked_tasks`.
 - **Realtime**: `supabase.channel('board')` subscribes to `tasks` table changes. Re-fetches row with assignee join on INSERT/UPDATE before merging.
 - **Presence**: `usePresence(session, profile)` tracks online users via Supabase Realtime presence.
 - **@dnd-kit versions**: core@6, sortable@10, utilities@3 — incompatible majors, import carefully.
