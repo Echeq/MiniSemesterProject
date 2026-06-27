@@ -32,20 +32,8 @@ const ICONS = {
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const in7Str = () => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 
-const Sidebar = memo(function Sidebar({
-  projects,
-  scope,
-  onSelectScope,
-  projectActions,
-  isAdmin,
-  onOpenAdmin,
-  members = [],
-  onlineIds,
-  stats = [],
-  currentUserId,
-  loadingProjects = false,
-  editors,
-}) {
+function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmin, onOpenAdmin, members = [], onlineIds, stats = [], currentUserId, loadingProjects = false, editors }) {
+
   const { t } = useTranslation()
   const [showCreate, setShowCreate] = useState(false)
   const [settingsProject, setSettingsProject] = useState(null)
@@ -82,7 +70,7 @@ const Sidebar = memo(function Sidebar({
       entry.total++
       if (t.status === 'done') entry.done++
     }
-    for (const [id, entry] of map) {
+    for (const [, entry] of map) {
       entry.pct = entry.total ? Math.round((entry.done / entry.total) * 100) : 0
     }
     return map
@@ -100,13 +88,11 @@ const Sidebar = memo(function Sidebar({
       .sort((a, b) => Number(b.online) - Number(a.online)),
     [members, onlineIds, editingNames],
   )
-  const onlineCount = useMemo(
-    () => onlineMembers.filter((m) => m.online).length,
-    [onlineMembers],
-  )
+
+  const onlineCount = useMemo(() => onlineMembers.filter((m) => m.online).length, [onlineMembers])
 
   return (
-    <aside className="glass hidden w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150 sm:flex">
+    <>
       <div className="flex items-center gap-2.5 px-4 py-3.5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--fg)] text-[var(--bg)]">
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -140,7 +126,7 @@ const Sidebar = memo(function Sidebar({
             </button>
           </div>
 
-          {active.length === 0 && !loadingProjects && (
+          {active.length === 0 && (
             <div className="px-1 py-2">
               <EmptyState icon="project" title={t('sidebar.noProjects')} description={t('sidebar.noProjectsDesc')} />
             </div>
@@ -151,7 +137,8 @@ const Sidebar = memo(function Sidebar({
             return (
               <div key={p.id} className="rounded-md">
                 <div className="group flex items-center">
-                  <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 ${scope?.id === p.id ? 'active' : ''}`}>
+              <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 ${scope?.id === p.id ? 'active' : ''}`}>
+
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: p.color || '#6366f1' }} />
                       <span className="truncate">{p.name}</span>
@@ -163,7 +150,12 @@ const Sidebar = memo(function Sidebar({
                     </button>
                     {isAdmin && (
                       <>
-                        <button title={t('sidebar.archive')} onClick={() => projectActions.setStatus(p.id, 'archived').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--doing)]">
+                        <button
+                          title={t('sidebar.archive')}
+                          onClick={() => window.confirm(t('sidebar.archiveConfirm', { name: p.name })) && projectActions.setStatus(p.id, 'archived').catch((e) => alert(e.message))}
+                          className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--doing)]"
+                        >
+
                           <Icon path={ICONS.archive} className="h-3.5 w-3.5" />
                         </button>
                         <button title={t('sidebar.delete')} onClick={() => window.confirm(t('sidebar.deleteProjectConfirm', { name: p.name })) && projectActions.delete(p.id).catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--danger)]">
@@ -267,7 +259,75 @@ const Sidebar = memo(function Sidebar({
           onClose={() => setSettingsProject(null)}
         />
       )}
-    </aside>
+    </>
+  )
+}
+
+const Sidebar = memo(function Sidebar({
+  projects,
+  mobileOpen = false,
+  onCloseMobile,
+  scope,
+  onSelectScope,
+  projectActions,
+  isAdmin,
+  onOpenAdmin,
+  members = [],
+  onlineIds,
+  stats = [],
+  currentUserId,
+  loadingProjects = false,
+  editors,
+}) {
+  return (
+    <>
+      {/* Mobile overlay */}
+      <div
+        className={`fixed inset-0 z-40 transition-opacity sm:hidden ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        aria-hidden={!mobileOpen}
+      >
+        <div className="absolute inset-0 bg-black/50" onClick={onCloseMobile} />
+        <div className="absolute left-0 top-0 h-full w-64">
+          <aside className="glass h-full w-full flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
+            <SidebarContent
+              projects={projects}
+              scope={scope}
+              onSelectScope={(s) => {
+                onSelectScope(s)
+                onCloseMobile?.()
+              }}
+              projectActions={projectActions}
+              isAdmin={isAdmin}
+              onOpenAdmin={onOpenAdmin}
+              members={members}
+              onlineIds={onlineIds}
+              stats={stats}
+              currentUserId={currentUserId}
+              loadingProjects={loadingProjects}
+              editors={editors}
+            />
+          </aside>
+        </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside className="glass hidden w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150 sm:flex">
+        <SidebarContent
+          projects={projects}
+          scope={scope}
+          onSelectScope={onSelectScope}
+          projectActions={projectActions}
+          isAdmin={isAdmin}
+          onOpenAdmin={onOpenAdmin}
+          members={members}
+          onlineIds={onlineIds}
+          stats={stats}
+          currentUserId={currentUserId}
+          loadingProjects={loadingProjects}
+          editors={editors}
+        />
+      </aside>
+    </>
   )
 })
 
@@ -293,3 +353,4 @@ function ViewItem({ icon, label, count, accent, active, onClick }) {
     </button>
   )
 }
+

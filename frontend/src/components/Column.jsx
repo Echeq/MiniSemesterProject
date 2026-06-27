@@ -15,7 +15,7 @@ function Column({ status, tasks, onTaskClick, onAddTask, editors }) {
 
   return (
     <div
-      className={`glass flex max-h-full w-[19rem] flex-shrink-0 flex-col rounded-xl shadow-[var(--shadow-md)] transition sm:w-80 ${
+      className={`glass flex max-h-full w-full flex-shrink-0 flex-col rounded-xl shadow-[var(--shadow-md)] transition ${
         isOver ? '!border-[var(--accent)] ring-1 ring-[var(--accent)]' : ''
       }`}
     >
@@ -56,3 +56,4 @@ function Column({ status, tasks, onTaskClick, onAddTask, editors }) {
 }
 
 export default memo(Column)
+

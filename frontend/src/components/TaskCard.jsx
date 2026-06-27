@@ -55,7 +55,12 @@ function TaskCard({ task, onClick, overlay = false, editors }) {
       onClick={() => onClick?.(task)}
       className={`group cursor-grab rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-3 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:-translate-y-0.5 hover:border-[var(--fg-subtle)] hover:bg-[var(--card-hover)] hover:shadow-[var(--shadow-md)] active:cursor-grabbing ${
         isDragging ? 'opacity-40' : ''
-      } ${overlay ? 'rotate-2 shadow-[var(--shadow-md)]' : ''}`}
+      } ${overlay ? 'rotate-2 shadow-[var(--shadow-md)]' : ''} ${
+        task.due_date && task.status !== 'done' && task.due_date < new Date().toISOString().slice(0, 10)
+          ? 'border-l-4 border-l-[var(--danger)]'
+          : ''
+      }`}
+
     >
       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
         {task.priority && (

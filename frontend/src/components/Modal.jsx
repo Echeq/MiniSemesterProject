@@ -14,8 +14,9 @@ export default function Modal({ title, subtitle, onClose, children, maxWidth = '
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`glass-strong w-full ${maxWidth} my-auto rounded-2xl p-6 animate-pop-in`}
+        className={`glass-strong w-full max-w-full sm:${maxWidth} my-auto rounded-2xl p-6 animate-pop-in`}
       >
+
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">{title}</h2>

@@ -164,18 +164,22 @@ export default function Board({
         ) : (
           <>
             {banner}
-            <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
-              {visibleStatuses.map((status) => (
-                <Column
-                  key={status}
-                  status={status}
-                  tasks={byStatus[status]}
-                  onTaskClick={onTaskClick}
-                  onAddTask={onAddTask}
-                  editors={editors}
-                />
-              ))}
+            <div className="flex min-h-0 flex-1 overflow-x-auto p-4 sm:p-6">
+              <div className="flex gap-4 sm:gap-4">
+                {visibleStatuses.map((status) => (
+                  <div key={status} className="w-full max-w-[19rem] flex-shrink-0 sm:w-80">
+                    <Column
+                      status={status}
+                      tasks={byStatus[status]}
+                      onTaskClick={onTaskClick}
+                      onAddTask={onAddTask}
+                      editors={editors}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
+
           </>
         )}
       </div>

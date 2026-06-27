@@ -9,8 +9,9 @@ language plpgsql
 security definer set search_path = public, auth
 as $$
 begin
-  -- Backwards-compatible wrapper:
+  -- Backwards-compatible wrapper.
   -- Enforce the same "last admin" guard as delete_own_account().
+  -- Kept for old clients / DB references; frontend should call delete_own_account().
   perform public.delete_own_account();
 end;
 $$;
