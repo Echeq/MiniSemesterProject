@@ -202,6 +202,7 @@
     "invitations": "邀请",
     "logs": "日志",
     "backup": "备份",
+    "restore": "恢复",
     "loading": "加载中…",
     "noInvitations": "暂无邀请。",
     "member": "成员",
