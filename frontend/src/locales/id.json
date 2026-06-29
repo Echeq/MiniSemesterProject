@@ -286,6 +286,9 @@
     "day": "Hari",
     "week": "Minggu",
     "month": "Bulan",
-    "today": "Hari ini"
+    "today": "Hari ini",
+    "dependencies": "Dependensi",
+    "linkHint": "Seret untuk menambah dependensi",
+    "removeDep": "Klik garis untuk menghapus dependensi"
   }
 }

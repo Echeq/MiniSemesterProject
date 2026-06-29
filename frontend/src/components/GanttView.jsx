@@ -1,89 +1,245 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Gantt from 'frappe-gantt'
-import '../gantt.css'
+import { supabase } from '../api/supabaseClient'
 import EmptyState from './EmptyState'
 
-const ZOOM_MODES = [
-  { key: 'Quarter Day', tKey: 'gantt.quarterDay' },
-  { key: 'Half Day',    tKey: 'gantt.halfDay' },
-  { key: 'Day',        tKey: 'gantt.day' },
-  { key: 'Week',       tKey: 'gantt.week' },
-  { key: 'Month',      tKey: 'gantt.month' },
-]
+const TASK_COL = 220
+const ROW_H = 44
+const BAR_H = 22
+const BAR_Y = (ROW_H - BAR_H) / 2
+const HEADER_UPPER_H = 26
+const HEADER_LOWER_H = 34
+const HEADER_H = HEADER_UPPER_H + HEADER_LOWER_H
 
-function toGanttDate(iso) {
-  return iso.replace(/-/g, '/')
+const PX_PER_DAY = { Day: 52, Week: 22, Month: 7 }
+const PADDING_DAYS = { Day: 3, Week: 10, Month: 25 }
+
+const BAR_STYLE = {
+  done:  { bg: '#10b981', text: '#fff' },
+  doing: { bg: '#f59e0b', text: '#fff' },
+  todo:  { bg: null, border: true, text: null },
 }
 
-function toISODate(ganttDate) {
-  return String(ganttDate).slice(0, 10)
+function addDays(date, n) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + n)
+  return d
 }
 
-export default function GanttView({ tasks, onTaskClick, updateTask }) {
+function startOfDay(date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function startOfWeek(date) {
+  const d = startOfDay(date)
+  const day = d.getDay()
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1)) // Monday
+  return d
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function nextMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+}
+
+function daysBetween(a, b) {
+  return Math.round((b - a) / 86400000)
+}
+
+function buildHeaderCells(zoom, rangeStart, rangeEnd, xOf, lang) {
+  const upper = []
+  const lower = []
+
+  if (zoom === 'Day') {
+    let cur = startOfMonth(rangeStart)
+    while (cur < rangeEnd) {
+      const next = nextMonth(cur)
+      const left = Math.max(0, xOf(cur))
+      const right = xOf(next)
+      upper.push({ label: new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(cur), left, width: right - left })
+      cur = next
+    }
+    let d = startOfDay(rangeStart)
+    while (d < rangeEnd) {
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6
+      lower.push({
+        label: new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric' }).format(d),
+        left: xOf(d),
+        width: PX_PER_DAY.Day,
+        isWeekend,
+      })
+      d = addDays(d, 1)
+    }
+  } else if (zoom === 'Week') {
+    let cur = startOfMonth(rangeStart)
+    while (cur < rangeEnd) {
+      const next = nextMonth(cur)
+      const left = Math.max(0, xOf(cur))
+      const right = xOf(next)
+      upper.push({ label: new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(cur), left, width: right - left })
+      cur = next
+    }
+    let w = startOfWeek(rangeStart)
+    while (w < rangeEnd) {
+      const next = addDays(w, 7)
+      lower.push({
+        label: new Intl.DateTimeFormat(lang, { month: 'short', day: 'numeric' }).format(w),
+        left: xOf(w),
+        width: xOf(next) - xOf(w),
+      })
+      w = next
+    }
+  } else {
+    let yr = rangeStart.getFullYear()
+    while (yr <= rangeEnd.getFullYear()) {
+      const ys = new Date(yr, 0, 1)
+      const ye = new Date(yr + 1, 0, 1)
+      const left = Math.max(0, xOf(ys))
+      const right = Math.min(xOf(rangeEnd), xOf(ye))
+      if (right > left) upper.push({ label: String(yr), left, width: right - left })
+      yr++
+    }
+    let cur = startOfMonth(rangeStart)
+    while (cur < rangeEnd) {
+      const next = nextMonth(cur)
+      lower.push({
+        label: new Intl.DateTimeFormat(lang, { month: 'short' }).format(cur),
+        left: xOf(cur),
+        width: xOf(next) - xOf(cur),
+      })
+      cur = next
+    }
+  }
+
+  return { upper, lower }
+}
+
+// Orthogonal finish-to-start connector path between two bars.
+function depPath(x1, y1, x2, y2) {
+  const stub = 9
+  if (x2 > x1 + stub + 6) {
+    return `M${x1},${y1} L${x1 + stub},${y1} L${x1 + stub},${y2} L${x2},${y2}`
+  }
+  // Successor starts before predecessor ends — route around through the row gap.
+  const backY = y2 + (y2 > y1 ? -ROW_H / 2 : ROW_H / 2)
+  return `M${x1},${y1} L${x1 + stub},${y1} L${x1 + stub},${backY} L${x2 - stub},${backY} L${x2 - stub},${y2} L${x2},${y2}`
+}
+
+export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemoveDependency }) {
   const { t, i18n } = useTranslation()
-  const containerRef = useRef(null)
-  const ganttRef = useRef(null)
+  const lang = i18n.language
   const [zoom, setZoom] = useState('Week')
-  const zoomRef = useRef('Week')
-  const tasksRef = useRef(tasks)
-  const prevLangRef = useRef(i18n.language)
+  const bodyRef = useRef(null)
+  const contentRef = useRef(null)
+  const pxPerDay = PX_PER_DAY[zoom]
+  const pad = PADDING_DAYS[zoom]
 
-  useEffect(() => { tasksRef.current = tasks }, [tasks])
+  // Dependency edges: { task_id (successor), depends_on_id (predecessor) }.
+  const [deps, setDeps] = useState([])
+  // Active drag-to-link state.
+  const [linkFrom, setLinkFrom] = useState(null) // predecessor task id
+  const [linkPos, setLinkPos] = useState(null)   // { x, y } in content coords
+  const [linkTarget, setLinkTarget] = useState(null) // hovered successor task id
 
   const ganttTasks = useMemo(() => tasks
     .filter((task) => task.due_date)
     .map((task) => {
-      const end = task.due_date
-      const startDate = new Date(end)
-      startDate.setDate(startDate.getDate() - 3)
-      const start = startDate.toISOString().slice(0, 10)
-      return {
-        id: task.id,
-        name: task.title,
-        start: toGanttDate(start),
-        end: toGanttDate(end),
-        progress: task.status === 'done' ? 100 : task.status === 'doing' ? 50 : 0,
-        custom_class: task.status === 'done' ? 'gantt-done' : task.status === 'doing' ? 'gantt-doing' : '',
-      }
-    }), [tasks])
+      const end = startOfDay(new Date(task.due_date + 'T12:00:00'))
+      const start = addDays(end, -3)
+      return { ...task, _start: start, _end: end }
+    })
+    .sort((a, b) => a._start - b._start),
+    [tasks])
 
+  const taskIdsKey = useMemo(
+    () => ganttTasks.map((t) => t.id).slice().sort().join(','),
+    [ganttTasks],
+  )
+
+  // Fetch dependency edges for the visible tasks.
   useEffect(() => {
-    if (!containerRef.current || ganttTasks.length === 0) return
+    if (!taskIdsKey) { setDeps([]); return }
+    const ids = taskIdsKey.split(',')
+    let cancelled = false
+    supabase
+      .from('task_dependencies')
+      .select('task_id, depends_on_id')
+      .in('task_id', ids)
+      .then(({ data }) => { if (!cancelled && data) setDeps(data) })
+    return () => { cancelled = true }
+  }, [taskIdsKey])
 
-    const langChanged = prevLangRef.current !== i18n.language
-    prevLangRef.current = i18n.language
+  const pointerToContent = useCallback((e) => {
+    const el = contentRef.current
+    if (!el) return null
+    const rect = el.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }, [])
 
-    if (ganttRef.current && !langChanged) {
-      ganttRef.current.refresh(ganttTasks)
-      return
+  const startLink = useCallback((e, taskId) => {
+    e.stopPropagation()
+    e.preventDefault()
+    const pos = pointerToContent(e)
+    setLinkFrom(taskId)
+    setLinkPos(pos)
+    setLinkTarget(null)
+  }, [pointerToContent])
+
+  // Window-level move/up handlers while a link is being dragged.
+  const nRows = ganttTasks.length
+  useEffect(() => {
+    if (linkFrom == null) return
+
+    function targetIdAt(pos) {
+      if (!pos || pos.x <= TASK_COL) return null
+      const idx = Math.floor((pos.y - HEADER_H) / ROW_H)
+      if (idx < 0 || idx >= nRows) return null
+      return ganttTasks[idx].id
     }
 
-    containerRef.current.innerHTML = ''
-    ganttRef.current = new Gantt(containerRef.current, ganttTasks, {
-      view_mode: zoomRef.current,
-      date_format: 'YYYY/MM/DD',
-      today_button: false,
-      language: i18n.language,
-      on_click: (ganttTask) => {
-        const orig = tasksRef.current.find((task) => task.id === ganttTask.id)
-        if (orig) onTaskClick?.(orig)
-      },
-      on_date_change: (ganttTask, start, end) => {
-        const newDueDate = toISODate(end)
-        if (updateTask) updateTask(ganttTask.id, { due_date: newDueDate }).catch(() => {})
-      },
-      on_progress_change: () => {},
-      on_view_change: (mode) => {
-        const name = mode?.name ?? mode
-        setZoom(name)
-        zoomRef.current = name
-      },
-    })
+    function onMove(e) {
+      const pos = pointerToContent(e)
+      setLinkPos(pos)
+      const tid = targetIdAt(pos)
+      setLinkTarget(tid && tid !== linkFrom ? tid : null)
+    }
 
-    return () => { ganttRef.current = null }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ganttTasks, i18n.language])
+    function onUp(e) {
+      const pos = pointerToContent(e)
+      const targetId = targetIdAt(pos)
+      const source = linkFrom
+      setLinkFrom(null)
+      setLinkPos(null)
+      setLinkTarget(null)
+      if (!targetId || targetId === source) return
+      // Skip if the edge (or its reverse) already exists.
+      const exists = deps.some((d) => d.task_id === targetId && d.depends_on_id === source)
+      const reverse = deps.some((d) => d.task_id === source && d.depends_on_id === targetId)
+      if (exists || reverse) return
+      const edge = { task_id: targetId, depends_on_id: source }
+      setDeps((prev) => [...prev, edge])
+      onAddDependency?.(targetId, source).catch(() => {
+        setDeps((prev) => prev.filter((d) => !(d.task_id === edge.task_id && d.depends_on_id === edge.depends_on_id)))
+      })
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [linkFrom, deps, ganttTasks, nRows, pointerToContent, onAddDependency])
+
+  const removeDep = useCallback((successorId, predecessorId) => {
+    setDeps((prev) => prev.filter((d) => !(d.task_id === successorId && d.depends_on_id === predecessorId)))
+    onRemoveDependency?.(successorId, predecessorId).catch(() => {})
+  }, [onRemoveDependency])
 
   if (ganttTasks.length === 0) {
     return (
@@ -95,80 +251,302 @@ export default function GanttView({ tasks, onTaskClick, updateTask }) {
     )
   }
 
-  function changeZoom(mode) {
-    setZoom(mode)
-    zoomRef.current = mode
-    ganttRef.current?.change_view_mode(mode)
+  const minDate = new Date(Math.min(...ganttTasks.map((t) => t._start)))
+  const maxDate = new Date(Math.max(...ganttTasks.map((t) => t._end)))
+  const rangeStart = startOfDay(addDays(minDate, -pad))
+  const rangeEnd = startOfDay(addDays(maxDate, pad))
+  const totalDays = daysBetween(rangeStart, rangeEnd)
+  const timelineW = totalDays * pxPerDay
+  const contentW = TASK_COL + timelineW
+  const contentH = HEADER_H + ganttTasks.length * ROW_H
+
+  function xOf(date) {
+    return daysBetween(rangeStart, date) * pxPerDay
   }
+
+  // Per-task geometry, keyed by id, in content coordinates.
+  const layout = new Map()
+  ganttTasks.forEach((task, i) => {
+    const barLeft = xOf(task._start)
+    const barRight = xOf(task._end)
+    const barW = Math.max(barRight - barLeft, pxPerDay)
+    layout.set(task.id, {
+      leftX: TASK_COL + barLeft,
+      rightX: TASK_COL + barLeft + barW,
+      centerY: HEADER_H + i * ROW_H + ROW_H / 2,
+      barLeft,
+      barW,
+    })
+  })
+
+  const { upper, lower } = buildHeaderCells(zoom, rangeStart, rangeEnd, xOf, lang)
+
+  const today = startOfDay(new Date())
+  const todayX = xOf(today)
+  const showToday = todayX >= 0 && todayX <= timelineW
 
   function scrollToToday() {
-    ganttRef.current?.scroll_current()
-  }
-
-  function exportPNG() {
-    const svg = containerRef.current?.querySelector('svg')
-    if (!svg) return
-    const serializer = new XMLSerializer()
-    const svgStr = serializer.serializeToString(svg)
-    const { width, height } = svg.getBoundingClientRect()
-    const canvas = document.createElement('canvas')
-    canvas.width = width * window.devicePixelRatio
-    canvas.height = height * window.devicePixelRatio
-    const ctx = canvas.getContext('2d')
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-    const img = new Image()
-    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    img.onload = () => {
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, width, height)
-      ctx.drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
-      const a = document.createElement('a')
-      a.href = canvas.toDataURL('image/png')
-      a.download = 'gantt-chart.png'
-      a.click()
-    }
-    img.src = url
+    if (!bodyRef.current) return
+    bodyRef.current.scrollLeft = Math.max(0, todayX - TASK_COL - 200)
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-1.5 border-b border-[var(--border-muted)] px-4 py-2 sm:px-6">
-        <span className="text-xs font-medium text-[var(--fg-muted)]">{t('gantt.zoom')}:</span>
-        {ZOOM_MODES.map((m) => (
+      {/* Toolbar */}
+      <div className="flex items-center gap-1 border-b border-[var(--border-muted)] px-4 py-2">
+        <span className="mr-1 text-xs font-medium text-[var(--fg-muted)]">{t('gantt.zoom')}:</span>
+        {['Day', 'Week', 'Month'].map((m) => (
           <button
-            key={m.key}
-            onClick={() => changeZoom(m.key)}
-            className={`rounded-full px-2 py-0.5 text-xs font-medium transition ${
-              zoom === m.key
-                ? 'bg-[var(--accent)] !text-white'
+            key={m}
+            onClick={() => setZoom(m)}
+            className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
+              zoom === m
+                ? 'bg-[var(--accent)] text-white'
                 : 'text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]'
             }`}
           >
-            {t(m.tKey)}
+            {t(`gantt.${m.toLowerCase()}`)}
           </button>
         ))}
         <button
           onClick={scrollToToday}
-          className="rounded-full px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
+          className="ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
         >
           {t('gantt.today')}
         </button>
-        <button
-          onClick={exportPNG}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)] transition"
-          title={t('gantt.exportPng')}
-        >
-          <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z" />
-            <path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.97a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06Z" />
-          </svg>
-          {t('gantt.exportPng')}
-        </button>
+        {/* Legend */}
+        <div className="ml-auto flex items-center gap-3 text-[10px] text-[var(--fg-muted)]">
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-3 rounded-sm" style={{ background: '#10b981' }} />
+            {t('board.done')}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-3 rounded-sm" style={{ background: '#f59e0b' }} />
+            {t('board.inProgress')}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2 w-3 rounded-sm border border-[var(--fg-subtle)]" style={{ background: 'transparent' }} />
+            {t('board.todo')}
+          </span>
+          <span className="flex items-center gap-1">
+            <svg width="18" height="8" className="overflow-visible">
+              <line x1="0" y1="4" x2="14" y2="4" stroke="var(--accent)" strokeWidth="1.5" />
+              <path d="M14,1 L18,4 L14,7 Z" fill="var(--accent)" />
+            </svg>
+            {t('gantt.dependencies')}
+          </span>
+        </div>
       </div>
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
-        <div ref={containerRef} className="gantt-wrapper" />
+
+      {/* Main scrollable grid */}
+      <div ref={bodyRef} className="min-h-0 flex-1 overflow-auto">
+        <div
+          ref={contentRef}
+          className="relative"
+          style={{ minWidth: contentW, width: contentW, userSelect: linkFrom != null ? 'none' : undefined }}
+        >
+
+          {/* Sticky header row */}
+          <div className="sticky top-0 z-20 flex" style={{ height: HEADER_H }}>
+            {/* Task col header */}
+            <div
+              className="sticky left-0 z-30 shrink-0 flex items-end border-b border-r border-[var(--border-muted)] bg-[var(--surface)]"
+              style={{ width: TASK_COL, minWidth: TASK_COL, paddingBottom: 8, paddingLeft: 16 }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--fg-muted)]">
+                {t('task.title')}
+              </span>
+            </div>
+
+            {/* Timeline header */}
+            <div
+              className="relative shrink-0 border-b border-[var(--border-muted)] bg-[var(--surface)]"
+              style={{ width: timelineW, height: HEADER_H }}
+            >
+              {/* Upper row — months / years */}
+              {upper.map((cell, i) => (
+                <div
+                  key={i}
+                  className="absolute flex items-center overflow-hidden border-r border-[var(--border-muted)]"
+                  style={{ left: cell.left, top: 0, width: cell.width, height: HEADER_UPPER_H }}
+                >
+                  <span className="truncate px-2 text-[10px] font-semibold text-[var(--fg-muted)]">{cell.label}</span>
+                </div>
+              ))}
+              {/* Lower row — weeks / days / months */}
+              {lower.map((cell, i) => (
+                <div
+                  key={i}
+                  className="absolute flex items-center justify-center overflow-hidden border-r border-[var(--border-muted)]"
+                  style={{
+                    left: cell.left,
+                    top: HEADER_UPPER_H,
+                    width: cell.width,
+                    height: HEADER_LOWER_H,
+                    background: cell.isWeekend ? 'var(--glass)' : undefined,
+                  }}
+                >
+                  <span className="truncate px-1 text-[10px] text-[var(--fg-muted)]">{cell.label}</span>
+                </div>
+              ))}
+              {/* Today marker in header */}
+              {showToday && (
+                <div
+                  className="absolute z-10"
+                  style={{ left: todayX - 1, top: 0, width: 2, height: HEADER_H, background: 'var(--accent)' }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Task rows */}
+          {ganttTasks.map((task) => {
+            const barLeft = xOf(task._start)
+            const barRight = xOf(task._end)
+            const barW = Math.max(barRight - barLeft, pxPerDay)
+            const st = BAR_STYLE[task.status] ?? BAR_STYLE.todo
+            const isLinkTarget = linkTarget === task.id
+
+            return (
+              <div key={task.id} className="group/row flex" style={{ height: ROW_H }}>
+                {/* Task name — sticky left */}
+                <div
+                  className="sticky left-0 z-10 shrink-0 flex cursor-pointer items-center border-b border-r border-[var(--border-muted)] bg-[var(--bg)] px-4 hover:bg-[var(--surface-hover)] transition-colors"
+                  style={{ width: TASK_COL, minWidth: TASK_COL }}
+                  onClick={() => onTaskClick?.(task)}
+                >
+                  <span className="truncate text-sm text-[var(--fg)]">{task.title}</span>
+                </div>
+
+                {/* Bar row */}
+                <div
+                  className="relative shrink-0 border-b border-[var(--border-muted)]"
+                  style={{
+                    width: timelineW,
+                    height: ROW_H,
+                    background: isLinkTarget ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : undefined,
+                  }}
+                >
+                  {/* Weekend shading (Day zoom only) */}
+                  {zoom === 'Day' && lower.filter((c) => c.isWeekend).map((c, j) => (
+                    <div
+                      key={j}
+                      className="pointer-events-none absolute"
+                      style={{ left: c.left, top: 0, width: c.width, height: ROW_H, background: 'var(--glass)' }}
+                    />
+                  ))}
+                  {/* Vertical grid lines */}
+                  {lower.map((c, j) => (
+                    <div
+                      key={j}
+                      className="pointer-events-none absolute"
+                      style={{ left: c.left, top: 0, width: 1, height: ROW_H, background: 'var(--border-muted)' }}
+                    />
+                  ))}
+                  {/* Today line */}
+                  {showToday && (
+                    <div
+                      className="pointer-events-none absolute z-10"
+                      style={{ left: todayX - 1, top: 0, width: 2, height: ROW_H, background: 'var(--accent)', opacity: 0.35 }}
+                    />
+                  )}
+                  {/* Task bar */}
+                  <div
+                    className="absolute cursor-pointer transition-opacity hover:opacity-80"
+                    style={{
+                      left: barLeft,
+                      top: BAR_Y,
+                      width: barW,
+                      height: BAR_H,
+                      borderRadius: 5,
+                      background: st.bg ?? 'transparent',
+                      border: st.border ? '1.5px solid var(--fg-subtle)' : 'none',
+                      boxShadow: st.bg ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                      overflow: 'hidden',
+                    }}
+                    onClick={() => onTaskClick?.(task)}
+                  >
+                    {barW > 50 && (
+                      <span
+                        className="pointer-events-none absolute inset-0 flex items-center overflow-hidden whitespace-nowrap"
+                        style={{ paddingLeft: 7, fontSize: 10, fontWeight: 500, color: st.text ?? 'var(--fg-muted)' }}
+                      >
+                        {task.title}
+                      </span>
+                    )}
+                  </div>
+                  {/* Dependency link handle — appears on row hover, drag to another bar */}
+                  <div
+                    title={t('gantt.linkHint')}
+                    onMouseDown={(e) => startLink(e, task.id)}
+                    className="absolute z-20 flex items-center justify-center rounded-full border border-[var(--accent)] bg-[var(--surface)] opacity-0 transition-opacity group-hover/row:opacity-100"
+                    style={{
+                      left: barLeft + barW - 5,
+                      top: ROW_H / 2 - 6,
+                      width: 12,
+                      height: 12,
+                      cursor: 'crosshair',
+                    }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+
+          {/* Dependency arrows + active link overlay */}
+          <svg
+            className="pointer-events-none absolute left-0 top-0"
+            width={contentW}
+            height={contentH}
+            style={{ overflow: 'visible' }}
+          >
+            <defs>
+              <marker id="gantt-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)" />
+              </marker>
+            </defs>
+            {deps.map((d, i) => {
+              const p = layout.get(d.depends_on_id) // predecessor
+              const s = layout.get(d.task_id)        // successor
+              if (!p || !s) return null
+              const path = depPath(p.rightX, p.centerY, s.leftX, s.centerY)
+              return (
+                <g key={`${d.depends_on_id}-${d.task_id}-${i}`}>
+                  <path d={path} fill="none" stroke="var(--accent)" strokeWidth="1.5" markerEnd="url(#gantt-arrow)" opacity="0.85" />
+                  {/* Wider invisible hit area to click-remove */}
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth="12"
+                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    onClick={() => removeDep(d.task_id, d.depends_on_id)}
+                  >
+                    <title>{t('gantt.removeDep')}</title>
+                  </path>
+                </g>
+              )
+            })}
+            {/* Active drag line */}
+            {linkFrom != null && linkPos && layout.get(linkFrom) && (
+              <line
+                x1={layout.get(linkFrom).rightX}
+                y1={layout.get(linkFrom).centerY}
+                x2={linkPos.x}
+                y2={linkPos.y}
+                stroke="var(--accent)"
+                strokeWidth="1.5"
+                strokeDasharray="4 3"
+                markerEnd="url(#gantt-arrow)"
+              />
+            )}
+          </svg>
+
+          {/* Bottom padding */}
+          <div style={{ height: 32 }} />
+        </div>
       </div>
     </div>
   )
