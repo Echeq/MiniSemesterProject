@@ -49,6 +49,7 @@ const Topbar = memo(function Topbar({
   onOpenAccount,
   onOpenAdmin,
   onToggleMobileSidebar,
+  onMenuOpen,
 }) {
   const { t } = useTranslation()
 
@@ -127,7 +128,7 @@ const Topbar = memo(function Topbar({
 
         {tasks.length > 0 && (
           <div className="hidden sm:block">
-            <ExportMenu tasks={tasks} />
+            <ExportMenu tasks={tasks} onOpen={onMenuOpen} />
           </div>
         )}
 
@@ -163,6 +164,7 @@ const Topbar = memo(function Topbar({
           isAdmin={isAdmin}
           onOpenAccount={onOpenAccount}
           onOpenAdmin={onOpenAdmin}
+          onOpen={onMenuOpen}
         />
       </div>
     </header>
