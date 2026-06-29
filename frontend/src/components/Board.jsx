@@ -17,6 +17,7 @@ import ListView from './ListView'
 import { CardSkeleton } from './Skeleton'
 
 const COL_DOT = { todo: 'var(--todo)', doing: 'var(--doing)', done: 'var(--done)' }
+const STATUS_LABEL_KEYS = { todo: 'board.todo', doing: 'board.inProgress', done: 'board.done' }
 
 export default function Board({
   tasks,
@@ -35,6 +36,16 @@ export default function Board({
   const { t } = useTranslation()
   const [activeTask, setActiveTask] = useState(null)
   const [visibleCols, setVisibleCols] = useState(STATUSES)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
+  const [mobileMenuTask, setMobileMenuTask] = useState(null)
+  const [colIndex, setColIndex] = useState(0)
+  const touchStartX = useRef(null)
+
+  useEffect(() => {
+    function handleResize() { setIsMobile(window.innerWidth < 640) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -61,6 +72,10 @@ export default function Board({
       : STATUSES.filter((s) => visibleCols.includes(s)),
     [hideEmptyColumns, byStatus, visibleCols],
   )
+
+  useEffect(() => {
+    if (colIndex >= visibleStatuses.length) setColIndex(0)
+  }, [visibleStatuses, colIndex])
 
   const toggleCol = useCallback((status) => {
     setVisibleCols((prev) =>
@@ -105,6 +120,31 @@ export default function Board({
     if (targetStatus === task.status && position === task.position) return
     updateTask(task.id, { status: targetStatus, position }).catch(() => {})
   }, [updateTask])
+
+  const handleTaskTap = useCallback((task) => {
+    if (isMobile) {
+      setMobileMenuTask(task)
+    } else {
+      onTaskClick(task)
+    }
+  }, [isMobile, onTaskClick])
+
+  const handleTouchStart = useCallback((e) => {
+    touchStartX.current = e.touches[0].clientX
+  }, [])
+
+  const handleTouchEnd = useCallback((e) => {
+    const startX = touchStartX.current
+    if (startX == null) return
+    const diff = startX - e.changedTouches[0].clientX
+    touchStartX.current = null
+    if (Math.abs(diff) < 50) return
+    if (diff > 0 && colIndex < visibleStatuses.length - 1) {
+      setColIndex((i) => i + 1)
+    } else if (diff < 0 && colIndex > 0) {
+      setColIndex((i) => i - 1)
+    }
+  }, [colIndex, visibleStatuses.length])
 
   if (loading) {
     return (
@@ -161,27 +201,111 @@ export default function Board({
           ) : (
             <EmptyState icon="search" title={t('filter.noTasksFound')} description={t('filter.noTasksDesc')} />
           )
+        ) : isMobile ? (
+          <>
+            {banner}
+            <div className="flex min-h-0 flex-1 touch-pan-y p-4"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="flex w-full justify-center">
+                <div className="w-full max-w-sm">
+                  <Column
+                    status={visibleStatuses[colIndex]}
+                    tasks={byStatus[visibleStatuses[colIndex]]}
+                    onTaskClick={handleTaskTap}
+                    onAddTask={onAddTask}
+                    editors={editors}
+                    isMobile={isMobile}
+                  />
+                </div>
+              </div>
+            </div>
+            {visibleStatuses.length > 1 && (
+              <div className="flex justify-center gap-2 pb-3">
+                {visibleStatuses.map((s, i) => (
+                  <button key={s} type="button" onClick={() => setColIndex(i)}
+                    className={`h-2 w-2 rounded-full transition ${
+                      i === colIndex ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'
+                    }`}
+                    aria-label={`Switch to ${t(STATUS_LABEL_KEYS[s])}`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
           <>
             {banner}
-            <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
-              {visibleStatuses.map((status) => (
-                <Column
-                  key={status}
-                  status={status}
-                  tasks={byStatus[status]}
-                  onTaskClick={onTaskClick}
-                  onAddTask={onAddTask}
-                  editors={editors}
-                />
-              ))}
+            <div className="flex min-h-0 flex-1 overflow-x-auto p-4 sm:p-6">
+              <div className="flex gap-4 sm:gap-4">
+                {visibleStatuses.map((status) => (
+                  <div key={status} className="w-full max-w-[19rem] flex-shrink-0 sm:w-80">
+                    <Column
+                      status={status}
+                      tasks={byStatus[status]}
+                      onTaskClick={onTaskClick}
+                      onAddTask={onAddTask}
+                      editors={editors}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}
       </div>
-      <DragOverlay>
-        {activeTask && <TaskCard task={activeTask} overlay />}
-      </DragOverlay>
+      {!isMobile && (
+        <DragOverlay>
+          {activeTask && <TaskCard task={activeTask} overlay />}
+        </DragOverlay>
+      )}
+
+      {mobileMenuTask && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:hidden" onClick={() => setMobileMenuTask(null)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative w-full max-w-sm rounded-t-2xl bg-[var(--surface)] p-4 shadow-[var(--shadow-lg)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--border)]" />
+            <p className="mb-3 text-sm font-semibold truncate">{mobileMenuTask.title}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
+                className="btn btn-primary w-full justify-center"
+              >
+                {t('task.edit')}
+              </button>
+              {STATUSES.filter((s) => s !== mobileMenuTask.status).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={async () => {
+                    const statusTasks = byStatusRef.current[s]
+                    const maxPos = statusTasks.length > 0
+                      ? Math.max(...statusTasks.map((c) => c.position))
+                      : 0
+                    await updateTask(mobileMenuTask.id, { status: s, position: maxPos + 1024 }).catch(() => {})
+                    setMobileMenuTask(null)
+                  }}
+                  className="btn btn-default w-full justify-center"
+                >
+                  {t('board.moveTo')} {t(STATUS_LABEL_KEYS[s])}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setMobileMenuTask(null)}
+                className="btn btn-default w-full justify-center text-[var(--fg-muted)]"
+              >
+                {t('task.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DndContext>
   )
 }

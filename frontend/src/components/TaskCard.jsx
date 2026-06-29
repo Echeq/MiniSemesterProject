@@ -32,14 +32,14 @@ function DueBadge({ due_date, status }) {
 
 const BLOCKED_ICON = 'M4 4a4 4 0 0 1 8 0v2h.25A1.75 1.75 0 0 1 14 7.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4zm1.5 2h5V4a2.5 2.5 0 0 0-5 0z'
 
-function TaskCard({ task, onClick, overlay = false, editors }) {
+function TaskCard({ task, onClick, overlay = false, editors, isMobile }) {
   const { t } = useTranslation()
   const STATUS_LABEL = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
   const PRIORITY_LABEL = { P0: t('filter.p0'), P1: t('filter.p1'), P2: t('filter.p2'), P3: t('filter.p3') }
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
-    disabled: overlay,
+    disabled: overlay || isMobile,
   })
   const style = overlay ? undefined : { transform: CSS.Transform.toString(transform), transition }
   const hasLabels = task.labels && task.labels.length > 0
@@ -53,9 +53,16 @@ function TaskCard({ task, onClick, overlay = false, editors }) {
       {...attributes}
       {...listeners}
       onClick={() => onClick?.(task)}
-      className={`group cursor-grab rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-3 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:-translate-y-0.5 hover:border-[var(--fg-subtle)] hover:bg-[var(--card-hover)] hover:shadow-[var(--shadow-md)] active:cursor-grabbing ${
+      className={`group rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-3 shadow-[var(--shadow-sm)] backdrop-blur-md transition hover:-translate-y-0.5 hover:border-[var(--fg-subtle)] hover:bg-[var(--card-hover)] hover:shadow-[var(--shadow-md)] ${
+        isMobile ? '' : 'cursor-grab active:cursor-grabbing'
+      } ${
         isDragging ? 'opacity-40' : ''
-      } ${overlay ? 'rotate-2 shadow-[var(--shadow-md)]' : ''}`}
+      } ${overlay ? 'rotate-2 shadow-[var(--shadow-md)]' : ''} ${
+        task.due_date && task.status !== 'done' && task.due_date < new Date().toISOString().slice(0, 10)
+          ? 'border-l-4 border-l-[var(--danger)]'
+          : ''
+      }`}
+
     >
       <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
         {task.priority && (

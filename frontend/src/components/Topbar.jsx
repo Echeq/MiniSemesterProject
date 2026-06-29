@@ -48,24 +48,37 @@ const Topbar = memo(function Topbar({
   isAdmin,
   onOpenAccount,
   onOpenAdmin,
+  onToggleMobileSidebar,
 }) {
   const { t } = useTranslation()
 
   return (
     <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
-        <h1 className="truncate text-base font-semibold">{title}</h1>
+        <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
         {archived && (
-          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)]">archived</span>
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)] max-sm:hidden">archived</span>
         )}
-        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)]">
+        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] max-sm:hidden">
           {taskCount}
         </span>
+        <button
+          type="button"
+          aria-label="Open sidebar"
+          title="Sidebar"
+          onClick={onToggleMobileSidebar}
+          className="btn btn-default !px-2 sm:hidden"
+        >
+          <span aria-hidden="true">☰</span>
+        </button>
       </div>
 
       <div className="flex items-center gap-2.5">
-        {/* View switcher */}
+
+        {/* View switcher (desktop only) */}
         <div className="hidden items-center rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] p-0.5 sm:flex">
+
+
           {VIEWS.map((v) => (
             <button
               key={v.id}
@@ -93,6 +106,7 @@ const Topbar = memo(function Topbar({
           aria-label="Toggle insights"
           className={`btn btn-default !px-2 hidden xl:inline-flex ${showInsights ? '!text-[var(--accent)] !border-[var(--accent)]' : ''}`}
         >
+
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.75a.75.75 0 0 0-1.5 0v11.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 0-1.5H1.5ZM4 9.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 4 9.5Zm3-2.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 1.5 0Zm2.75-2a.75.75 0 0 1 .75.75v6.25a.75.75 0 0 1-1.5 0V5.5a.75.75 0 0 1 .75-.75Zm3.75-1a.75.75 0 0 0-1.5 0v8.5a.75.75 0 0 0 1.5 0v-8.5Z" /></svg>
         </button>
 
@@ -101,8 +115,9 @@ const Topbar = memo(function Topbar({
             type="button"
             onClick={onToggleFilters}
             title={t('filter.columns')}
-            className={`btn btn-default !px-2 ${showFilters || filterCount > 0 ? '!text-[var(--accent)] !border-[var(--accent)]' : ''}`}
+            className={`btn btn-default !px-2 hidden sm:inline-flex ${showFilters || filterCount > 0 ? '!text-[var(--accent)] !border-[var(--accent)]' : ''}`}
           >
+
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
               <path d="M.75 3h14.5a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1 0-1.5ZM3 7.75A.75.75 0 0 1 3.75 7h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 3 7.75m2.75 3.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5Z" />
             </svg>
@@ -110,10 +125,17 @@ const Topbar = memo(function Topbar({
           </button>
         )}
 
-        {tasks.length > 0 && <ExportMenu tasks={tasks} />}
+        {tasks.length > 0 && (
+          <div className="hidden sm:block">
+            <ExportMenu tasks={tasks} />
+          </div>
+        )}
+
+
 
         {onOpenLabelManager && (
-          <button type="button" onClick={onOpenLabelManager} className="btn btn-default !px-2" title="Manage labels">
+          <button type="button" onClick={onOpenLabelManager} className="btn btn-default !px-2 hidden sm:inline-flex" title="Manage labels">
+
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
               <path d="M1 2.75A.75.75 0 0 1 1.75 2h5.586c.464 0 .909.184 1.237.513l5.914 5.914a1.75 1.75 0 0 1 0 2.474l-4.586 4.586a1.75 1.75 0 0 1-2.474 0L1.513 9.573A1.75 1.75 0 0 1 1 8.336V2.75m2 .75v4.836l5.586 5.586 4.586-4.586L7.836 3.5H3Z" />
             </svg>
@@ -122,10 +144,18 @@ const Topbar = memo(function Topbar({
 
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
 
-        <button type="button" onClick={onNewTask} className="btn btn-primary">
+        <button
+          type="button"
+          onClick={onNewTask}
+          className="btn btn-primary"
+          title={t('header.newTaskShort')}
+          aria-label={t('header.newTaskShort')}
+        >
           <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" /></svg>
           <span className="hidden sm:inline">{t('header.newTaskShort')}</span>
         </button>
+
+
 
         <ProfileMenu
           profile={profile}

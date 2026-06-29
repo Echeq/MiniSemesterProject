@@ -14,6 +14,13 @@ insert into storage.buckets (id, name, public)
 values ('avatars', 'avatars', true)
 on conflict (id) do nothing;
 
+-- ============================================================
+-- Ensure avatar storage policies are idempotent.
+--  - Some environments may already contain these policies (e.g. from a prior migration).
+--  - Use policy-name checks + DO blocks to avoid duplicate-policy failures on reset.
+-- ============================================================
+
+
 -- Public read policy (idempotent)
 DO $$
 BEGIN
@@ -41,6 +48,7 @@ create policy if not exists "Users can upload their own avatar"
     bucket_id = 'avatars'
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
+
 
 -- Replace policy (idempotent)
 DO $$

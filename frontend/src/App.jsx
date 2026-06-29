@@ -1,4 +1,5 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState, useEffect } from 'react'
+
 import { useTranslation } from 'react-i18next'
 import { supabase } from './api/supabaseClient'
 import { useAuth } from './hooks/useAuth'
@@ -91,6 +92,8 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
   const [scope, setScope] = useState('all')
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   const isProject = scope !== null && typeof scope === 'object'
   const isView = typeof scope === 'string' && scope.startsWith('view:')
   const projectId = isProject ? scope.id : scope === null ? null : 'all'
@@ -107,9 +110,38 @@ function BoardPage({ session, theme, toggleTheme }) {
   const { labels } = useLabels(isProject ? scope.id : null)
 
   const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
-  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+
   const handleNewTask = useCallback(() => setModal('new'), [])
+
+  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const tag = (e.target?.tagName || '').toUpperCase()
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+
+      const key = e.key.toLowerCase()
+      const isMac = /mac/i.test(navigator.platform)
+      const mod = isMac ? e.metaKey : e.ctrlKey
+
+      if (mod && key === 'n') {
+        e.preventDefault()
+        handleNewTask()
+      }
+
+      if (mod && key === 'f') {
+        e.preventDefault()
+        document.getElementById('filter-input')?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [handleNewTask])
+
   const handleOpenLabelManager = useCallback(() => setShowLabelManager(true), [])
+
+
   const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
   const handleOpenAccount = useCallback(() => setPanel('account'), [])
   const handleOpenAdmin = useCallback(() => setPanel('admin'), [])
@@ -188,6 +220,9 @@ function BoardPage({ session, theme, toggleTheme }) {
       <ErrorBoundary>
         <Sidebar
           projects={projects}
+          mobileOpen={mobileOpen}
+          onCloseMobile={() => setMobileOpen(false)}
+
           scope={liveScope}
           onSelectScope={setScope}
           projectActions={projectActions}
@@ -203,39 +238,44 @@ function BoardPage({ session, theme, toggleTheme }) {
       </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          title={scopeLabel}
-          archived={isProject && liveScope.status === 'archived'}
-          taskCount={filteredViewTasks.length}
-          tasks={filteredViewTasks}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          showInsights={showInsights}
-          onToggleInsights={handleToggleInsights}
-          activeView={activeView}
-          onSetView={setActiveView}
-          onNewTask={handleNewTask}
-          onOpenLabelManager={isProject ? handleOpenLabelManager : null}
-          showFilters={showFilters}
-          onToggleFilters={() => setShowFilters((s) => !s)}
-          filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
-          session={session}
-          profile={profile}
-          isAdmin={isAdmin}
-          onOpenAccount={handleOpenAccount}
-          onOpenAdmin={handleOpenAdmin}
-        />
+        <div className="relative">
+          <Topbar
+            onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
+            title={scopeLabel}
+            archived={isProject && liveScope.status === 'archived'}
+            taskCount={filteredViewTasks.length}
+            tasks={filteredViewTasks}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            showInsights={showInsights}
+            onToggleInsights={handleToggleInsights}
+            activeView={activeView}
+            onSetView={setActiveView}
+            onNewTask={handleNewTask}
+            onOpenLabelManager={isProject ? handleOpenLabelManager : null}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters((s) => !s)}
+            filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
+            session={session}
+            profile={profile}
+            isAdmin={isAdmin}
+            onOpenAccount={handleOpenAccount}
+            onOpenAdmin={handleOpenAdmin}
+          />
+
+          {showFilters && (
+            <div className="absolute left-0 right-0 z-20">
+              <FilterPanel
+                filters={filters}
+                onChange={setFilters}
+                members={members}
+                labels={labels}
+              />
+            </div>
+          )}
+        </div>
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
-
-        {showFilters && (
-          <FilterPanel
-            filters={filters}
-            onChange={setFilters}
-            members={members}
-            labels={labels}
-          />
-        )}
 
         <ErrorBoundary>
           {activeView === 'gantt' ? (
@@ -344,3 +384,4 @@ function AuthGate({ theme, toggleTheme }) {
     </ErrorBoundary>
   )
 }
+
