@@ -82,6 +82,7 @@
     "passwordTooShort": "新密码至少需要 6 个字符",
     "passwordChanged": "密码已更改",
     "updating": "更新中…",
+    "update": "更新",
     "updateEmail": "更新邮箱",
     "newEmail": "新邮箱",
     "emailUpdated": "验证邮件已发送到您当前和新的邮箱地址",
