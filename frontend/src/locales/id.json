@@ -82,6 +82,7 @@
     "passwordTooShort": "Kata sandi baru minimal 6 karakter",
     "passwordChanged": "Kata sandi diubah",
     "updating": "Memperbarui…",
+    "update": "Perbarui",
     "updateEmail": "Perbarui email",
     "newEmail": "Email baru",
     "emailUpdated": "Email verifikasi dikirim ke alamat email Anda saat ini dan baru",

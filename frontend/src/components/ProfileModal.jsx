@@ -326,7 +326,7 @@ function Settings({ session, profile, onSaved }) {
           <span className={labelCls}>{t('profile.newEmail')}</span>
           <div className="flex gap-2">
             <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
-            <button disabled={busy || !newEmail} className="btn btn-default">{t('profile.updating')}</button>
+            <button disabled={busy || !newEmail} className="btn btn-default">{busy ? t('profile.updating') : t('profile.update')}</button>
           </div>
         </label>
       </form>
@@ -336,7 +336,7 @@ function Settings({ session, profile, onSaved }) {
           <span className={labelCls}>{t('profile.newPassword')}</span>
           <div className="flex gap-2">
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input" />
-            <button disabled={busy || !password} className="btn btn-default">{t('profile.updating')}</button>
+            <button disabled={busy || !password} className="btn btn-default">{busy ? t('profile.updating') : t('profile.update')}</button>
           </div>
         </label>
       </form>

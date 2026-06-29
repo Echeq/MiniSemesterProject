@@ -82,6 +82,7 @@
     "passwordTooShort": "La nueva contraseña debe tener al menos 6 caracteres",
     "passwordChanged": "Contraseña cambiada",
     "updating": "Actualizando…",
+    "update": "Actualizar",
     "updateEmail": "Actualizar correo",
     "newEmail": "Nuevo correo",
     "emailUpdated": "Correos de verificación enviados a tu correo actual y nuevo",
