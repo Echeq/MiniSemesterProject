@@ -53,7 +53,7 @@ const Topbar = memo(function Topbar({
   const { t } = useTranslation()
 
   return (
-    <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
+    <header className="relative flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
         <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
         {archived && (
