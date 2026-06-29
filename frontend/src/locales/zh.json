@@ -286,6 +286,9 @@
     "day": "天",
     "week": "周",
     "month": "月",
-    "today": "今天"
+    "today": "今天",
+    "dependencies": "依赖关系",
+    "linkHint": "拖动以添加依赖",
+    "removeDep": "点击连线删除依赖"
   }
 }

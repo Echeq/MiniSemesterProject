@@ -286,6 +286,9 @@
     "day": "Día",
     "week": "Semana",
     "month": "Mes",
-    "today": "Hoy"
+    "today": "Hoy",
+    "dependencies": "Dependencias",
+    "linkHint": "Arrastra para añadir dependencia",
+    "removeDep": "Haz clic en la línea para eliminar la dependencia"
   }
 }

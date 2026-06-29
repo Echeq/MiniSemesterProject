@@ -279,7 +279,7 @@ function BoardPage({ session, theme, toggleTheme }) {
 
         <ErrorBoundary>
           {activeView === 'gantt' ? (
-            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} /></Suspense>
+            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
           ) : activeView === 'sphere' ? (
             <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
           ) : (
