@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
 import ExportMenu from './ExportMenu'
+import NotificationBell from './NotificationBell'
 
 const VIEWS = [
   {
@@ -142,6 +143,8 @@ const Topbar = memo(function Topbar({
             </svg>
           </button>
         )}
+
+        <NotificationBell userId={session?.user?.id} onOpen={onMenuOpen} />
 
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
 

@@ -291,5 +291,14 @@
     "dependencies": "Dependencias",
     "linkHint": "Arrastra para añadir dependencia",
     "removeDep": "Haz clic en la línea para eliminar la dependencia"
+  },
+  "notif": {
+    "title": "Notificaciones",
+    "empty": "Estás al día",
+    "markAll": "Marcar todo como leído",
+    "justNow": "ahora mismo",
+    "minutesAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}} h",
+    "daysAgo": "hace {{count}} d"
   }
 }
