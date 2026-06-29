@@ -51,6 +51,13 @@ function daysBetween(a, b) {
   return Math.round((b - a) / 86400000)
 }
 
+function toISODate(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 function buildHeaderCells(zoom, rangeStart, rangeEnd, xOf, lang) {
   const upper = []
   const lower = []
@@ -130,7 +137,7 @@ function depPath(x1, y1, x2, y2) {
   return `M${x1},${y1} L${x1 + stub},${y1} L${x1 + stub},${backY} L${x2 - stub},${backY} L${x2 - stub},${y2} L${x2},${y2}`
 }
 
-export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemoveDependency }) {
+export default function GanttView({ tasks, onTaskClick, updateTask, onAddDependency, onRemoveDependency }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   const [zoom, setZoom] = useState('Week')
@@ -241,6 +248,48 @@ export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemov
     onRemoveDependency?.(successorId, predecessorId).catch(() => {})
   }, [onRemoveDependency])
 
+  // Drag a bar horizontally to shift its due date.
+  const dateDragRef = useRef(null) // { startX, moved, task }
+  const [dragId, setDragId] = useState(null)
+  const [dragDx, setDragDx] = useState(0)
+
+  const startDateDrag = useCallback((e, task) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    dateDragRef.current = { startX: e.clientX, moved: false, task }
+    setDragId(task.id)
+    setDragDx(0)
+  }, [])
+
+  useEffect(() => {
+    if (dragId == null) return
+    const onMove = (e) => {
+      const d = dateDragRef.current
+      if (!d) return
+      const dx = e.clientX - d.startX
+      if (Math.abs(dx) > 3) d.moved = true
+      setDragDx(dx)
+    }
+    const onUp = (e) => {
+      const d = dateDragRef.current
+      dateDragRef.current = null
+      setDragId(null)
+      setDragDx(0)
+      if (!d) return
+      if (!d.moved) { onTaskClick?.(d.task); return } // a click, not a drag
+      const days = Math.round((e.clientX - d.startX) / pxPerDay)
+      if (days === 0) return
+      const next = addDays(new Date(d.task.due_date + 'T12:00:00'), days)
+      updateTask?.(d.task.id, { due_date: toISODate(next) }).catch(() => {})
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [dragId, pxPerDay, onTaskClick, updateTask])
+
   if (ganttTasks.length === 0) {
     return (
       <EmptyState
@@ -343,7 +392,7 @@ export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemov
         <div
           ref={contentRef}
           className="relative"
-          style={{ minWidth: contentW, width: contentW, userSelect: linkFrom != null ? 'none' : undefined }}
+          style={{ minWidth: contentW, width: contentW, userSelect: (linkFrom != null || dragId != null) ? 'none' : undefined }}
         >
 
           {/* Sticky header row */}
@@ -450,9 +499,9 @@ export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemov
                       style={{ left: todayX - 1, top: 0, width: 2, height: ROW_H, background: 'var(--accent)', opacity: 0.35 }}
                     />
                   )}
-                  {/* Task bar */}
+                  {/* Task bar — drag horizontally to change due date, click to open */}
                   <div
-                    className="absolute cursor-pointer transition-opacity hover:opacity-80"
+                    className="absolute transition-opacity hover:opacity-80"
                     style={{
                       left: barLeft,
                       top: BAR_Y,
@@ -463,8 +512,12 @@ export default function GanttView({ tasks, onTaskClick, onAddDependency, onRemov
                       border: st.border ? '1.5px solid var(--fg-subtle)' : 'none',
                       boxShadow: st.bg ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
                       overflow: 'hidden',
+                      cursor: dragId === task.id ? 'grabbing' : 'ew-resize',
+                      transform: dragId === task.id ? `translateX(${dragDx}px)` : undefined,
+                      opacity: dragId === task.id ? 0.85 : undefined,
+                      zIndex: dragId === task.id ? 30 : undefined,
                     }}
-                    onClick={() => onTaskClick?.(task)}
+                    onMouseDown={(e) => startDateDrag(e, task)}
                   >
                     {barW > 50 && (
                       <span
