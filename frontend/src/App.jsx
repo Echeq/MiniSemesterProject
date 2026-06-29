@@ -124,6 +124,12 @@ function BoardPage({ session, theme, toggleTheme }) {
     setShowFilters((s) => !s)
   }, [showFilters])
 
+  // Opening a header dropdown (profile / export) closes the panels so nothing overlaps.
+  const handleMenuOpen = useCallback(() => {
+    setShowFilters(false)
+    setShowInsights(false)
+  }, [])
+
   useEffect(() => {
     const onKeyDown = (e) => {
       const tag = (e.target?.tagName || '').toUpperCase()
@@ -270,6 +276,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             isAdmin={isAdmin}
             onOpenAccount={handleOpenAccount}
             onOpenAdmin={handleOpenAdmin}
+            onMenuOpen={handleMenuOpen}
           />
 
           {showFilters && (
