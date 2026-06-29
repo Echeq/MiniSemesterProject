@@ -289,5 +289,14 @@
     "dependencies": "التبعيات",
     "linkHint": "اسحب لإضافة تبعية",
     "removeDep": "انقر على الخط لإزالة التبعية"
+  },
+  "notif": {
+    "title": "الإشعارات",
+    "empty": "لا إشعارات جديدة",
+    "markAll": "تحديد الكل كمقروء",
+    "justNow": "الآن",
+    "minutesAgo": "قبل {{count}} د",
+    "hoursAgo": "قبل {{count}} س",
+    "daysAgo": "قبل {{count}} ي"
   }
 }

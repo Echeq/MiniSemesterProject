@@ -291,5 +291,14 @@
     "dependencies": "依赖关系",
     "linkHint": "拖动以添加依赖",
     "removeDep": "点击连线删除依赖"
+  },
+  "notif": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "markAll": "全部标为已读",
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "daysAgo": "{{count}} 天前"
   }
 }

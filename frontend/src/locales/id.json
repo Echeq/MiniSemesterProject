@@ -291,5 +291,14 @@
     "dependencies": "Dependensi",
     "linkHint": "Seret untuk menambah dependensi",
     "removeDep": "Klik garis untuk menghapus dependensi"
+  },
+  "notif": {
+    "title": "Notifikasi",
+    "empty": "Semua sudah dibaca",
+    "markAll": "Tandai semua dibaca",
+    "justNow": "baru saja",
+    "minutesAgo": "{{count}} mnt lalu",
+    "hoursAgo": "{{count}} jam lalu",
+    "daysAgo": "{{count}} hr lalu"
   }
 }

@@ -291,5 +291,14 @@
     "dependencies": "Dependencies",
     "linkHint": "Drag to add dependency",
     "removeDep": "Click line to remove dependency"
+  },
+  "notif": {
+    "title": "Notifications",
+    "empty": "You're all caught up",
+    "markAll": "Mark all read",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
   }
 }
