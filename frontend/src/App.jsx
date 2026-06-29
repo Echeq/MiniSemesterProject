@@ -113,7 +113,16 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const handleNewTask = useCallback(() => setModal('new'), [])
 
-  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+  // Insights and the filter panel are mutually exclusive — opening one closes the other.
+  const handleToggleInsights = useCallback(() => {
+    if (!showInsights) setShowFilters(false)
+    setShowInsights((s) => !s)
+  }, [showInsights])
+
+  const handleToggleFilters = useCallback(() => {
+    if (!showFilters) setShowInsights(false)
+    setShowFilters((s) => !s)
+  }, [showFilters])
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -238,7 +247,7 @@ function BoardPage({ session, theme, toggleTheme }) {
       </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="relative">
+        <div className="relative z-30">
           <Topbar
             onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
             title={scopeLabel}
@@ -254,7 +263,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             onNewTask={handleNewTask}
             onOpenLabelManager={isProject ? handleOpenLabelManager : null}
             showFilters={showFilters}
-            onToggleFilters={() => setShowFilters((s) => !s)}
+            onToggleFilters={handleToggleFilters}
             filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
             session={session}
             profile={profile}
@@ -277,28 +286,30 @@ function BoardPage({ session, theme, toggleTheme }) {
 
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
-        <ErrorBoundary>
-          {activeView === 'gantt' ? (
-            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
-          ) : activeView === 'sphere' ? (
-            <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
-          ) : (
-            <Board
-              tasks={filteredViewTasks}
-              allViewTasks={viewTasks}
-              updateTask={updateTask}
-              onTaskClick={handleTaskClick}
-              onAddTask={(status) => setModal({ defaultStatus: status })}
-              labels={labels}
-              hideEmptyColumns={isView}
-              banner={memoBanner}
-              activeView={activeView}
-              loading={loading}
-              members={members}
-              editors={editors}
-            />
-          )}
-        </ErrorBoundary>
+        <div className="relative z-0 flex min-h-0 flex-1 flex-col">
+          <ErrorBoundary>
+            {activeView === 'gantt' ? (
+              <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
+            ) : activeView === 'sphere' ? (
+              <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
+            ) : (
+              <Board
+                tasks={filteredViewTasks}
+                allViewTasks={viewTasks}
+                updateTask={updateTask}
+                onTaskClick={handleTaskClick}
+                onAddTask={(status) => setModal({ defaultStatus: status })}
+                labels={labels}
+                hideEmptyColumns={isView}
+                banner={memoBanner}
+                activeView={activeView}
+                loading={loading}
+                members={members}
+                editors={editors}
+              />
+            )}
+          </ErrorBoundary>
+        </div>
       </div>
 
       {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
