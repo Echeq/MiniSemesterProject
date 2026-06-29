@@ -1,5 +1,7 @@
 # Daily Tracking — Week 2 (Jun 23 → Jun 28)
 
+> ⚠️ This week is complete. See conversation for Week 3 assignments.
+
 > Each member marks [x] at end of day. PM reviews daily.
 
 ---

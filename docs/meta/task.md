@@ -311,17 +311,17 @@ Implement Gantt chart for timeline view of tasks.
 - [x] Map tasks to Gantt tasks (start date, end date, progress)
 - [x] Add zoom controls (Quarter Day, Half Day, Day, Week, Month)
 - [ ] Show dependency lines
-- [ ] Allow drag to adjust dates (update API)
+- [x] Allow drag to adjust dates (update API)
 - [ ] Allow drag to adjust dependencies
-- [ ] Export Gantt as PNG
+- [x] Export Gantt as PNG
 
 ### Acceptance Criteria
 - [x] Users can switch to Gantt view (via Topbar view switcher)
 - [x] Tasks appear as bars on timeline
 - [ ] Dependencies shown as arrows
-- [ ] Dragging task bar updates due date
+- [x] Dragging task bar updates due date
 - [x] Zoom in/out works
-- [ ] Export to PNG works
+- [x] Export to PNG works
 
 ### Dependencies
 - Issue #4 (Task CRUD)
@@ -348,9 +348,9 @@ Create 3D sphere visualization using Three.js to show project progress.
 - [x] Map task completion to sphere color (red→green)
 - [x] Add rotation animation
 - [ ] Map in-progress tasks to flowing particles
-- [ ] Map overdue tasks to pulsing effect
+- [x] Map overdue tasks to pulsing effect
 - [x] Add mouse interaction (drag to rotate, zoom)
-- [ ] Add hover tooltip with task details
+- [x] Add hover tooltip with task details
 
 ### Visual Mapping
 | Data | Visual |
@@ -364,7 +364,7 @@ Create 3D sphere visualization using Three.js to show project progress.
 ### Acceptance Criteria
 - [x] 3D sphere renders with particles
 - [x] Color changes based on completion %
-- [ ] Hover shows task details
+- [x] Hover shows task details
 - [x] Works on modern browsers (WebGL)
 - [ ] Doesn't kill performance (<200 tasks)
 
@@ -392,14 +392,14 @@ Create a table/list view with advanced filtering and sorting.
 - [x] Create ListView component (table with title, status, priority, assignee, due_date)
 - [x] Add filter sidebar/panel (FilterPanel.jsx with status, priority, assignee, labels, date range)
 - [x] Add column sort by click on table header (toggleSort with asc/desc indicators)
-- [ ] Save filter preferences (localStorage or DB)
-- [ ] Toggle between compact and detailed view
+- [x] Save filter preferences (localStorage or DB)
+- [x] Toggle between compact and detailed view
 
 ### Acceptance Criteria
 - [x] Users can switch to List view (via Topbar Kanban/List toggle)
 - [x] Filters work together (AND logic via client-side filtering)
 - [x] Sorting works on any column (click header asc/desc)
-- [ ] Filter preferences persist after page reload
+- [x] Filter preferences persist after page reload
 - [ ] Bulk edit possible (checkboxes)
 
 ### Dependencies

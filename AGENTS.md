@@ -51,6 +51,7 @@ Supabase CLI (from root or `supabase/`):
 - **`useBoard(projectId)`** accepts `'all'`, `null` (shared board, no project), or a project UUID.
 - **Smart views** are client-side filters: `view:mine` (assigned), `view:due` (≤7d), `view:overdue` (past due, not done).
 - **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board, can submit join requests). First signup ever → admin. New signups default to `unknown` via `handle_new_user()` trigger. Admin promotes via `admin_set_role` RPC or Requests tab.
+- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite flow). First signup ever → admin.
 - **Position system**: float8 `position`. `positionBetween()` at `frontend/src/hooks/useBoard.js:9`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 - **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
