@@ -199,6 +199,8 @@ function Settings({ session, profile, onSaved }) {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [password, setPassword] = useState('')
   const [newEmail, setNewEmail] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [reauthFor, setReauthFor] = useState(null)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState(null)
@@ -211,19 +213,32 @@ function Settings({ session, profile, onSaved }) {
     setTimeout(() => setter(null), 4000)
   }
 
-  async function saveProfile(e) {
-    e.preventDefault()
-    setBusy(true); setError(null)
-    try {
-      const { error } = await supabase.from('profiles').update({ display_name: displayName }).eq('id', userId)
-      if (error) throw error
-      await onSaved()
-      flash(setMsg, 'Profile saved.')
-    } catch (err) {
-      flash(setError, err.message)
-    } finally {
-      setBusy(false)
+  async function verifyAndExecute(actionFn, actionLabel) {
+    if (reauthFor === actionLabel) {
+      setBusy(true); setError(null)
+      try {
+        const { error: authErr } = await supabase.auth.signInWithPassword({
+          email: session.user.email,
+          password: currentPassword,
+        })
+        if (authErr) throw new Error('Current password is incorrect.')
+        setCurrentPassword(''); setReauthFor(null)
+        await actionFn()
+      } catch (err) {
+        flash(setError, err.message)
+      } finally {
+        setBusy(false)
+      }
+    } else {
+      setCurrentPassword(''); setError(null); setReauthFor(actionLabel)
     }
+  }
+
+  async function saveProfile() {
+    const { error } = await supabase.from('profiles').update({ display_name: displayName }).eq('id', userId)
+    if (error) throw error
+    await onSaved()
+    flash(setMsg, 'Profile saved.')
   }
 
   async function uploadAvatar(e) {
@@ -241,6 +256,7 @@ function Settings({ session, profile, onSaved }) {
       if (dbErr) throw dbErr
       setAvatarUrl(url)
       await onSaved()
+      setCurrentPassword(''); setReauthFor(null)
       flash(setMsg, 'Avatar updated.')
     } catch (err) {
       flash(setError, err.message)
@@ -249,36 +265,35 @@ function Settings({ session, profile, onSaved }) {
     }
   }
 
-  async function changeEmail(e) {
-    e.preventDefault()
+  async function changeEmail() {
     if (!newEmail) return
-    setBusy(true); setError(null)
-    try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail })
-      if (error) throw error
-      setNewEmail('')
-      flash(setMsg, 'Verification email sent.')
-    } catch (err) {
-      flash(setError, err.message)
-    } finally {
-      setBusy(false)
-    }
+    const { error } = await supabase.auth.updateUser({ email: newEmail })
+    if (error) throw error
+    setNewEmail('')
+    flash(setMsg, 'Verification email sent.')
   }
 
-  async function changePassword(e) {
+  async function changePassword() {
+    if (password.length < 6) { flash(setError, 'Password must be at least 6 characters.'); return }
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+    setPassword('')
+    flash(setMsg, 'Password changed.')
+  }
+
+  function handleSaveProfile(e) {
     e.preventDefault()
-    if (password.length < 6) return flash(setError, 'Password must be at least 6 characters.')
-    setBusy(true); setError(null)
-    try {
-      const { error } = await supabase.auth.updateUser({ password })
-      if (error) throw error
-      setPassword('')
-      flash(setMsg, 'Password changed.')
-    } catch (err) {
-      flash(setError, err.message)
-    } finally {
-      setBusy(false)
-    }
+    verifyAndExecute(saveProfile, 'display name')
+  }
+
+  function handleChangeEmail(e) {
+    e.preventDefault()
+    verifyAndExecute(changeEmail, 'email')
+  }
+
+  function handleChangePassword(e) {
+    e.preventDefault()
+    verifyAndExecute(changePassword, 'password')
   }
 
   async function deleteAccount() {
@@ -311,35 +326,53 @@ function Settings({ session, profile, onSaved }) {
         </div>
       </div>
 
-      <form onSubmit={saveProfile} className="mb-5">
-        <label className="block">
-          <span className={labelCls}>{t('profile.displayName')}</span>
+      {reauthFor && (
+        <form onSubmit={(e) => { e.preventDefault(); verifyAndExecute(
+          reauthFor === 'display name' ? saveProfile : reauthFor === 'email' ? changeEmail : changePassword,
+          reauthFor
+        ) }} className="mb-5 rounded-md border p-3" style={{ borderColor: 'var(--doing)' }}>
+          <p className="mb-2 text-sm font-medium">Enter current password to change {reauthFor}.</p>
           <div className="flex gap-2">
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} className="input" />
-            <button disabled={busy} className="btn btn-primary">{t('profile.save')}</button>
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" className="input" />
+            <button disabled={busy || !currentPassword} className="btn btn-primary">Verify</button>
+            <button type="button" onClick={() => { setReauthFor(null); setCurrentPassword('') }} className="btn btn-default">Cancel</button>
           </div>
-        </label>
-      </form>
+        </form>
+      )}
 
-      <form onSubmit={changeEmail} className="mb-6">
-        <label className="block">
-          <span className={labelCls}>{t('profile.newEmail')}</span>
-          <div className="flex gap-2">
-            <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
-            <button disabled={busy || !newEmail} className="btn btn-default">{t('profile.updating')}</button>
-          </div>
-        </label>
-      </form>
+      {!reauthFor && (
+        <>
+          <form onSubmit={handleSaveProfile} className="mb-5">
+            <label className="block">
+              <span className={labelCls}>{t('profile.displayName')}</span>
+              <div className="flex gap-2">
+                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} className="input" />
+                <button disabled={busy} className="btn btn-primary">{t('profile.save')}</button>
+              </div>
+            </label>
+          </form>
 
-      <form onSubmit={changePassword} className="mb-6">
-        <label className="block">
-          <span className={labelCls}>{t('profile.newPassword')}</span>
-          <div className="flex gap-2">
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input" />
-            <button disabled={busy || !password} className="btn btn-default">{t('profile.updating')}</button>
-          </div>
-        </label>
-      </form>
+          <form onSubmit={handleChangeEmail} className="mb-6">
+            <label className="block">
+              <span className={labelCls}>{t('profile.newEmail')}</span>
+              <div className="flex gap-2">
+                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
+                <button disabled={busy || !newEmail} className="btn btn-default">{t('profile.updating')}</button>
+              </div>
+            </label>
+          </form>
+
+          <form onSubmit={handleChangePassword} className="mb-6">
+            <label className="block">
+              <span className={labelCls}>{t('profile.newPassword')}</span>
+              <div className="flex gap-2">
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input" />
+                <button disabled={busy || !password} className="btn btn-default">{t('profile.updating')}</button>
+              </div>
+            </label>
+          </form>
+        </>
+      )}
 
       <div className="rounded-md border p-4" style={{ borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
         <p className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>{t('profile.dangerZone')}</p>

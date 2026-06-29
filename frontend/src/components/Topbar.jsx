@@ -67,7 +67,7 @@ const Topbar = memo(function Topbar({
           aria-label="Open sidebar"
           title="Sidebar"
           onClick={onToggleMobileSidebar}
-          className="btn btn-default !px-2 sm:hidden"
+          className="btn btn-default !px-2 sidebar-toggle"
         >
           <span aria-hidden="true">☰</span>
         </button>
@@ -144,16 +144,18 @@ const Topbar = memo(function Topbar({
 
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
 
-        <button
-          type="button"
-          onClick={onNewTask}
-          className="btn btn-primary"
-          title={t('header.newTaskShort')}
-          aria-label={t('header.newTaskShort')}
-        >
-          <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" /></svg>
-          <span className="hidden sm:inline">{t('header.newTaskShort')}</span>
-        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={onNewTask}
+            className="btn btn-primary"
+            title={t('header.newTaskShort')}
+            aria-label={t('header.newTaskShort')}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" /></svg>
+            <span className="hidden sm:inline">{t('header.newTaskShort')}</span>
+          </button>
+        )}
 
 
 

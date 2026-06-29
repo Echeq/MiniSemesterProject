@@ -34,7 +34,7 @@ export function useTaskEditing(userId, displayName) {
 
     channel.subscribe((status) => {
       channelRef.current = channel
-      if (status === 'SUBSCRIBED' && editingRef.current) {
+      if (status === 'SUBSCRIBED') {
         channel.track({ taskId: editingRef.current, displayName })
       }
     })
