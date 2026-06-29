@@ -4,6 +4,7 @@ import Avatar from './Avatar'
 import EmptyState from './EmptyState'
 import CreateProjectModal from './CreateProjectModal'
 import ProjectSettingsModal from './ProjectSettingsModal'
+import ConfirmModal from './ConfirmModal'
 import { SidebarStatsSkeleton } from './Skeleton'
 
 function Icon({ path, className = 'h-4 w-4' }) {
@@ -32,11 +33,13 @@ const ICONS = {
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const in7Str = () => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 
-function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmin, onOpenAdmin, members = [], onlineIds, stats = [], currentUserId, loadingProjects = false, editors }) {
+function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmin, onOpenAdmin, members = [], onlineIds, stats = [], currentUserId, loadingProjects = false, editors, setConfirmAction, setConfirmError }) {
 
   const { t } = useTranslation()
   const [showCreate, setShowCreate] = useState(false)
   const [settingsProject, setSettingsProject] = useState(null)
+  const [showAllMembers, setShowAllMembers] = useState(false)
+  const INITIAL_MEMBERS = 5
 
   const active = useMemo(() => projects.filter((p) => p.status === 'active'), [projects])
   const archived = useMemo(() => projects.filter((p) => p.status === 'archived'), [projects])
@@ -121,9 +124,11 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
 
           <div className="flex items-center justify-between px-2 pb-1 pt-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('sidebar.projects')}</span>
-            <button onClick={() => setShowCreate(true)} title={t('sidebar.newProject')} className="rounded p-0.5 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]">
-              <Icon path={ICONS.plus} className="h-3.5 w-3.5" />
-            </button>
+            {isAdmin && (
+              <button onClick={() => setShowCreate(true)} title={t('sidebar.newProject')} className="rounded p-0.5 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--fg)]">
+                <Icon path={ICONS.plus} className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
 
           {active.length === 0 && (
@@ -152,13 +157,16 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
                       <>
                         <button
                           title={t('sidebar.archive')}
-                          onClick={() => window.confirm(t('sidebar.archiveConfirm', { name: p.name })) && projectActions.setStatus(p.id, 'archived').catch((e) => alert(e.message))}
+                          onClick={() => setConfirmAction({ type: 'archive', project: p })}
                           className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--doing)]"
                         >
-
                           <Icon path={ICONS.archive} className="h-3.5 w-3.5" />
                         </button>
-                        <button title={t('sidebar.delete')} onClick={() => window.confirm(t('sidebar.deleteProjectConfirm', { name: p.name })) && projectActions.delete(p.id).catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--danger)]">
+                        <button
+                          title={t('sidebar.delete')}
+                          onClick={() => setConfirmAction({ type: 'delete', project: p })}
+                          className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--danger)]"
+                        >
                           <Icon path={ICONS.trash} className="h-3.5 w-3.5" />
                         </button>
                       </>
@@ -189,7 +197,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
                     </span>
                   </button>
                   {isAdmin && (
-                    <button title={t('sidebar.restore')} onClick={() => projectActions.setStatus(p.id, 'active').catch((e) => alert(e.message))} className="rounded p-1 text-[var(--fg-muted)] opacity-0 transition hover:text-[var(--done)] group-hover:opacity-100">
+                    <button title={t('sidebar.restore')} onClick={async () => { try { await projectActions.setStatus(p.id, 'active') } catch (e) { setConfirmError(e.message) } }} className="rounded p-1 text-[var(--fg-muted)] opacity-0 transition hover:text-[var(--done)] group-hover:opacity-100">
                       <Icon path={ICONS.restore} className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -208,7 +216,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
                   </span>
                 )}
               </div>
-              {onlineMembers.map((m) => (
+              {(showAllMembers ? onlineMembers : onlineMembers.slice(0, INITIAL_MEMBERS)).map((m) => (
                 <div key={m.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5">
                   <span className="relative flex-shrink-0">
                     <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
@@ -230,6 +238,11 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
                   {m.role === 'admin' && <span className="text-[10px] font-semibold text-[var(--accent)]">{t('admin.admin')}</span>}
                 </div>
               ))}
+              {onlineMembers.length > INITIAL_MEMBERS && !showAllMembers && (
+                <button onClick={() => setShowAllMembers(true)} className="w-full rounded-md px-2 py-1.5 text-xs font-medium text-[var(--accent)] transition hover:bg-[var(--surface-hover)]">
+                  View all {onlineMembers.length} members →
+                </button>
+              )}
             </>
           )}
         </nav>
@@ -279,54 +292,76 @@ const Sidebar = memo(function Sidebar({
   loadingProjects = false,
   editors,
 }) {
+  const { t } = useTranslation()
+  const [confirmAction, setConfirmAction] = useState(null)
+  const [confirmError, setConfirmError] = useState(null)
+
+  const sharedContentProps = { projects, scope, projectActions, isAdmin, onOpenAdmin, members, onlineIds, stats, currentUserId, loadingProjects, editors, setConfirmAction, setConfirmError }
+
   return (
     <>
       {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity sm:hidden ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-40 transition-opacity md:hidden ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         aria-hidden={!mobileOpen}
       >
         <div className="absolute inset-0 bg-black/50" onClick={onCloseMobile} />
         <div className="absolute left-0 top-0 h-full w-64">
           <aside className="glass h-full w-full flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
             <SidebarContent
-              projects={projects}
-              scope={scope}
+              {...sharedContentProps}
               onSelectScope={(s) => {
                 onSelectScope(s)
                 onCloseMobile?.()
               }}
-              projectActions={projectActions}
-              isAdmin={isAdmin}
-              onOpenAdmin={onOpenAdmin}
-              members={members}
-              onlineIds={onlineIds}
-              stats={stats}
-              currentUserId={currentUserId}
-              loadingProjects={loadingProjects}
-              editors={editors}
             />
           </aside>
         </div>
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="glass hidden w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150 sm:flex">
+      <aside className="glass max-md:hidden md:flex w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
         <SidebarContent
-          projects={projects}
-          scope={scope}
+          {...sharedContentProps}
           onSelectScope={onSelectScope}
-          projectActions={projectActions}
-          isAdmin={isAdmin}
-          onOpenAdmin={onOpenAdmin}
-          members={members}
-          onlineIds={onlineIds}
-          stats={stats}
-          currentUserId={currentUserId}
-          loadingProjects={loadingProjects}
-          editors={editors}
         />
       </aside>
+
+      {/* Confirm modals — rendered OUTSIDE backdrop-filter containers to avoid stacking-context clipping */}
+      {confirmAction && (
+        <ConfirmModal
+          title={confirmAction.type === 'archive' ? t('sidebar.archiveConfirm', { name: confirmAction.project.name }) : t('sidebar.deleteProjectConfirm', { name: confirmAction.project.name })}
+          message={confirmAction.type === 'archive' ? 'The project will be hidden from the active list.' : 'This action cannot be undone.'}
+          confirmLabel={confirmAction.type === 'archive' ? 'Archive' : 'Delete'}
+          cancelLabel="Cancel"
+          danger={confirmAction.type === 'delete'}
+          onConfirm={async () => {
+            try {
+              if (confirmAction.type === 'archive') {
+                await projectActions.setStatus(confirmAction.project.id, 'archived')
+              } else {
+                await projectActions.delete(confirmAction.project.id)
+              }
+            } catch (e) {
+              setConfirmError(e.message)
+            }
+            setConfirmAction(null)
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
+      )}
+
+      {confirmError && (
+        <ConfirmModal
+          title="Error"
+          message={confirmError}
+          confirmLabel="OK"
+          cancelLabel={null}
+          danger
+          onConfirm={() => setConfirmError(null)}
+          onCancel={() => setConfirmError(null)}
+        />
+      )}
     </>
   )
 })

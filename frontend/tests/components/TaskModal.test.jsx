@@ -93,14 +93,12 @@ describe('TaskModal', () => {
 
   it('calls onDelete when delete is confirmed', async () => {
     const onDelete = vi.fn()
-    const originalConfirm = window.confirm
-    window.confirm = vi.fn(() => true)
     const TaskModal = (await import('../../src/components/TaskModal')).default
     render(<TaskModal task={{ id: 't1', title: 'Delete me', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={onDelete} onClose={vi.fn()} />)
-    await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
     await userEvent.click(screen.getByText('Delete'))
+    await waitFor(() => expect(screen.getByText('Delete this task?')).toBeInTheDocument())
+    await userEvent.click(screen.getAllByText('Delete')[1])
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('t1'))
-    window.confirm = originalConfirm
   })
 
   it('displays error message', async () => {

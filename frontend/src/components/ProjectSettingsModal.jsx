@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Modal from './Modal'
+import Avatar from './Avatar'
+import { supabase } from '../api/supabaseClient'
 
 const PRESET_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#06b6d4']
 const PRESET_ICONS = [
@@ -14,6 +16,7 @@ const PRESET_ICONS = [
 
 export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
   const { t } = useTranslation()
+  const [tab, setTab] = useState('settings')
   const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description || '')
   const [color, setColor] = useState(project.color || '#6366f1')
@@ -37,52 +40,183 @@ export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
   }
 
   return (
-    <Modal title={t('project.settingsTitle')} subtitle={project.name} onClose={onClose}>
-      <form onSubmit={handleSubmit}>
-        <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.name')}</span>
-          <input type="text" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} className="input" />
-        </label>
+    <Modal title={t('project.settingsTitle')} subtitle={project.name} onClose={onClose} maxWidth="max-w-lg">
+      <div className="mb-4 flex gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
+        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</TabButton>
+        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>Members</TabButton>
+      </div>
 
-        <label className="mb-3 block">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.description')}</span>
-          <textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" />
-        </label>
+      {tab === 'settings' ? (
+        <form onSubmit={handleSubmit}>
+          <label className="mb-3 block">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.name')}</span>
+            <input type="text" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} className="input" />
+          </label>
 
-        <div className="mb-3">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.color')}</span>
-          <div className="flex gap-2">
-            {PRESET_COLORS.map((c) => (
-              <button key={c} type="button" onClick={() => setColor(c)}
-                className="h-7 w-7 rounded-full border-2 transition hover:scale-110"
-                style={{ background: c, borderColor: color === c ? 'var(--fg)' : 'transparent' }}
-              />
-            ))}
+          <label className="mb-3 block">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.description')}</span>
+            <textarea rows={2} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" />
+          </label>
+
+          <div className="mb-3">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.color')}</span>
+            <div className="flex gap-2">
+              {PRESET_COLORS.map((c) => (
+                <button key={c} type="button" onClick={() => setColor(c)}
+                  className="h-7 w-7 rounded-full border-2 transition hover:scale-110"
+                  style={{ background: c, borderColor: color === c ? 'var(--fg)' : 'transparent' }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="mb-4">
-          <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.icon')}</span>
-          <div className="flex flex-wrap gap-2">
-            {PRESET_ICONS.map((icn) => (
-              <button key={icn.key} type="button" onClick={() => setIcon(icn.key)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:scale-110"
-                style={{ background: icon === icn.key ? 'var(--surface-hover)' : 'transparent', color: 'var(--fg)' }}
-              >
-                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d={icn.path} /></svg>
-              </button>
-            ))}
+          <div className="mb-4">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">{t('project.icon')}</span>
+            <div className="flex flex-wrap gap-2">
+              {PRESET_ICONS.map((icn) => (
+                <button key={icn.key} type="button" onClick={() => setIcon(icn.key)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:scale-110"
+                  style={{ background: icon === icn.key ? 'var(--surface-hover)' : 'transparent', color: 'var(--fg)' }}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d={icn.path} /></svg>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
+          {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
-        <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn btn-default">{t('project.cancel')}</button>
-          <button type="submit" disabled={busy} className="btn btn-primary">{t('project.save')}</button>
-        </div>
-      </form>
+          <div className="flex items-center justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn btn-default">{t('project.cancel')}</button>
+            <button type="submit" disabled={busy} className="btn btn-primary">{t('project.save')}</button>
+          </div>
+        </form>
+      ) : (
+        <ProjectMembers projectId={project.id} />
+      )}
     </Modal>
+  )
+}
+
+function TabButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+        active ? 'bg-[var(--card-hover)] text-[var(--fg)] shadow-[var(--shadow-sm)]' : 'text-[var(--fg-muted)] hover:text-[var(--fg)]'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function ProjectMembers({ projectId }) {
+  const { t } = useTranslation()
+  const [members, setMembers] = useState([])
+  const [allProfiles, setAllProfiles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [addQuery, setAddQuery] = useState('')
+  const [busyId, setBusyId] = useState(null)
+
+  const fetchMembers = useCallback(async () => {
+    const { data } = await supabase
+      .from('project_members')
+      .select('id, user_id, role, profile:profiles!project_members_user_id_fkey(display_name, avatar_url)')
+      .eq('project_id', projectId)
+    setMembers(data ?? [])
+    setLoading(false)
+  }, [projectId])
+
+  useEffect(() => {
+    fetchMembers()
+    supabase.from('profiles').select('id, display_name, avatar_url').then(({ data }) => setAllProfiles(data ?? []))
+  }, [fetchMembers])
+
+  const availableProfiles = useMemo(() => {
+    const memberIds = new Set(members.map((m) => m.user_id))
+    if (!addQuery.trim()) return []
+    const q = addQuery.toLowerCase()
+    return allProfiles.filter((p) => !memberIds.has(p.id) && p.display_name?.toLowerCase().includes(q)).slice(0, 8)
+  }, [members, allProfiles, addQuery])
+
+  async function addMember(userId) {
+    setError(null)
+    try {
+      await supabase.rpc('add_project_member', { p_project_id: projectId, p_user_id: userId })
+      setAddQuery('')
+      await fetchMembers()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function removeMember(userId) {
+    setBusyId(userId)
+    setError(null)
+    try {
+      await supabase.rpc('remove_project_member', { p_project_id: projectId, p_user_id: userId })
+      await fetchMembers()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  return (
+    <div>
+      {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
+
+      <div className="mb-3">
+        <input
+          type="text"
+          value={addQuery}
+          onChange={(e) => setAddQuery(e.target.value)}
+          placeholder="Search user to add…"
+          className="input"
+        />
+      </div>
+
+      {addQuery.trim() && availableProfiles.length > 0 && (
+        <div className="mb-3 max-h-40 space-y-1 overflow-y-auto rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-1.5">
+          {availableProfiles.map((p) => (
+            <button key={p.id} onClick={() => addMember(p.id)}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-[var(--surface-hover)]"
+            >
+              <Avatar name={p.display_name} url={p.avatar_url} size="sm" />
+              <span>{p.display_name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {loading ? (
+        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+      ) : members.length === 0 ? (
+        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">No members.</p>
+      ) : (
+        <div className="max-h-64 space-y-1.5 overflow-y-auto">
+          {members.map((m) => (
+            <div key={m.id} className="flex items-center gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
+              <Avatar name={m.profile?.display_name} url={m.profile?.avatar_url} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{m.profile?.display_name}</p>
+              </div>
+              <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold text-[var(--fg-muted)]" style={{ borderColor: 'var(--border)' }}>{m.role}</span>
+              <button
+                onClick={() => removeMember(m.user_id)}
+                disabled={busyId === m.user_id}
+                className="btn btn-danger !py-1 !text-xs"
+              >
+                {busyId === m.user_id ? '…' : 'Remove'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

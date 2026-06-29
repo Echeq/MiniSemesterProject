@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { STATUSES } from '../hooks/useBoard'
 import Modal from './Modal'
+import ConfirmModal from './ConfirmModal'
 
 const PRIORITIES = [
   { value: '', label: 'None', color: null },
@@ -43,6 +44,7 @@ export default function TaskModal({
   const [error, setError] = useState(null)
   const [blockerError, setBlockerError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const editing = Boolean(task)
 
   const availableLabels = labels.filter((l) => l.project_id === projectId || (!projectId && !l.project_id))
@@ -111,7 +113,6 @@ export default function TaskModal({
   }
 
   async function handleDelete() {
-    if (!window.confirm('Delete this task?')) return
     setBusy(true)
     try {
       await onDelete(task.id)
@@ -237,7 +238,7 @@ export default function TaskModal({
 
         <div className="flex items-center justify-between">
           {editing ? (
-            <button type="button" onClick={handleDelete} disabled={busy} className="btn btn-danger">{t('task.delete')}</button>
+            <button type="button" onClick={() => setConfirmDelete(true)} disabled={busy} className="btn btn-danger">{t('task.delete')}</button>
           ) : <span />}
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="btn btn-default">{t('task.cancel')}</button>
@@ -245,6 +246,17 @@ export default function TaskModal({
           </div>
         </div>
       </form>
+      {confirmDelete && (
+        <ConfirmModal
+          title="Delete this task?"
+          message="This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          danger
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </Modal>
   )
 }
