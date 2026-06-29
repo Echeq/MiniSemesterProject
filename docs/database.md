@@ -189,10 +189,21 @@ This ensures UPDATE and DELETE events include old row values.
 | `admin_set_role(target_user uuid, new_role text)` | Set a user's role (admin only) |
 | `set_project_status(target_project uuid, new_status text)` | Archive/restore projects (admin only) |
 | `delete_own_account()` | Delete current user's account and data |
+| `delete_account()` | Legacy wrapper for `delete_own_account` |
+| `log_activity(p_action text, p_target_type text, p_target_id uuid, p_metadata jsonb)` | Insert audit log row |
+| `get_logs(p_user_id uuid, p_action text, p_date_from timestamptz, p_date_to timestamptz)` | List filtered logs (admin only) |
+| `restore_from_backup(data jsonb)` | Restore projects, tasks, labels from JSON backup (admin only) |
+| `get_profile_preferences(target_user_id uuid)` | Get user UI preferences as JSON |
+| `set_profile_preferences(target_user_id uuid, prefs jsonb)` | Set user UI preferences |
+| `check_blocked_tasks(target_task_id uuid)` | Return incomplete dependencies blocking a task |
+| `add_task_dependency(p_task_id uuid, p_depends_on_id uuid)` | Add a dependency link with circular check |
+| `export_all_data()` | Return full user-scoped data as JSON (projects, tasks, labels, members) |
+| `get_filtered_tasks(p_status, p_priority, p_assignee, p_date_from, p_date_to, p_label_ids, p_order_by, p_order_dir)` | Server-side filtered task query |
+| `get_notifications(target_user_id uuid)` | Get unread notifications for a user |
 
 ---
 
-## Migrations (9 total)
+## Migrations (14 total)
 
 Located in `supabase/migrations/` — **source of truth** for the schema:
 
@@ -207,6 +218,11 @@ Located in `supabase/migrations/` — **source of truth** for the schema:
 | `20260617120000_rbac_projects_invitations.sql` | RBAC for projects + invitations revamp, `is_admin()` RPC |
 | `20260617120100_account_management.sql` | Account management improvements |
 | `20260618120000_project_members_and_colors.sql` | `project_members` junction table, `color`/`icon` on projects |
+| `20260625000002_logs_and_preferences.sql` | `system_logs` table, `get_logs`/`get_profile_preferences`/`set_profile_preferences` RPCs, `preferences` column on profiles |
+| `20260625000003_restore_backup.sql` | `restore_from_backup()` RPC |
+| `20260625000004_system_config.sql` | `system_config` table for app-wide key-value settings |
+| `20260625000005_fix_notify_due_soon_null_assignee.sql` | Fix `notify_due_soon()` to skip tasks with no assignee |
+| `20260627000001_capture_mcp_rpcs.sql` | `notifications` table, circular dependency trigger, `add_task_dependency`/`check_blocked_tasks`/`export_all_data`/`get_filtered_tasks`/`get_notifications`/`log_activity` RPCs |
 
 Apply with:
 ```bash

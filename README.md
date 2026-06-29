@@ -6,7 +6,7 @@
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Vite 8, Tailwind CSS v4, TypeScript 6, @dnd-kit |
+| Frontend | React 19, Vite 8, Tailwind CSS v4, @dnd-kit (JSX — no TS at runtime) |
 | Backend | Supabase (Auth, PostgREST, Realtime, PostgreSQL) |
 | Testing | Vitest 4, Thunder Client |
 | AI Tooling | OpenCode (@ai-log, @ai-commit, Supabase MCP) |
@@ -20,7 +20,7 @@
 - **User authentication** — sign up and sign in with Supabase Auth
 - **Task management** — titles, descriptions, due dates, and assignees
 - **Mobile responsive** — adaptive layout for phones and tablets
-- **Export** — download your board as XLSX or PDF
+- **Export** — download your board as Excel (.xlsx), PDF, or CSV
 
 ## Quick Start
 

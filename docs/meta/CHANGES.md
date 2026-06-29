@@ -14,7 +14,7 @@
 | i18n | i18next + react-i18next (en, es, zh, id, ar) |
 | Testing | Vitest 4 (jsdom) |
 
-There is **no application server** — the React app talks directly to Supabase over PostgREST, Realtime, and Storage. All backend logic lives in SQL migrations under `supabase/migrations/` (13 files: tables, RLS policies, triggers, RPCs).
+There is **no application server** — the React app talks directly to Supabase over PostgREST, Realtime, and Storage. All backend logic lives in SQL migrations under `supabase/migrations/` (14 files: tables, RLS policies, triggers, RPCs).
 
 ## Project layout
 
@@ -30,13 +30,13 @@ frontend/            React + Vite app (the UI)
     hooks/            useAuth, useBoard, useProfile, useProjects, useMembers,
                       useInvitations, useTaskStats, usePresence, useTheme,
                       useIsMobile
-    locales/          en.json, es.json, id.json, zh.json
+    locales/          en.json, es.json, id.json, zh.json, ar.json
     i18n.js           i18next configuration
     App.jsx           Root component
     main.jsx          Entry point
-  tests/              17 test files (16 default + api.test.js excluded)
+  tests/              27 test files (26 default + api.test.js excluded)
 supabase/
-  migrations/        9 SQL migrations (schema source of truth)
+  migrations/        14 SQL migrations (schema source of truth)
   seed.sql           Sample data for local dev
 ```
 
@@ -117,7 +117,7 @@ npm run dev          # http://localhost:5173
 - **Light / dark** toggle in the topbar (persisted to `localStorage` key `taskflow-theme`, defaults to OS preference).
 
 ### Internationalization
-- 4 languages: English, Spanish, Indonesian, Chinese. Stored in `localStorage` key `lang`.
+- 5 languages: English, Spanish, Indonesian, Chinese, Arabic. Stored in `localStorage` key `lang`. Arabic is RTL.
 
 ### Mobile
 - Adaptive layout: columns stack vertically below 639px. Touch drag supported.
@@ -133,7 +133,7 @@ npm run dev          # http://localhost:5173
 | `invitations` | `invited_email`, `role`, `status`, `invited_by` |
 | `join_requests` | `requester_id`, `admin_email`, `status` |
 
-**RPCs:** `is_admin`, `admin_set_role`, `set_project_status`, `delete_own_account`
+**RPCs:** `is_admin`, `admin_set_role`, `set_project_status`, `delete_own_account`, `delete_account()` (legacy wrapper), `log_activity`, `get_logs`, `restore_from_backup`, `get_profile_preferences`, `set_profile_preferences`, `check_blocked_tasks`, `add_task_dependency`, `export_all_data`, `get_filtered_tasks`, `get_notifications`
 
 **Storage:** public `avatars` bucket (`{userId}/{file}`)
 
