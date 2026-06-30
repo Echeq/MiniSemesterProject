@@ -104,6 +104,7 @@ function Members({ session }) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }
