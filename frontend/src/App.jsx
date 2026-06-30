@@ -294,31 +294,36 @@ function BoardPage({ session, theme, toggleTheme }) {
         {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
 
         <div className="relative z-0 flex min-h-0 flex-1 flex-col">
-          <ErrorBoundary>
-            {activeView === 'gantt' ? (
-              <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
-            ) : activeView === 'sphere' ? (
-              <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
-            ) : (
-              <Board
-                tasks={filteredViewTasks}
-                allViewTasks={viewTasks}
-                updateTask={updateTask}
-                onTaskClick={handleTaskClick}
-                onAddTask={(status) => setModal({ defaultStatus: status })}
-                labels={labels}
-                hideEmptyColumns={isView}
-                banner={memoBanner}
-                activeView={activeView}
-                loading={loading}
-                members={members}
-                editors={editors}
-              />
-            )}
-          </ErrorBoundary>
+          {/* Content reserves space for the insights overlay (pe = panel width)
+              so views without horizontal scroll (list, gantt) aren't covered.
+              The padding transitions so toggling slides instead of snapping. */}
+          <div className={`flex min-h-0 flex-1 flex-col transition-[padding] duration-200 ease-out ${showInsights && !loading ? 'xl:pe-80' : ''}`}>
+            <ErrorBoundary>
+              {activeView === 'gantt' ? (
+                <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
+              ) : activeView === 'sphere' ? (
+                <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
+              ) : (
+                <Board
+                  tasks={filteredViewTasks}
+                  allViewTasks={viewTasks}
+                  updateTask={updateTask}
+                  onTaskClick={handleTaskClick}
+                  onAddTask={(status) => setModal({ defaultStatus: status })}
+                  labels={labels}
+                  hideEmptyColumns={isView}
+                  banner={memoBanner}
+                  activeView={activeView}
+                  loading={loading}
+                  members={members}
+                  editors={editors}
+                />
+              )}
+            </ErrorBoundary>
+          </div>
 
-          {/* Insights floats over the board as an overlay so toggling it never
-              reflows the layout (the board keeps its width). */}
+          {/* Insights floats as an overlay pinned to the right edge; the content
+              wrapper above reserves matching space so nothing is hidden under it. */}
           {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
         </div>
       </div>
