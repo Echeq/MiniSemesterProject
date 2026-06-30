@@ -12,7 +12,7 @@ const LANGUAGES = [
   { code: 'ar', label: 'العربية', flag: '🇸🇦' },
 ]
 
-export default function ProfileMenu({ profile, email, isAdmin, onOpenAccount, onOpenAdmin }) {
+export default function ProfileMenu({ profile, email, isAdmin, onOpenAccount, onOpenAdmin, onOpen }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const name = profile?.display_name || email
@@ -26,7 +26,7 @@ export default function ProfileMenu({ profile, email, isAdmin, onOpenAccount, on
 
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center rounded-full transition hover:ring-2 hover:ring-[var(--border)]">
+      <button type="button" onClick={() => { if (!open) onOpen?.(); setOpen((o) => !o) }} className="flex items-center rounded-full transition hover:ring-2 hover:ring-[var(--border)]">
         <Avatar name={name} url={profile?.avatar_url} size="md" />
       </button>
 

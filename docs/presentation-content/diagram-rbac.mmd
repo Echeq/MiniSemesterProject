@@ -1,0 +1,26 @@
+flowchart LR
+    subgraph Roles["Role-Based Access Control"]
+        direction LR
+        Admin["Admin<br/>Full CRUD all tasks"]
+        Member["Member<br/>Read-only, own tasks"]
+        Unknown["Unknown<br/>Empty board"]
+    end
+
+    subgraph Signup["Signup Flow"]
+        First["First user ever"] --> Admin
+        New["New signup"] --> Trigger["handle_new_user() trigger"]
+        Trigger -->|Invitation matches?| Member
+        Trigger -->|No invitation| Unknown
+        Unknown -->|Admin promotes via admin_set_role| Admin
+        Unknown -->|Request Access| AdminMod["Admin approves"]
+        AdminMod --> Member
+    end
+
+    subgraph RLS["Row-Level Security"]
+        Tasks["tasks table"]
+        Tasks -->|admin| AllTasks["SELECT/INSERT/UPDATE/DELETE all rows"]
+        Tasks -->|member| OwnTasks["SELECT all, UPDATE only assigned"]
+        Tasks -->|unknown| NoTasks["No rows visible"]
+    end
+
+    Signup --> RLS

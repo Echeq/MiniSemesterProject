@@ -1,0 +1,92 @@
+erDiagram
+    profiles {
+        uuid id PK
+        text display_name
+        text avatar_url
+        text role "admin | member | unknown"
+        timestamptz created_at
+    }
+
+    tasks {
+        uuid id PK
+        text title "1-200 chars"
+        text description "max 5000"
+        text status "todo | doing | done"
+        date due_date
+        float8 position
+        text priority "P0 | P1 | P2 | P3"
+        uuid created_by FK "immutable"
+        uuid assignee FK
+        uuid project_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    projects {
+        uuid id PK
+        text name "1-120 chars"
+        text description
+        text status "active | archived"
+        uuid created_by FK
+        timestamptz created_at
+    }
+
+    project_members {
+        uuid project_id FK
+        uuid user_id FK
+        text role "admin | member"
+    }
+
+    labels {
+        uuid id PK
+        text name
+        text color
+        uuid project_id FK
+    }
+
+    task_labels {
+        uuid task_id FK
+        uuid label_id FK
+    }
+
+    task_dependencies {
+        uuid task_id FK
+        uuid depends_on_id FK
+    }
+
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        text type "due_soon | overdue | assignment | mention"
+        text message
+        uuid task_id FK
+        boolean read
+        timestamptz created_at
+    }
+
+    invitations {
+        uuid id PK
+        text email
+        text role
+        text status "pending | accepted | revoked"
+        uuid invited_by FK
+        timestamptz created_at
+    }
+
+    join_requests {
+        uuid id PK
+        uuid requester_id FK
+        text admin_email
+        text status "pending | resolved"
+    }
+
+    profiles ||--o{ tasks : "created_by"
+    profiles ||--o{ tasks : "assignee"
+    profiles ||--o{ notifications : "user_id"
+    projects ||--o{ tasks : "project_id"
+    projects ||--o{ project_members : "members"
+    profiles ||--o{ project_members : "members"
+    projects ||--o{ labels : "labels"
+    tasks ||--o{ task_labels : "labels"
+    labels ||--o{ task_labels : "used_in"
+    tasks ||--o{ task_dependencies : "depends_on"

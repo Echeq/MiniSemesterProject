@@ -19,6 +19,7 @@ import Board from './components/Board'
 import FilterPanel from './components/FilterPanel'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
+import Dashboard from './components/Dashboard'
 
 const TaskModal = lazy(() => import('./components/TaskModal'))
 const ProfileModal = lazy(() => import('./components/ProfileModal'))
@@ -91,7 +92,7 @@ function BoardPage({ session, theme, toggleTheme }) {
   const profileName = profile?.display_name || session.user.email
   const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
-  const [scope, setScope] = useState('all')
+  const [scope, setScope] = useState('_dashboard')
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isProject = scope !== null && typeof scope === 'object'
@@ -113,7 +114,22 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const handleNewTask = useCallback(() => setModal('new'), [])
 
-  const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
+  // Insights and the filter panel are mutually exclusive — opening one closes the other.
+  const handleToggleInsights = useCallback(() => {
+    if (!showInsights) setShowFilters(false)
+    setShowInsights((s) => !s)
+  }, [showInsights])
+
+  const handleToggleFilters = useCallback(() => {
+    if (!showFilters) setShowInsights(false)
+    setShowFilters((s) => !s)
+  }, [showFilters])
+
+  // Opening a header dropdown (profile / export) closes the panels so nothing overlaps.
+  const handleMenuOpen = useCallback(() => {
+    setShowFilters(false)
+    setShowInsights(false)
+  }, [])
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -238,7 +254,8 @@ function BoardPage({ session, theme, toggleTheme }) {
       </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="relative">
+        {scope !== '_dashboard' && (
+        <div className="relative z-10">
           <Topbar
             onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
             title={scopeLabel}
@@ -254,13 +271,14 @@ function BoardPage({ session, theme, toggleTheme }) {
             onNewTask={handleNewTask}
             onOpenLabelManager={isProject ? handleOpenLabelManager : null}
             showFilters={showFilters}
-            onToggleFilters={() => setShowFilters((s) => !s)}
+            onToggleFilters={handleToggleFilters}
             filterCount={filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0) + filters.labelIds.length + (filters.dueFrom || filters.dueTo ? 1 : 0)}
             session={session}
             profile={profile}
             isAdmin={isAdmin}
             onOpenAccount={handleOpenAccount}
             onOpenAdmin={handleOpenAdmin}
+            onMenuOpen={handleMenuOpen}
           />
 
           {showFilters && (
@@ -274,35 +292,46 @@ function BoardPage({ session, theme, toggleTheme }) {
             </div>
           )}
         </div>
+        )}
 
-        {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
+        {scope === '_dashboard' ? (
+          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} onToggleMobileSidebar={() => setMobileOpen((o) => !o)} userId={userId} />
+        ) : (
+          <>
+            {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
+            <div className="relative z-0 flex min-h-0 flex-1 flex-col">
+              <div className={`flex min-h-0 flex-1 flex-col transition-[padding] duration-200 ease-out ${showInsights && !loading ? 'xl:pe-80' : ''}`}>
+                <ErrorBoundary>
+                  {activeView === 'gantt' ? (
+                    <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} onAddDependency={addDependency} onRemoveDependency={removeDependency} /></Suspense>
+                  ) : activeView === 'sphere' ? (
+                    <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
+                  ) : (
+                    <Board
+                      tasks={filteredViewTasks}
+                      allViewTasks={viewTasks}
+                      updateTask={updateTask}
+                      isAdmin={isAdmin}
+                      onTaskClick={handleTaskClick}
+                      onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}
+                      labels={labels}
+                      hideEmptyColumns={isView}
+                      banner={memoBanner}
+                      activeView={activeView}
+                      loading={loading}
+                      members={members}
+                      editors={editors}
+                    />
+                  )}
+                </ErrorBoundary>
+              </div>
 
-        <ErrorBoundary>
-          {activeView === 'gantt' ? (
-            <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} /></Suspense>
-          ) : activeView === 'sphere' ? (
-            <Suspense fallback={null}><DataSphere tasks={filteredViewTasks} /></Suspense>
-          ) : (
-            <Board
-              tasks={filteredViewTasks}
-              allViewTasks={viewTasks}
-              updateTask={updateTask}
-              isAdmin={isAdmin}
-              onTaskClick={handleTaskClick}
-              onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}
-              labels={labels}
-              hideEmptyColumns={isView}
-              banner={memoBanner}
-              activeView={activeView}
-              loading={loading}
-              members={members}
-              editors={editors}
-            />
-          )}
-        </ErrorBoundary>
+              {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
+            </div>
+          </>
+        )}
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
 
       <Suspense fallback={null}>
         {modal && (
@@ -362,6 +391,21 @@ function Backdrop() {
 
 export default function App() {
   const { theme, toggle } = useTheme()
+  const { session, loading: authLoading } = useAuth()
+  const { profile, loading: profileLoading } = useProfile(session)
+
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex min-h-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (session && profile?.role === 'unknown') {
+    return <UnknownGate session={session} />
+  }
+
   return (
     <>
       <Backdrop />
@@ -370,9 +414,74 @@ export default function App() {
   )
 }
 
+function UnknownGate({ session }) {
+  const [state, setState] = useState('loading')
+
+  useEffect(() => {
+    supabase
+      .from('join_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_id', session.user.id)
+      .neq('status', 'resolved')
+      .then(({ count }) => setState(count > 0 ? 'sent' : 'idle'))
+  }, [session.user.id])
+
+  async function requestAccess() {
+    const { error } = await supabase.from('join_requests').insert({
+      requester_id: session.user.id,
+      admin_email: session.user.email,
+      status: 'pending',
+    })
+    if (!error) setState('sent')
+  }
+
+  return (
+    <div style={{
+      height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#0f1117', color: '#e1e4e8', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', position: 'relative'
+    }}>
+      <button onClick={() => supabase.auth.signOut()}
+        style={{
+          position: 'absolute', top: 16, right: 16, padding: '6px 14px', fontSize: 13,
+          border: '1px solid #30363d', borderRadius: 6, cursor: 'pointer',
+          background: '#1c1f26', color: '#e1e4e8'
+        }}>
+        Sign out
+      </button>
+      <div style={{ maxWidth: 400, textAlign: 'center', padding: 32 }}>
+        <div style={{
+          width: 64, height: 64, margin: '0 auto', borderRadius: '50%',
+          background: '#1c1f26', display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <svg width={32} height={32} viewBox="0 0 16 16" fill="#6366f1">
+            <path d="M7.467.133a1.75 1.75 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.813-5.032 3.855a1.7 1.7 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Z" />
+          </svg>
+        </div>
+        <h1 style={{ fontSize: 20, marginTop: 20, marginBottom: 8 }}>Welcome to PivotPoint! 🎉</h1>
+        <p style={{ fontSize: 14, color: '#8b949e', margin: 0, lineHeight: 1.5 }}>
+          Your account is currently under review. Please contact the administrator to start using the platform.
+        </p>
+        {state === 'sent' ? (
+          <p style={{ fontSize: 14, color: '#3fb950', marginTop: 20, fontWeight: 500 }}>
+            Request sent! An admin will review it shortly.
+          </p>
+        ) : (
+          <button onClick={requestAccess} style={{
+            marginTop: 20, padding: '8px 20px', fontSize: 14, fontWeight: 500,
+            border: 'none', borderRadius: 8, cursor: 'pointer', background: '#6366f1', color: '#fff'
+          }}>
+            Request Access
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AuthGate({ theme, toggleTheme }) {
-  const { session, loading } = useAuth()
-  if (loading) {
+  const { session, loading: authLoading } = useAuth()
+  const { profile, loading: profileLoading } = useProfile(session)
+  if (authLoading || profileLoading) {
     return (
       <div className="flex min-h-full items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
