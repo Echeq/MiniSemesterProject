@@ -39,7 +39,7 @@ Supabase CLI (from root or `supabase/`):
 
 - **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Source is JSX (tsconfig is tooling-only typecheck).
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage, presence). No custom server.
-- **DB source of truth**: `supabase/migrations/` (SQL). 19 migrations from `20260612100000` → `20260629000005`.
+- **DB source of truth**: `supabase/migrations/` (SQL). 19 migrations (`20260612100000` → `20260629000005`).
 - **Supabase MCP applies migrations remotely** — it does NOT write to `supabase/migrations/`. After MCP migrations, run `supabase db pull` locally or copy the SQL into a file to prevent drift.
 - **Entry**: `src/main.jsx` → `App.jsx`. App renders a setup hint when `supabaseClient.js` exports `null` (env vars missing).
 - **Root `package.json`** is a dependency stub (only `@supabase/supabase-js`). All real dependencies in `frontend/`. Install from `frontend/`.
@@ -50,8 +50,7 @@ Supabase CLI (from root or `supabase/`):
 
 - **`useBoard(projectId)`** accepts `'all'`, `null` (shared board, no project), or a project UUID.
 - **Smart views** are client-side filters: `view:mine` (assigned), `view:due` (≤7d), `view:overdue` (past due, not done).
-- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board, can submit join requests). First signup ever → admin. New signups default to `unknown` via `handle_new_user()` trigger. Admin promotes via `admin_set_role` RPC or Requests tab.
-- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite flow). First signup ever → admin.
+- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + can submit join requests). First signup ever → admin. New signups default to `unknown` via `handle_new_user()` trigger (migration `20260629000001`). Admin promotes via `admin_set_role` RPC or Requests tab in AdminModal.
 - **Position system**: float8 `position`. `positionBetween()` at `frontend/src/hooks/useBoard.js:9`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 - **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
@@ -69,6 +68,8 @@ Supabase CLI (from root or `supabase/`):
 - **Views**: Kanban (default), Gantt chart (`frappe-gantt`), 3D sphere (`three`). Switched via `activeView` state in `App.jsx`.
 - **Keyboard shortcuts**: `Ctrl/Cmd+N` new task, `Ctrl/Cmd+F` focus filter input (defined in `App.jsx`).
 - **Export**: XLSX via `exceljs`, PDF via `jspdf` (ExportMenu component).
+- **ConfirmModal**: Generic confirmation dialog (`ConfirmModal.jsx`) used by Sidebar for archive/delete actions. Rendered outside backdrop-filter containers to avoid stacking-context clipping.
+- **Vite 8 + Rolldown**: Production build uses Rolldown (Rust). Rolldown requires JSX children to be consistently indented between opening/closing tags — inline expressions (`{map(...)}`) misaligned with parent tags will fail to parse. Dev server (esbuild) has no such restriction.
 
 ## Setup gotchas
 

@@ -19,19 +19,49 @@ function Spinner() {
 export default function AdminModal({ session, onClose }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState('members')
+  const [pendingCount, setPendingCount] = useState(0)
+  const [msg, setMsg] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('join_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .then(({ count }) => setPendingCount(count ?? 0))
+    const sub = supabase
+      .channel('admin-requests')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, () => {
+        supabase
+          .from('join_requests')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending')
+          .then(({ count }) => setPendingCount(count ?? 0))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(sub) }
+  }, [])
+
   return (
     <Modal title={t('admin.title')} subtitle={t('admin.subtitle')} onClose={onClose} maxWidth="max-w-lg">
+      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)', background: 'color-mix(in srgb, var(--done) 12%, transparent)' }}>{msg}</p>}
       <div className="mb-4 flex flex-wrap gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
         <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('admin.members') || 'Members'}</TabButton>
-        <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>{t('admin.invitations') || 'Invitations'}</TabButton>
-        <TabButton active={tab === 'requests'} onClick={() => setTab('requests')}>Requests</TabButton>
+        <TabButton active={tab === 'access'} onClick={() => setTab('access')}>
+          Access
+          {pendingCount > 0 && (
+            <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+              {pendingCount > 99 ? '99+' : pendingCount}
+            </span>
+          )}
+        </TabButton>
+        <TabButton active={tab === 'emailChanges'} onClick={() => setTab('emailChanges')}>Email Changes</TabButton>
         <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs') || 'Logs'}</TabButton>
         <TabButton active={tab === 'backup'} onClick={() => setTab('backup')}>{t('admin.backup') || 'Backup'}</TabButton>
         <TabButton active={tab === 'restore'} onClick={() => setTab('restore')}>{t('admin.restore') || 'Restore'}</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
-      {tab === 'invites' && <Invites />}
-      {tab === 'requests' && <JoinRequests />}
+      {tab === 'access' && <Access onApproved={(name) => setMsg(`✅ ${name} has been accepted, now a member.`)} />}
+      {tab === 'emailChanges' && <EmailChanges />}
       {tab === 'logs' && <LogViewer />}
       {tab === 'backup' && <BackupPanel />}
       {tab === 'restore' && <RestorePanel />}
@@ -58,6 +88,29 @@ function rolePill(role) {
     : { color: 'var(--fg-muted)', borderColor: 'var(--border)' }
 }
 
+function MemberRow({ m, session, busyId, toggle, t }) {
+  const isSelf = m.id === session.user.id
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
+      <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">
+          {m.display_name} {isSelf && <span className="text-xs text-[var(--fg-subtle)]">({t('sidebar.you')})</span>}
+        </p>
+      </div>
+      <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold" style={rolePill(m.role)}>{m.role}</span>
+      <button
+        onClick={() => toggle(m)}
+        disabled={isSelf || busyId === m.id}
+        title={isSelf ? "You can't change your own role" : ''}
+        className="btn btn-default !py-1 !text-xs"
+      >
+        {m.role === 'admin' ? t('admin.demote') : t('admin.promote')}
+      </button>
+    </div>
+  )
+}
+
 function Members({ session }) {
   const { t } = useTranslation()
   const { members, loading, setRole } = useMembers()
@@ -82,38 +135,34 @@ function Members({ session }) {
     <div>
       {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
       <div className="max-h-80 space-y-1.5 overflow-y-auto">
-      {members.map((m) => {
-        const isSelf = m.id === session.user.id
-        return (
-          <div key={m.id} className="flex items-center gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
-            <Avatar name={m.display_name} url={m.avatar_url} size="sm" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {m.display_name} {isSelf && <span className="text-xs text-[var(--fg-subtle)]">({t('sidebar.you')})</span>}
-              </p>
-            </div>
-            <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold" style={rolePill(m.role)}>{m.role}</span>
-            <button
-              onClick={() => toggle(m)}
-              disabled={isSelf || busyId === m.id}
-              title={isSelf ? "You can't change your own role" : ''}
-              className="btn btn-default !py-1 !text-xs"
-            >
-              {m.role === 'admin' ? t('admin.demote') : t('admin.promote')}
-            </button>
-          </div>
-        )
-      })}
+        {members.map((m) =>
+          <MemberRow key={m.id} m={m} session={session} busyId={busyId} toggle={toggle} t={t} />
+        )}
+      </div>
     </div>
   )
 }
 
-function Invites() {
+function Access({ onApproved }) {
   const { t } = useTranslation()
   const { members, setRole } = useMembers()
   const [query, setQuery] = useState('')
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState(null)
+  const [requests, setRequests] = useState([])
+  const [loadingReqs, setLoadingReqs] = useState(true)
+
+  const fetchRequests = useCallback(async () => {
+    const { data } = await supabase
+      .from('join_requests')
+      .select('id, requester_id, admin_email, status, created_at, profile:profiles!join_requests_requester_id_fkey(display_name, avatar_url)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+    setRequests(data ?? [])
+    setLoadingReqs(false)
+  }, [])
+
+  useEffect(() => { fetchRequests() }, [fetchRequests])
 
   const filtered = useMemo(() => {
     if (!query.trim()) return []
@@ -136,8 +185,60 @@ function Invites() {
     }
   }
 
+  async function approve(r) {
+    setBusyId(r.id)
+    try {
+      await setRole(r.requester_id, 'member')
+      await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
+      await fetchRequests()
+      onApproved?.(r.profile?.display_name || 'User')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function deny(r) {
+    setBusyId(r.id)
+    try {
+      await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
+      await fetchRequests()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   return (
     <div>
+      {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
+
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Pending requests</p>
+      {loadingReqs ? <Spinner /> : requests.length === 0 ? (
+        <p className="mb-4 rounded-lg border border-dashed border-[var(--glass-border)] py-3 text-center text-xs text-[var(--fg-muted)]">No pending requests.</p>
+      ) : (
+        <div className="mb-4 max-h-40 space-y-1.5 overflow-y-auto">
+          {requests.map((r) => (
+            <div key={r.id} className="flex items-center gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
+              <Avatar name={r.profile?.display_name} url={r.profile?.avatar_url} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{r.profile?.display_name || 'Unknown'}</p>
+                <p className="text-xs text-[var(--fg-subtle)]">{r.admin_email}</p>
+              </div>
+              <button onClick={() => approve(r)} disabled={busyId === r.id} className="btn btn-primary !py-1 !text-xs">
+                {busyId === r.id ? '...' : 'Approve'}
+              </button>
+              <button onClick={() => deny(r)} disabled={busyId === r.id} className="btn btn-default !py-1 !text-xs">
+                Deny
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">Search & assign role</p>
       <div className="mb-3">
         <input
           type="text"
@@ -145,10 +246,8 @@ function Invites() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name or email..."
           className="input"
-          autoFocus
         />
       </div>
-      {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
       {query.trim() && filtered.length === 0 ? (
         <p className="py-4 text-center text-sm text-[var(--fg-muted)]">No accounts found.</p>
@@ -181,17 +280,17 @@ function Invites() {
   )
 }
 
-function JoinRequests() {
-  const { t } = useTranslation()
-  const { setRole } = useMembers()
+function EmailChanges() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const [error, setError] = useState(null)
 
   const fetchRequests = useCallback(async () => {
     const { data } = await supabase
-      .from('join_requests')
-      .select('id, requester_id, admin_email, status, created_at, profile:profiles!join_requests_requester_id_fkey(display_name, avatar_url)')
+      .from('email_change_requests')
+      .select('id, user_id, old_email, new_email, status, created_at, reviewed_by, reviewed_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
     setRequests(data ?? [])
@@ -201,25 +300,28 @@ function JoinRequests() {
   useEffect(() => { fetchRequests() }, [fetchRequests])
 
   async function approve(r) {
-    setBusyId(r.id)
+    setBusyId(r.id); setError(null)
     try {
-      await setRole(r.requester_id, 'member')
-      await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
+      const { error: e } = await supabase.rpc('approve_email_change', { request_id: r.id })
+      if (e) throw e
+      setMsg(`Approved: ${r.new_email}`)
       await fetchRequests()
     } catch (err) {
-      alert(err.message)
+      setError(err.message)
     } finally {
       setBusyId(null)
     }
   }
 
-  async function deny(r) {
-    setBusyId(r.id)
+  async function reject(r) {
+    setBusyId(r.id); setError(null)
     try {
-      await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
+      const { error: e } = await supabase.rpc('reject_email_change', { request_id: r.id })
+      if (e) throw e
+      setMsg(`Rejected: ${r.new_email}`)
       await fetchRequests()
     } catch (err) {
-      alert(err.message)
+      setError(err.message)
     } finally {
       setBusyId(null)
     }
@@ -229,26 +331,28 @@ function JoinRequests() {
 
   return (
     <div>
-      <p className="mb-3 text-xs text-[var(--fg-muted)]">
-        Users with the "unknown" role who have requested access to the board.
-      </p>
+      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)' }}>{msg}</p>}
+      {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
       {requests.length === 0 ? (
-        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">No pending requests.</p>
+        <p className="py-6 text-center text-sm text-[var(--fg-muted)]">No pending email change requests.</p>
       ) : (
         <div className="max-h-80 space-y-1.5 overflow-y-auto">
           {requests.map((r) => (
-            <div key={r.id} className="flex items-center gap-3 rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-2.5">
-              <Avatar name={r.profile?.display_name} url={r.profile?.avatar_url} size="sm" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{r.profile?.display_name || 'Unknown'}</p>
-                <p className="text-xs text-[var(--fg-subtle)]">{r.admin_email}</p>
+            <div key={r.id} className="rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-3">
+              <p className="text-sm">
+                <span className="font-medium">{r.old_email}</span>
+                <span className="mx-1 text-[var(--fg-subtle)]">→</span>
+                <span className="font-medium">{r.new_email}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--fg-subtle)]">Requested {new Date(r.created_at).toLocaleDateString()}</p>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => approve(r)} disabled={busyId === r.id} className="btn btn-primary !py-1 !text-xs">
+                  {busyId === r.id ? '...' : 'Approve'}
+                </button>
+                <button onClick={() => reject(r)} disabled={busyId === r.id} className="btn btn-default !py-1 !text-xs">
+                  Reject
+                </button>
               </div>
-              <button onClick={() => approve(r)} disabled={busyId === r.id} className="btn btn-primary !py-1 !text-xs">
-                {busyId === r.id ? '...' : 'Approve'}
-              </button>
-              <button onClick={() => deny(r)} disabled={busyId === r.id} className="btn btn-default !py-1 !text-xs">
-                Deny
-              </button>
             </div>
           ))}
         </div>

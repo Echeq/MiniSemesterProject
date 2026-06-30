@@ -133,7 +133,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
 
           {active.length === 0 && (
             <div className="px-1 py-2">
-              <EmptyState icon="project" title={t('sidebar.noProjects')} description={t('sidebar.noProjectsDesc')} />
+              <EmptyState compact title={t('sidebar.noProjects')} description={isAdmin ? t('sidebar.noProjectsDesc') : t('sidebar.noProjectsMemberDesc')} />
             </div>
           )}
 
@@ -307,7 +307,7 @@ const Sidebar = memo(function Sidebar({
       >
         <div className="absolute inset-0 bg-black/50" onClick={onCloseMobile} />
         <div className="absolute left-0 top-0 h-full w-64">
-          <aside className="glass h-full w-full flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
+          <aside className="glass h-full w-full flex-shrink-0 flex-col overflow-y-auto border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
             <SidebarContent
               {...sharedContentProps}
               onSelectScope={(s) => {
@@ -320,7 +320,7 @@ const Sidebar = memo(function Sidebar({
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="glass max-md:hidden md:flex w-64 flex-shrink-0 flex-col border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
+      <aside className="glass max-md:hidden md:flex w-64 flex-shrink-0 flex-col overflow-y-auto border-r border-[var(--glass-border)] backdrop-blur-xl backdrop-saturate-150">
         <SidebarContent
           {...sharedContentProps}
           onSelectScope={onSelectScope}

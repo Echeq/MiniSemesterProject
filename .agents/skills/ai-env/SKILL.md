@@ -1,6 +1,7 @@
 ---
 name: ai-env
 description: Environment configuration manager. Scans code for env vars, generates .env.example, updates .gitignore, validates .env files, and detects hardcoded secrets.
+allowed-tools: Read, Write, Bash, Glob, Grep
 triggers:
   - "@ai-env"
   - "@ai-env --scan"

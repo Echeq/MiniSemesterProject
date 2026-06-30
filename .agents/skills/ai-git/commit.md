@@ -16,4 +16,4 @@ feat, fix, docs, style, refactor, perf, test, chore
 
 - `.env` files are never committed (in `.gitignore`)
 - `backend/generated/prisma/` is never committed (in `.gitignore`)
-- Root `package-lock.json` is orphaned and gitignored
+- Root `package-lock.json` and `.opencode/plans/` should be excluded if present

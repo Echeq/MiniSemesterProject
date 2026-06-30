@@ -7,7 +7,6 @@ allowed-tools: Read, Write, Bash, Glob, Grep
 triggers:
   - "@ai-docs"
   - "@ai-docs pro"
-  - "@ai-docs professional"
   - "@ai-docs update"
   - "@ai-docs audit"
   - "@ai-docs --log"

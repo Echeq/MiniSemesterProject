@@ -9,17 +9,19 @@ const ICONS = {
     'M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z',
 }
 
-export default function EmptyState({ icon = 'inbox', title, description, action }) {
-  const path = ICONS[icon] || ICONS.inbox
+export default function EmptyState({ icon, title, description, action, compact }) {
+  const path = icon ? ICONS[icon] || ICONS.inbox : null
 
   return (
-    <div className="flex min-h-[240px] items-center justify-center px-4">
+    <div className={`flex ${compact ? 'min-h-[100px]' : 'min-h-[240px]'} items-center justify-center px-4`}>
       <div className="text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full" style={{ color: 'var(--fg-subtle)', background: 'var(--glass-border)' }}>
-          <svg className="h-6 w-6" viewBox="0 0 16 16" fill="currentColor">
-            <path d={path} />
-          </svg>
-        </span>
+        {icon && (
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full" style={{ color: 'var(--fg-subtle)', background: 'var(--glass-border)' }}>
+            <svg className="h-6 w-6" viewBox="0 0 16 16" fill="currentColor">
+              <path d={path} />
+            </svg>
+          </span>
+        )}
         {title && <h3 className="mt-3 text-sm font-semibold text-[var(--fg)]">{title}</h3>}
         {description && <p className="mt-1 text-xs text-[var(--fg-muted)]">{description}</p>}
         {action && <div className="mt-4">{action}</div>}

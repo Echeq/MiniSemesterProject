@@ -368,9 +368,45 @@ export default function App() {
   )
 }
 
+function UnknownGate({ session, theme, toggleTheme, profile }) {
+  const [sent, setSent] = useState(false)
+  const { t } = useTranslation()
+
+  async function requestAccess() {
+    const { error } = await supabase.from('join_requests').insert({
+      requester_id: session.user.id,
+      admin_email: session.user.email,
+      status: 'pending',
+    })
+    if (!error) setSent(true)
+  }
+
+  return (
+    <div className="flex min-h-full items-center justify-center px-4">
+      <div className="surface max-w-md rounded-xl p-8 text-center shadow-[var(--shadow-md)]">
+        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-hover)]">
+          <svg className="h-8 w-8 text-[var(--fg-muted)]" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M7.467.133a1.75 1.75 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.7 1.7 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Z" />
+          </svg>
+        </span>
+        <h2 className="mt-4 text-lg font-semibold">Waiting for approval</h2>
+        <p className="mt-2 text-sm text-[var(--fg-muted)]">
+          Your account is pending admin approval. Contact your administrator to gain access to the board.
+        </p>
+        {sent ? (
+          <p className="mt-4 text-sm font-medium" style={{ color: 'var(--done)' }}>Request sent! An admin will review it shortly.</p>
+        ) : (
+          <button onClick={requestAccess} className="btn btn-primary mt-4">Request Access</button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AuthGate({ theme, toggleTheme }) {
-  const { session, loading } = useAuth()
-  if (loading) {
+  const { session, loading: authLoading } = useAuth()
+  const { profile, loading: profileLoading } = useProfile(session)
+  if (authLoading || profileLoading) {
     return (
       <div className="flex min-h-full items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
@@ -378,6 +414,9 @@ function AuthGate({ theme, toggleTheme }) {
     )
   }
   if (!session) return <AuthForm />
+  if (profile?.role === 'unknown') {
+    return <UnknownGate session={session} theme={theme} toggleTheme={toggleTheme} profile={profile} />
+  }
   return (
     <ErrorBoundary>
       <BoardPage session={session} theme={theme} toggleTheme={toggleTheme} />

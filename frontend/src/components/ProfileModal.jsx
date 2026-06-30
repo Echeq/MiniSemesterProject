@@ -192,6 +192,17 @@ function Stat({ label, value, color }) {
   )
 }
 
+function SectionCard({ title, desc, children, accent }) {
+  const borderColor = accent || 'var(--glass-border)'
+  return (
+    <div className="mb-4 rounded-lg border p-4" style={{ borderColor, background: 'var(--card)' }}>
+      {title && <p className="mb-1 text-sm font-semibold text-[var(--fg)]">{title}</p>}
+      {desc && <p className="mb-3 text-xs text-[var(--fg-muted)]">{desc}</p>}
+      {children}
+    </div>
+  )
+}
+
 function Settings({ session, profile, onSaved }) {
   const { t } = useTranslation()
   const userId = session.user.id
@@ -199,39 +210,19 @@ function Settings({ session, profile, onSaved }) {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? null)
   const [password, setPassword] = useState('')
   const [newEmail, setNewEmail] = useState('')
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [reauthFor, setReauthFor] = useState(null)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState(null)
   const [error, setError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [emailBusy, setEmailBusy] = useState(null)
+  const [passBusy, setPassBusy] = useState(null)
+  const [passPassword, setPassPassword] = useState('')
   const fileRef = useRef(null)
 
   function flash(setter, text) {
     setter(text)
     setTimeout(() => setter(null), 4000)
-  }
-
-  async function verifyAndExecute(actionFn, actionLabel) {
-    if (reauthFor === actionLabel) {
-      setBusy(true); setError(null)
-      try {
-        const { error: authErr } = await supabase.auth.signInWithPassword({
-          email: session.user.email,
-          password: currentPassword,
-        })
-        if (authErr) throw new Error('Current password is incorrect.')
-        setCurrentPassword(''); setReauthFor(null)
-        await actionFn()
-      } catch (err) {
-        flash(setError, err.message)
-      } finally {
-        setBusy(false)
-      }
-    } else {
-      setCurrentPassword(''); setError(null); setReauthFor(actionLabel)
-    }
   }
 
   async function saveProfile() {
@@ -256,7 +247,6 @@ function Settings({ session, profile, onSaved }) {
       if (dbErr) throw dbErr
       setAvatarUrl(url)
       await onSaved()
-      setCurrentPassword(''); setReauthFor(null)
       flash(setMsg, 'Avatar updated.')
     } catch (err) {
       flash(setError, err.message)
@@ -265,35 +255,40 @@ function Settings({ session, profile, onSaved }) {
     }
   }
 
-  async function changeEmail() {
+  async function handleChangeEmail() {
     if (!newEmail) return
-    const { error } = await supabase.auth.updateUser({ email: newEmail })
-    if (error) throw error
-    setNewEmail('')
-    flash(setMsg, 'Verification email sent.')
+    setEmailBusy(true)
+    setError(null); setMsg(null)
+    try {
+      const { error: rErr } = await supabase.rpc('submit_email_change', { new_email: newEmail })
+      if (rErr) throw rErr
+      setNewEmail(''); setEmailBusy(null)
+      flash(setMsg, 'Change request submitted. An admin will review it.')
+    } catch (err) {
+      flash(setError, err.message)
+      setEmailBusy(false)
+    }
   }
 
-  async function changePassword() {
+  async function handleChangePassword() {
     if (password.length < 6) { flash(setError, 'Password must be at least 6 characters.'); return }
-    const { error } = await supabase.auth.updateUser({ password })
-    if (error) throw error
-    setPassword('')
-    flash(setMsg, 'Password changed.')
-  }
-
-  function handleSaveProfile(e) {
-    e.preventDefault()
-    verifyAndExecute(saveProfile, 'display name')
-  }
-
-  function handleChangeEmail(e) {
-    e.preventDefault()
-    verifyAndExecute(changeEmail, 'email')
-  }
-
-  function handleChangePassword(e) {
-    e.preventDefault()
-    verifyAndExecute(changePassword, 'password')
+    if (!passPassword) return
+    setPassBusy(true)
+    setError(null); setMsg(null)
+    try {
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: passPassword,
+      })
+      if (authErr) throw new Error('Current password is incorrect.')
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      setPassword(''); setPassPassword(''); setPassBusy(null)
+      flash(setMsg, 'Password changed.')
+    } catch (err) {
+      flash(setError, err.message)
+      setPassBusy(false)
+    }
   }
 
   async function deleteAccount() {
@@ -304,89 +299,99 @@ function Settings({ session, profile, onSaved }) {
       await supabase.auth.signOut()
     } catch (err) {
       flash(setError, err.message)
+    } finally {
       setBusy(false)
     }
   }
 
-  const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--fg)]'
-
   return (
-    <div>
-      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)' }}>{msg}</p>}
+    <div className="space-y-2">
+      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)', background: 'color-mix(in srgb, var(--done) 12%, transparent)' }}>{msg}</p>}
       {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
-      <div className="mb-5 flex items-center gap-4">
-        <Avatar name={displayName} url={avatarUrl} size="lg" ring />
-        <div>
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="btn btn-default">
-            {uploading ? t('profile.uploading') : t('profile.changeAvatar')}
-          </button>
-          <p className="mt-1 text-xs text-[var(--fg-subtle)]">PNG or JPG.</p>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
-        </div>
-      </div>
-
-      {reauthFor && (
-        <form onSubmit={(e) => { e.preventDefault(); verifyAndExecute(
-          reauthFor === 'display name' ? saveProfile : reauthFor === 'email' ? changeEmail : changePassword,
-          reauthFor
-        ) }} className="mb-5 rounded-md border p-3" style={{ borderColor: 'var(--doing)' }}>
-          <p className="mb-2 text-sm font-medium">Enter current password to change {reauthFor}.</p>
-          <div className="flex gap-2">
-            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" className="input" />
-            <button disabled={busy || !currentPassword} className="btn btn-primary">Verify</button>
-            <button type="button" onClick={() => { setReauthFor(null); setCurrentPassword('') }} className="btn btn-default">Cancel</button>
+      {/* Avatar */}
+      <SectionCard>
+        <div className="flex items-center gap-4">
+          <Avatar name={displayName} url={avatarUrl} size="lg" ring />
+          <div>
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="btn btn-default">
+              {uploading ? t('profile.uploading') : t('profile.changeAvatar')}
+            </button>
+            <p className="mt-1 text-xs text-[var(--fg-subtle)]">PNG or JPG.</p>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
           </div>
-        </form>
-      )}
+        </div>
+      </SectionCard>
 
-      {!reauthFor && (
-        <>
-          <form onSubmit={handleSaveProfile} className="mb-5">
-            <label className="block">
-              <span className={labelCls}>{t('profile.displayName')}</span>
-              <div className="flex gap-2">
-                <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} className="input" />
-                <button disabled={busy} className="btn btn-primary">{t('profile.save')}</button>
-              </div>
-            </label>
-          </form>
+      {/* Display name */}
+      <SectionCard title="Display name" desc="How your name appears across the board.">
+        <div className="flex gap-2">
+          <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} className="input flex-1" />
+          <button disabled={busy} onClick={async () => { try { await saveProfile() } catch (e) { flash(setError, e.message) } }} className="btn btn-primary">
+            {t('profile.save')}
+          </button>
+        </div>
+      </SectionCard>
 
-          <form onSubmit={handleChangeEmail} className="mb-6">
-            <label className="block">
-              <span className={labelCls}>{t('profile.newEmail')}</span>
-              <div className="flex gap-2">
-                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input" />
-                <button disabled={busy || !newEmail} className="btn btn-default">{t('profile.updating')}</button>
-              </div>
-            </label>
-          </form>
+      {/* Email */}
+      <SectionCard title={t('profile.newEmail')} desc="Change your login email. A verification link will be sent to the new address.">
+        {emailBusy !== null ? (
+          <div className="flex gap-2">
+            <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input flex-1" disabled={emailBusy === true} />
+            <button disabled={emailBusy === true || !newEmail} onClick={handleChangeEmail} className="btn btn-primary">
+              {emailBusy === true ? 'Submitting…' : 'Confirm'}
+            </button>
+            <button disabled={emailBusy === true} onClick={() => { setEmailBusy(null); setNewEmail('') }} className="btn btn-default">{t('profile.cancel')}</button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="new@example.com" className="input flex-1" />
+            <button disabled={!newEmail} onClick={() => setEmailBusy('ready')} className="btn btn-default">
+              Request email change
+            </button>
+          </div>
+        )}
+      </SectionCard>
 
-          <form onSubmit={handleChangePassword} className="mb-6">
-            <label className="block">
-              <span className={labelCls}>{t('profile.newPassword')}</span>
-              <div className="flex gap-2">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input" />
-                <button disabled={busy || !password} className="btn btn-default">{t('profile.updating')}</button>
-              </div>
-            </label>
-          </form>
-        </>
-      )}
+      {/* Password */}
+      <SectionCard title={t('profile.newPassword')} desc="Must be at least 6 characters.">
+        {passBusy !== null ? (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input flex-1" disabled={passBusy === true} />
+            </div>
+            <div className="flex gap-2">
+              <input type="password" value={passPassword} onChange={(e) => setPassPassword(e.target.value)} placeholder="Current password to confirm" className="input flex-1" disabled={passBusy === true} />
+              <button disabled={passBusy === true || !password || !passPassword} onClick={handleChangePassword} className="btn btn-primary">
+                {passBusy === true ? 'Updating…' : t('profile.changePassword')}
+              </button>
+              <button disabled={passBusy === true} onClick={() => { setPassBusy(null); setPassword(''); setPassPassword('') }} className="btn btn-default">{t('profile.cancel')}</button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} placeholder="••••••••" className="input flex-1" />
+            <button disabled={!password} onClick={() => setPassBusy('ready')} className="btn btn-default">
+              {t('profile.changePassword')}
+            </button>
+          </div>
+        )}
+      </SectionCard>
 
-      <div className="rounded-md border p-4" style={{ borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
+      {/* Danger zone */}
+      <div className="rounded-lg border p-4" style={{ borderColor: 'var(--danger)', background: 'color-mix(in srgb, var(--danger) 8%, transparent)' }}>
         <p className="text-sm font-semibold" style={{ color: 'var(--danger)' }}>{t('profile.dangerZone')}</p>
         <p className="mt-1 text-xs text-[var(--fg-muted)]">{t('profile.dangerWarning')}</p>
         {deleteConfirm ? (
           <div className="mt-3 space-y-2">
             <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>{t('profile.deleteWarning')}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">{t('profile.cancel')}</button>
-              <button type="button" onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? t('profile.deleting') : t('profile.deleteConfirmAction')}</button>
+              <button onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">{t('profile.cancel')}</button>
+              <button onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? t('profile.deleting') : t('profile.deleteConfirmAction')}</button>
             </div>
           </div>
         ) : (
-          <button type="button" onClick={() => setDeleteConfirm(true)} className="btn btn-danger mt-3">{t('profile.deleteAccount')}</button>
+          <button onClick={() => setDeleteConfirm(true)} className="btn btn-danger mt-3">{t('profile.deleteAccount')}</button>
         )}
       </div>
     </div>
