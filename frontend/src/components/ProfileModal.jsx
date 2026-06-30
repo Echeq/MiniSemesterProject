@@ -215,6 +215,10 @@ function Settings({ session, profile, onSaved }) {
   const [msg, setMsg] = useState(null)
   const [error, setError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [avatarPassword, setAvatarPassword] = useState('')
+  const [avatarConfirm, setAvatarConfirm] = useState(false)
+  const [pendingAvatarFile, setPendingAvatarFile] = useState(null)
   const [emailBusy, setEmailBusy] = useState(null)
   const [passBusy, setPassBusy] = useState(null)
   const [passPassword, setPassPassword] = useState('')
@@ -232,11 +236,25 @@ function Settings({ session, profile, onSaved }) {
     flash(setMsg, 'Profile saved.')
   }
 
-  async function uploadAvatar(e) {
+  function handleAvatarSelect(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    setPendingAvatarFile(file)
+    setAvatarConfirm(true)
+    setAvatarPassword('')
+    setError(null)
+  }
+
+  async function confirmAvatarUpload() {
+    if (!pendingAvatarFile || !avatarPassword) return
     setUploading(true); setError(null)
     try {
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: avatarPassword,
+      })
+      if (authErr) throw new Error('Current password is incorrect.')
+      const file = pendingAvatarFile
       const ext = file.name.split('.').pop()
       const path = `${userId}/avatar.${ext}`
       const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
@@ -245,7 +263,7 @@ function Settings({ session, profile, onSaved }) {
       const url = `${data.publicUrl}?t=${Date.now()}`
       const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
       if (dbErr) throw dbErr
-      setAvatarUrl(url)
+      setAvatarUrl(url); setPendingAvatarFile(null); setAvatarConfirm(false)
       await onSaved()
       flash(setMsg, 'Avatar updated.')
     } catch (err) {
@@ -291,15 +309,20 @@ function Settings({ session, profile, onSaved }) {
     }
   }
 
-  async function deleteAccount() {
+  async function handleDelete() {
+    if (!deletePassword) return
     setBusy(true); setError(null)
     try {
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: deletePassword,
+      })
+      if (authErr) throw new Error('Current password is incorrect.')
       const { error } = await supabase.rpc('delete_own_account')
       if (error) throw error
       await supabase.auth.signOut()
     } catch (err) {
       flash(setError, err.message)
-    } finally {
       setBusy(false)
     }
   }
@@ -318,9 +341,21 @@ function Settings({ session, profile, onSaved }) {
               {uploading ? t('profile.uploading') : t('profile.changeAvatar')}
             </button>
             <p className="mt-1 text-xs text-[var(--fg-subtle)]">PNG or JPG.</p>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} />
           </div>
         </div>
+        {avatarConfirm && (
+          <div className="mt-3 rounded-md border p-3" style={{ borderColor: 'var(--doing)', background: 'var(--surface-hover)' }}>
+            <p className="mb-2 text-xs font-medium">Enter your current password to confirm avatar change.</p>
+            <div className="flex gap-2">
+              <input type="password" value={avatarPassword} onChange={(e) => setAvatarPassword(e.target.value)} placeholder="Current password" className="input flex-1" />
+              <button disabled={uploading || !avatarPassword} onClick={confirmAvatarUpload} className="btn btn-primary">
+                {uploading ? 'Uploading…' : 'Confirm'}
+              </button>
+              <button disabled={uploading} onClick={() => { setAvatarConfirm(false); setPendingAvatarFile(null); setAvatarPassword('') }} className="btn btn-default">Cancel</button>
+            </div>
+          </div>
+        )}
       </SectionCard>
 
       {/* Display name */}
@@ -386,8 +421,11 @@ function Settings({ session, profile, onSaved }) {
           <div className="mt-3 space-y-2">
             <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>{t('profile.deleteWarning')}</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(false)} disabled={busy} className="btn btn-default">{t('profile.cancel')}</button>
-              <button onClick={deleteAccount} disabled={busy} className="btn btn-danger">{busy ? t('profile.deleting') : t('profile.deleteConfirmAction')}</button>
+              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder="Current password to confirm" className="input flex-1" disabled={busy} />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setDeleteConfirm(false); setDeletePassword('') }} disabled={busy} className="btn btn-default">{t('profile.cancel')}</button>
+              <button onClick={handleDelete} disabled={busy || !deletePassword} className="btn btn-danger">{busy ? t('profile.deleting') : t('profile.deleteConfirmAction')}</button>
             </div>
           </div>
         ) : (
