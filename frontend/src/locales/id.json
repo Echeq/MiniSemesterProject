@@ -47,6 +47,7 @@
     "create": "Buat",
     "close": "Tutup",
     "editAction": "Edit",
+    "view": "Lihat",
     "moveTo": "Pindahkan ke",
     "deleteTask": "Hapus tugas",
     "readOnly": "Tugas ini hanya baca. Hubungi admin Anda untuk perubahan.",

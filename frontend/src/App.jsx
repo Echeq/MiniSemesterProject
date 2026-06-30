@@ -287,8 +287,9 @@ function BoardPage({ session, theme, toggleTheme }) {
               tasks={filteredViewTasks}
               allViewTasks={viewTasks}
               updateTask={updateTask}
+              isAdmin={isAdmin}
               onTaskClick={handleTaskClick}
-              onAddTask={(status) => setModal({ defaultStatus: status })}
+              onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}
               labels={labels}
               hideEmptyColumns={isView}
               banner={memoBanner}
@@ -313,6 +314,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             defaultProjectId={defaultProjectId}
             labels={labels}
             allTasks={tasks}
+            isAdmin={isAdmin}
             onCreate={createTask}
             onUpdate={updateTask}
             onDelete={deleteTask}

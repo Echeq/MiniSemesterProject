@@ -23,6 +23,7 @@ export default function Board({
   tasks,
   allViewTasks,
   updateTask,
+  isAdmin = false,
   onTaskClick,
   onAddTask,
   labels = [],
@@ -276,7 +277,7 @@ export default function Board({
                 onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
                 className="btn btn-primary w-full justify-center"
               >
-                {t('task.edit')}
+                {isAdmin ? t('task.edit') : t('task.view')}
               </button>
               {STATUSES.filter((s) => s !== mobileMenuTask.status).map((s) => (
                 <button

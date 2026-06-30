@@ -47,6 +47,7 @@
     "create": "Create",
     "close": "Close",
     "editAction": "Edit",
+    "view": "View",
     "moveTo": "Move to",
     "deleteTask": "Delete task",
     "readOnly": "This task is read-only. Contact your admin for changes.",

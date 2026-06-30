@@ -47,6 +47,7 @@
     "create": "Crear",
     "close": "Cerrar",
     "editAction": "Editar",
+    "view": "Ver",
     "moveTo": "Mover a",
     "deleteTask": "Eliminar tarea",
     "readOnly": "Esta tarea es solo de lectura. Contacta a tu administrador para cambios.",

@@ -47,6 +47,7 @@
     "create": "创建",
     "close": "关闭",
     "editAction": "编辑",
+    "view": "查看",
     "moveTo": "移动到",
     "deleteTask": "删除任务",
     "readOnly": "此任务为只读。请联系管理员进行更改。",

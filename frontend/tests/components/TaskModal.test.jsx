@@ -9,7 +9,7 @@ vi.mock('../../src/api/supabaseClient', () => ({ supabase: mockSupabase }))
 
 const TASK_TRANSLATIONS = {
   'board.todo': 'To Do', 'board.inProgress': 'In progress', 'board.done': 'Done',
-  'task.new': 'New task', 'task.edit': 'Edit task', 'task.title': 'Title',
+  'task.new': 'New task', 'task.edit': 'Edit task', 'task.details': 'Task details', 'task.title': 'Title',
   'task.description': 'Description', 'task.dueDate': 'Due date', 'task.status': 'Status',
   'task.priority': 'Priority', 'task.assignee': 'Assignee', 'task.unassigned': '— Unassigned —',
   'task.project': 'Project', 'task.sharedBoard': 'Shared board', 'task.labels': 'Labels',
@@ -37,21 +37,21 @@ describe('TaskModal', () => {
 
   it('renders create mode when task is null', async () => {
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={null} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={null} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByText('New task')).toBeInTheDocument())
     expect(screen.getByText('Create')).toBeInTheDocument()
   })
 
   it('renders edit mode when task is provided', async () => {
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={{ id: 't1', title: 'Edit me', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={{ id: 't1', title: 'Edit me', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByText('Edit task')).toBeInTheDocument())
     expect(screen.getByText('Save')).toBeInTheDocument()
   })
 
   it('renders task details in edit mode', async () => {
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={{ id: 't1', title: 'Read only', description: 'desc', due_date: null, status: 'doing', assignee: null, created_by: 'other' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={{ id: 't1', title: 'Read only', description: 'desc', due_date: null, status: 'doing', assignee: null, created_by: 'other' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByText('Edit task')).toBeInTheDocument())
     expect(screen.getByDisplayValue('Read only')).toBeInTheDocument()
     expect(screen.getByText('desc')).toBeInTheDocument()
@@ -59,7 +59,7 @@ describe('TaskModal', () => {
 
   it('fetches projects for project dropdown', async () => {
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={null} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={null} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => {
       expect(screen.getByText('New task')).toBeInTheDocument()
     })
@@ -68,7 +68,7 @@ describe('TaskModal', () => {
   it('calls onCreate with form data on create submit', async () => {
     const onCreate = vi.fn()
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={null} members={[]} projects={[]} onCreate={onCreate} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={null} members={[]} projects={[]} onCreate={onCreate} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByLabelText('Title')).toBeInTheDocument())
     await userEvent.type(screen.getByLabelText('Title'), 'New Task')
     await userEvent.click(screen.getByText('Create'))
@@ -80,7 +80,7 @@ describe('TaskModal', () => {
   it('calls onUpdate with updated fields on edit submit', async () => {
     const onUpdate = vi.fn()
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={{ id: 't1', title: 'Old', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={onUpdate} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={{ id: 't1', title: 'Old', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={onUpdate} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByLabelText('Title')).toBeInTheDocument())
     const titleInput = screen.getByLabelText('Title')
     await userEvent.clear(titleInput)
@@ -94,17 +94,28 @@ describe('TaskModal', () => {
   it('calls onDelete when delete is confirmed', async () => {
     const onDelete = vi.fn()
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={{ id: 't1', title: 'Delete me', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={onDelete} onClose={vi.fn()} />)
+    render(<TaskModal task={{ id: 't1', title: 'Delete me', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={vi.fn()} onDelete={onDelete} onClose={vi.fn()} isAdmin />)
     await userEvent.click(screen.getByText('Delete'))
     await waitFor(() => expect(screen.getByText('Delete this task?')).toBeInTheDocument())
     await userEvent.click(screen.getAllByText('Delete')[1])
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('t1'))
   })
 
+  it('is read-only for members: no save/delete, inputs disabled', async () => {
+    const onUpdate = vi.fn()
+    const TaskModal = (await import('../../src/components/TaskModal')).default
+    render(<TaskModal task={{ id: 't1', title: 'Member view', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={onUpdate} onDelete={vi.fn()} onClose={vi.fn()} isAdmin={false} />)
+    await waitFor(() => expect(screen.getByText('Task details')).toBeInTheDocument())
+    expect(screen.getByText('This task is read-only. Contact your admin for changes.')).toBeInTheDocument()
+    expect(screen.queryByText('Save')).not.toBeInTheDocument()
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Title')).toBeDisabled()
+  })
+
   it('displays error message', async () => {
     const onCreate = vi.fn().mockRejectedValue(new Error('Create failed'))
     const TaskModal = (await import('../../src/components/TaskModal')).default
-    render(<TaskModal task={null} members={[]} projects={[]} onCreate={onCreate} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} />)
+    render(<TaskModal task={null} members={[]} projects={[]} onCreate={onCreate} onUpdate={vi.fn()} onDelete={vi.fn()} onClose={vi.fn()} isAdmin />)
     await waitFor(() => expect(screen.getByLabelText('Title')).toBeInTheDocument())
     await userEvent.type(screen.getByLabelText('Title'), 'Task')
     await userEvent.click(screen.getByText('Create'))

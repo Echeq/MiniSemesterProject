@@ -20,6 +20,7 @@ export default function TaskModal({
   defaultStatus = 'todo',
   labels = [],
   allTasks = [],
+  isAdmin = false,
   onCreate,
   onUpdate,
   onDelete,
@@ -46,6 +47,8 @@ export default function TaskModal({
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const editing = Boolean(task)
+  // Members can only drag-and-drop on the board; the modal is view-only for them.
+  const readOnly = !isAdmin
 
   const availableLabels = labels.filter((l) => l.project_id === projectId || (!projectId && !l.project_id))
   const projectTasks = allTasks.filter((t) => t.id !== task?.id && (t.project_id === projectId || (!projectId && !t.project_id)))
@@ -64,6 +67,7 @@ export default function TaskModal({
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (readOnly) return
     setError(null)
     setBlockerError(null)
     setBusy(true)
@@ -126,26 +130,31 @@ export default function TaskModal({
   const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--fg)]'
 
   return (
-    <Modal title={editing ? t('task.edit') : t('task.new')} onClose={onClose}>
+    <Modal title={readOnly ? t('task.details') : editing ? t('task.edit') : t('task.new')} onClose={onClose}>
       <form onSubmit={handleSubmit}>
+        {readOnly && (
+          <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--fg-muted)', borderColor: 'var(--border)', background: 'var(--surface-hover)' }}>
+            {t('task.readOnly')}
+          </p>
+        )}
         <label className="mb-3 block">
           <span className={labelCls}>{t('task.title')}</span>
-          <input type="text" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder={t('task.title')} />
+          <input type="text" required maxLength={200} autoFocus={!readOnly} disabled={readOnly} value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder={t('task.title')} />
         </label>
 
         <label className="mb-3 block">
           <span className={labelCls}>{t('task.description')}</span>
-          <textarea rows={3} maxLength={5000} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder={t('task.description')} />
+          <textarea rows={3} maxLength={5000} disabled={readOnly} value={description} onChange={(e) => setDescription(e.target.value)} className="input resize-none" placeholder={t('task.description')} />
         </label>
 
         <div className="mb-3 flex gap-3">
           <label className="flex-1">
             <span className={labelCls}>{t('task.dueDate')}</span>
-            <input type="date" value={dueDate ?? ''} onChange={(e) => setDueDate(e.target.value)} className="input" />
+            <input type="date" disabled={readOnly} value={dueDate ?? ''} onChange={(e) => setDueDate(e.target.value)} className="input" />
           </label>
           <label className="flex-1">
             <span className={labelCls}>{t('task.status')}</span>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
+            <select value={status} disabled={readOnly} onChange={(e) => setStatus(e.target.value)} className="input">
               {STATUSES.map((s) => (
                 <option key={s} value={s} disabled={s === 'done' && (task?.blocked_by || 0) > 0}>
                   {STATUS_LABELS[s]}{s === 'done' && (task?.blocked_by || 0) > 0 ? ' (blocked)' : ''}
@@ -168,13 +177,13 @@ export default function TaskModal({
         <div className="mb-3 flex gap-3">
           <label className="flex-1">
             <span className={labelCls}>{t('task.priority')}</span>
-            <select value={priority} onChange={(e) => setPriority(e.target.value)} className="input">
+            <select value={priority} disabled={readOnly} onChange={(e) => setPriority(e.target.value)} className="input">
               {PRIORITIES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
           </label>
           <label className="flex-1">
             <span className={labelCls}>{t('task.assignee')}</span>
-            <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="input">
+            <select value={assignee} disabled={readOnly} onChange={(e) => setAssignee(e.target.value)} className="input">
               <option value="">{t('task.unassigned')}</option>
               {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
             </select>
@@ -184,7 +193,7 @@ export default function TaskModal({
         <div className="mb-5 flex gap-3">
           <label className="flex-1">
             <span className={labelCls}>{t('task.project')}</span>
-            <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="input">
+            <select value={projectId} disabled={readOnly} onChange={(e) => setProjectId(e.target.value)} className="input">
               <option value="">{t('task.sharedBoard')}</option>
               {projects.filter((p) => p.status === 'active').map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
@@ -196,8 +205,8 @@ export default function TaskModal({
             <span className={labelCls}>{t('task.labels')}</span>
             <div className="flex flex-wrap gap-1.5">
               {availableLabels.map((l) => (
-                <button key={l.id} type="button" onClick={() => toggleLabel(l.id)}
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition hover:scale-105"
+                <button key={l.id} type="button" disabled={readOnly} onClick={() => toggleLabel(l.id)}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
                     background: selectedLabels.includes(l.id) ? l.color : 'transparent',
                     color: selectedLabels.includes(l.id) ? '#fff' : 'var(--fg)',
@@ -219,8 +228,8 @@ export default function TaskModal({
             <span className={labelCls}>{t('task.blockedBy')}</span>
             <div className="flex flex-wrap gap-1.5">
               {projectTasks.map((t) => (
-                <button key={t.id} type="button" onClick={() => toggleDependency(t.id)}
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition hover:scale-105"
+                <button key={t.id} type="button" disabled={readOnly} onClick={() => toggleDependency(t.id)}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
                     background: blockedBy.includes(t.id) ? 'var(--danger)' : 'transparent',
                     color: blockedBy.includes(t.id) ? '#fff' : 'var(--fg)',
@@ -237,12 +246,14 @@ export default function TaskModal({
         {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
 
         <div className="flex items-center justify-between">
-          {editing ? (
+          {editing && !readOnly ? (
             <button type="button" onClick={() => setConfirmDelete(true)} disabled={busy} className="btn btn-danger">{t('task.delete')}</button>
           ) : <span />}
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="btn btn-default">{t('task.cancel')}</button>
-            <button type="submit" disabled={busy} className="btn btn-primary">{editing ? t('task.save') : t('task.create')}</button>
+            <button type="button" onClick={onClose} className="btn btn-default">{readOnly ? t('task.close') : t('task.cancel')}</button>
+            {!readOnly && (
+              <button type="submit" disabled={busy} className="btn btn-primary">{editing ? t('task.save') : t('task.create')}</button>
+            )}
           </div>
         </div>
       </form>
