@@ -1,0 +1,31 @@
+flowchart TD
+    Start([User visits app]) --> EnvCheck{supabaseClient.js<br>has valid env vars?}
+    EnvCheck -->|No| SetupHint[Show setup hint]
+    SetupHint --> End([Stop])
+
+    EnvCheck -->|Yes| AuthGate{Has session?}
+    AuthGate -->|No| AuthForm[Show Auth Form]
+    AuthForm -->|Sign Up / Sign In| AuthGate
+
+    AuthGate -->|Yes| RoleCheck{Profile role?}
+
+    RoleCheck -->|unknown| UnknownGate[Show Request Access screen]
+    UnknownGate -->|Admin promotes| RoleCheck
+
+    RoleCheck -->|admin / member| BoardPage[Enter BoardPage]
+
+    BoardPage --> Dashboard[Dashboard view]
+    BoardPage --> Kanban[Kanban Board]
+    BoardPage --> Gantt[Gantt Chart]
+    BoardPage --> Sphere[3D Data Sphere]
+
+    Kanban --> TaskOps[CRUD Tasks via Supabase]
+    TaskOps --> Realtime[Realtime sync to all clients]
+    Realtime --> Kanban
+
+    Kanban --> DragDrop[Drag & Drop reorder]
+    DragDrop --> Midpoint[midpoint calculation]
+    Midpoint --> TaskOps
+
+    TaskOps --> Labels[Manage Labels & Dependencies]
+    TaskOps --> Export[Export: XLSX / PDF / CSV]

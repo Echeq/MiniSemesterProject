@@ -1,0 +1,30 @@
+graph TB
+    subgraph Client["Frontend (React 19 + Vite 8)"]
+        App["App.jsx"]
+        Views["Views: Kanban / Gantt / 3D Sphere"]
+        Hooks["Hooks: useBoard, useAuth, usePresence"]
+        UI["Components: Board, Column, TaskCard, Modal..."]
+    end
+
+    subgraph Supabase["Supabase Backend"]
+        Auth["Auth (email/password)"]
+        PG["PostgreSQL + PostgREST"]
+        RT["Realtime (channel 'board')"]
+        Storage["Storage (avatars)"]
+        Edge["Edge Functions"]
+    end
+
+    subgraph External["External"]
+        Browser["Browser (localStorage, IndexedDB)"]
+    end
+
+    App --> Hooks
+    Hooks --> UI
+    UI --> Views
+    Hooks -- supabase-js --> Auth
+    Hooks -- supabase-js --> PG
+    Hooks -- supabase-js --> RT
+    Hooks -- supabase-js --> Storage
+    PG --> RT
+    RT -- live updates --> Browser
+    Browser -- user events --> UI

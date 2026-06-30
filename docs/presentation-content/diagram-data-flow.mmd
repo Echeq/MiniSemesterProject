@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor U as User
+    participant UI as React UI
+    participant H as Custom Hooks
+    participant SB as supabase-js
+    participant PG as PostgreSQL
+    participant RT as Realtime Channel
+
+    U->>UI: Drag task to "Done"
+    UI->>H: updateTask(id, {status:"done"})
+    H->>H: check_blocked_tasks RPC
+    H-->>UI: Throw if blockers exist
+
+    alt No blockers
+        H->>SB: supabase.from('tasks').update(fields)
+        SB->>PG: UPDATE tasks SET status='done'
+        PG-->>SB: success
+        SB-->>H: {data, error}
+        H->>UI: Optimistic update (setTasks)
+
+        PG->>RT: Broadcast change (channel 'board')
+        RT-->>SB: postgres_changes event
+        SB-->>H: payload received
+        H->>PG: Re-fetch row with assignee join
+        PG-->>H: enriched data
+        H->>UI: Merge into task list
+
+        U-->>U: Other client sees update instantly
+    end

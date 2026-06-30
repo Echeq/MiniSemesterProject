@@ -126,10 +126,9 @@ export default function Board({
     if (isMobile) {
       setMobileMenuTask(task)
     } else {
-      if (!isAdmin) return
       onTaskClick(task)
     }
-  }, [isMobile, onTaskClick, isAdmin])
+  }, [isMobile, onTaskClick])
 
   const handleTouchStart = useCallback((e) => {
     touchStartX.current = e.touches[0].clientX

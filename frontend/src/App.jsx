@@ -20,8 +20,7 @@ import FilterPanel from './components/FilterPanel'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 import Dashboard from './components/Dashboard'
-
-const TaskModal = lazy(() => import('./components/TaskModal'))
+import TaskModal from './components/TaskModal'
 const ProfileModal = lazy(() => import('./components/ProfileModal'))
 const AdminModal = lazy(() => import('./components/AdminModal'))
 const LabelManager = lazy(() => import('./components/LabelManager'))
@@ -110,12 +109,8 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
-  const handleTaskClick = useCallback((task) => {
-    if (!isAdmin || !task?.id) return
-    setModal(task)
-  }, [isAdmin])
-
-  const handleNewTask = useCallback(() => { if (!isAdmin) return; setModal('new') }, [isAdmin])
+  const handleTaskClick = useCallback((task) => { setModal(task) }, [])
+  const handleNewTask = useCallback(() => setModal('new'), [])
 
   const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
 
@@ -299,7 +294,7 @@ function BoardPage({ session, theme, toggleTheme }) {
               allViewTasks={viewTasks}
               updateTask={updateTask}
               onTaskClick={handleTaskClick}
-              onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}
+              onAddTask={(status) => setModal({ defaultStatus: status })}
               labels={labels}
               hideEmptyColumns={isView}
               banner={memoBanner}
@@ -422,8 +417,16 @@ function UnknownGate({ session }) {
   return (
     <div style={{
       height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#0f1117', color: '#e1e4e8', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+      background: '#0f1117', color: '#e1e4e8', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', position: 'relative'
     }}>
+      <button onClick={() => supabase.auth.signOut()}
+        style={{
+          position: 'absolute', top: 16, right: 16, padding: '6px 14px', fontSize: 13,
+          border: '1px solid #30363d', borderRadius: 6, cursor: 'pointer',
+          background: '#1c1f26', color: '#e1e4e8'
+        }}>
+        Sign out
+      </button>
       <div style={{ maxWidth: 400, textAlign: 'center', padding: 32 }}>
         <div style={{
           width: 64, height: 64, margin: '0 auto', borderRadius: '50%',
