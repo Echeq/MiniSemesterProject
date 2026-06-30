@@ -316,10 +316,13 @@ function BoardPage({ session, theme, toggleTheme }) {
               />
             )}
           </ErrorBoundary>
+
+          {/* Insights floats over the board as an overlay so toggling it never
+              reflows the layout (the board keeps its width). */}
+          {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
         </div>
       </div>
 
-      {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
 
       <Suspense fallback={null}>
         {modal && (

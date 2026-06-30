@@ -66,7 +66,7 @@ function InsightsPanel({ tasks, scopeLabel, onClose }) {
   }, [stats])
 
   return (
-    <aside className="glass hidden w-80 flex-shrink-0 flex-col overflow-y-auto border-l border-[var(--glass-border)] xl:flex">
+    <aside className="glass absolute inset-y-0 end-0 z-20 hidden w-80 flex-col overflow-y-auto border-l border-[var(--glass-border)] shadow-2xl animate-fade-in xl:flex">
       <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-5 py-4">
         <div>
           <h2 className="text-sm font-semibold">{t('insights.title')}</h2>
