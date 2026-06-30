@@ -19,6 +19,7 @@ import Board from './components/Board'
 import FilterPanel from './components/FilterPanel'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
+import Dashboard from './components/Dashboard'
 
 const TaskModal = lazy(() => import('./components/TaskModal'))
 const ProfileModal = lazy(() => import('./components/ProfileModal'))
@@ -91,7 +92,7 @@ function BoardPage({ session, theme, toggleTheme }) {
   const profileName = profile?.display_name || session.user.email
   const { editors, startEditing, stopEditing } = useTaskEditing(userId, profileName)
 
-  const [scope, setScope] = useState('all')
+  const [scope, setScope] = useState('_dashboard')
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isProject = scope !== null && typeof scope === 'object'
@@ -238,6 +239,7 @@ function BoardPage({ session, theme, toggleTheme }) {
       </ErrorBoundary>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {scope !== '_dashboard' && (
         <div className="relative">
           <Topbar
             onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
@@ -274,10 +276,14 @@ function BoardPage({ session, theme, toggleTheme }) {
             </div>
           )}
         </div>
+        )}
 
-        {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
-
-        <ErrorBoundary>
+        {scope === '_dashboard' ? (
+          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} />
+        ) : (
+          <>
+            {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
+            <ErrorBoundary>
           {activeView === 'gantt' ? (
             <Suspense fallback={null}><GanttView tasks={filteredViewTasks} onTaskClick={handleTaskClick} updateTask={updateTask} /></Suspense>
           ) : activeView === 'sphere' ? (
@@ -298,7 +304,9 @@ function BoardPage({ session, theme, toggleTheme }) {
               editors={editors}
             />
           )}
-        </ErrorBoundary>
+          </ErrorBoundary>
+          </>
+        )}
       </div>
 
       {showInsights && !loading && <InsightsPanel tasks={filteredViewTasks} scopeLabel={scopeLabel} onClose={handleToggleInsights} />}
@@ -360,6 +368,21 @@ function Backdrop() {
 
 export default function App() {
   const { theme, toggle } = useTheme()
+  const { session, loading: authLoading } = useAuth()
+  const { profile, loading: profileLoading } = useProfile(session)
+
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex min-h-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (session && profile?.role === 'unknown') {
+    return <UnknownGate />
+  }
+
   return (
     <>
       <Backdrop />
@@ -368,36 +391,25 @@ export default function App() {
   )
 }
 
-function UnknownGate({ session, theme, toggleTheme, profile }) {
-  const [sent, setSent] = useState(false)
-  const { t } = useTranslation()
-
-  async function requestAccess() {
-    const { error } = await supabase.from('join_requests').insert({
-      requester_id: session.user.id,
-      admin_email: session.user.email,
-      status: 'pending',
-    })
-    if (!error) setSent(true)
-  }
-
+function UnknownGate() {
   return (
-    <div className="flex min-h-full items-center justify-center px-4">
-      <div className="surface max-w-md rounded-xl p-8 text-center shadow-[var(--shadow-md)]">
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-hover)]">
-          <svg className="h-8 w-8 text-[var(--fg-muted)]" viewBox="0 0 16 16" fill="currentColor">
+    <div style={{
+      height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#0f1117', color: '#e1e4e8', fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+    }}>
+      <div style={{ maxWidth: 400, textAlign: 'center', padding: 32 }}>
+        <div style={{
+          width: 64, height: 64, margin: '0 auto', borderRadius: '50%',
+          background: '#1c1f26', display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <svg width={32} height={32} viewBox="0 0 16 16" fill="#6366f1">
             <path d="M7.467.133a1.75 1.75 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.7 1.7 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Z" />
           </svg>
-        </span>
-        <h2 className="mt-4 text-lg font-semibold">Waiting for approval</h2>
-        <p className="mt-2 text-sm text-[var(--fg-muted)]">
-          Your account is pending admin approval. Contact your administrator to gain access to the board.
+        </div>
+        <h1 style={{ fontSize: 20, marginTop: 20, marginBottom: 8 }}>Access pending</h1>
+        <p style={{ fontSize: 14, color: '#8b949e', margin: 0, lineHeight: 1.5 }}>
+          Your account is waiting for admin approval.
         </p>
-        {sent ? (
-          <p className="mt-4 text-sm font-medium" style={{ color: 'var(--done)' }}>Request sent! An admin will review it shortly.</p>
-        ) : (
-          <button onClick={requestAccess} className="btn btn-primary mt-4">Request Access</button>
-        )}
       </div>
     </div>
   )
@@ -414,9 +426,6 @@ function AuthGate({ theme, toggleTheme }) {
     )
   }
   if (!session) return <AuthForm />
-  if (profile?.role === 'unknown') {
-    return <UnknownGate session={session} theme={theme} toggleTheme={toggleTheme} profile={profile} />
-  }
   return (
     <ErrorBoundary>
       <BoardPage session={session} theme={theme} toggleTheme={toggleTheme} />

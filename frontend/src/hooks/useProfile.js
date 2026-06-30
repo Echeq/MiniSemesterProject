@@ -8,7 +8,7 @@ export function useProfile(session) {
 
   const refetch = useCallback(async () => {
     const userId = session?.user?.id
-    if (!userId) return
+    if (!userId) { setLoading(false); return }
     const { data } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url, role')
