@@ -255,7 +255,7 @@ function BoardPage({ session, theme, toggleTheme }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {scope !== '_dashboard' && (
-        <div className="relative">
+        <div className="relative z-10">
           <Topbar
             onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
             title={scopeLabel}

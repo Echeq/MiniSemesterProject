@@ -1,0 +1,43 @@
+graph TD
+    App --> AuthForm
+    App --> UnknownGate
+    App --> BoardPage
+
+    subgraph BoardPage["BoardPage"]
+        Sidebar --> CreateProjectModal
+        Sidebar --> ProfileModal
+        Sidebar --> AdminModal
+
+        Topbar --> FilterPanel
+        Topbar --> ExportMenu
+        Topbar --> ThemeToggle
+
+        Board --> Column
+        Column --> TaskCard
+        TaskCard --> TaskModal
+
+        GanttView
+        DataSphere
+        Dashboard
+        InsightsPanel
+        LabelManager
+        LogViewer
+        RestorePanel
+        BackupPanel
+        ProjectSettingsModal
+        ListView
+        ErrorBoundary
+    end
+
+    subgraph Shared["Shared"]
+        Modal
+        ConfirmModal
+        Skeleton
+        EmptyState
+        Avatar
+        NotFound
+        ProfileMenu
+        ProjectActionSheet
+    end
+
+    BoardPage --> Shared

@@ -1,0 +1,5 @@
+- 2026-06-30 10:27 — Generated presentation content with 6 Mermaid diagrams in docs/presentation-content/ (plan: PLAN_20260630_102700.md)
+- 2026-06-30 10:30 — Generated PresentationScript.md (16-slide professional presentation script in English) in docs/presentation-content/ (plan: PLAN_20260630_103000.md)
+- 2026-06-30 14:43 — Fixed admin/member task permission bugs in Board.jsx + captured DB drift migration (plan: PLAN_20260630_144300.md)
+- 2026-06-30 14:57 — Re-enabled drag-and-drop for all users on desktop; mobile uses tap-menu only (plan: PLAN_20260630_145700.md)
+- 2026-06-30 15:10 — Allowed members to create, edit, and delete tasks (frontend + RLS) (plan: PLAN_20260630_151000.md)

@@ -110,6 +110,9 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
       {loadingProjects ? <SidebarStatsSkeleton /> : (
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
           <SectionLabel>{t('sidebar.boards')}</SectionLabel>
+          <button onClick={() => onSelectScope('_dashboard')} className={`nav-item ${scope === '_dashboard' ? 'active' : ''}`}>
+            <Icon path="M0 1.75A.75.75 0 0 1 .75 1h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75A.75.75 0 0 1 0 6.25Zm0 8A.75.75 0 0 1 .75 9h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75Zm6-8A.75.75 0 0 1 6.75 1h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 6 1.75Zm0 8a.75.75 0 0 1 .75-.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1-.75-.75Z" /> Dashboard
+          </button>
           <button onClick={() => onSelectScope('all')} className={`nav-item ${scope === 'all' ? 'active' : ''}`}>
             <Icon path={ICONS.inbox} /> {t('sidebar.allTasks')}
           </button>
