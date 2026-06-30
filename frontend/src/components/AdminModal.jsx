@@ -20,7 +20,7 @@ export default function AdminModal({ session, onClose }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState('members')
   return (
-    <Modal title={t('admin.title')} subtitle={t('admin.subtitle')} onClose={onClose} maxWidth="max-w-lg">
+    <Modal title={t('admin.title')} subtitle={t('admin.subtitle')} onClose={onClose} maxWidth="max-w-3xl">
       <div className="mb-4 flex flex-wrap gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
         <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('admin.members') || 'Members'}</TabButton>
         <TabButton active={tab === 'invites'} onClick={() => setTab('invites')}>{t('admin.invitations') || 'Invitations'}</TabButton>

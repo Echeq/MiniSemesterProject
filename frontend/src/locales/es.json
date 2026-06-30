@@ -83,6 +83,7 @@
     "passwordTooShort": "La nueva contraseña debe tener al menos 6 caracteres",
     "passwordChanged": "Contraseña cambiada",
     "updating": "Actualizando…",
+    "update": "Actualizar",
     "updateEmail": "Actualizar correo",
     "newEmail": "Nuevo correo",
     "emailUpdated": "Correos de verificación enviados a tu correo actual y nuevo",
@@ -203,6 +204,7 @@
     "invitations": "Invitaciones",
     "logs": "Registros",
     "backup": "Copia de seguridad",
+    "restore": "Restaurar",
     "loading": "Cargando…",
     "noInvitations": "Sin invitaciones aún.",
     "member": "Miembro",
@@ -287,6 +289,18 @@
     "day": "Día",
     "week": "Semana",
     "month": "Mes",
-    "today": "Hoy"
+    "today": "Hoy",
+    "dependencies": "Dependencias",
+    "linkHint": "Arrastra para añadir dependencia",
+    "removeDep": "Haz clic en la línea para eliminar la dependencia"
+  },
+  "notif": {
+    "title": "Notificaciones",
+    "empty": "Estás al día",
+    "markAll": "Marcar todo como leído",
+    "justNow": "ahora mismo",
+    "minutesAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}} h",
+    "daysAgo": "hace {{count}} d"
   }
 }

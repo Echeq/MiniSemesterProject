@@ -85,6 +85,46 @@ export default function DataSphere({ tasks }) {
     const shellMat = new THREE.MeshBasicMaterial({ color: 0x334155, wireframe: true, transparent: true, opacity: 0.07 })
     scene.add(new THREE.Mesh(shellGeo, shellMat))
 
+    // Flowing particles for in-progress work — they orbit the sphere on
+    // randomised great circles, count proportional to the number of "doing" tasks.
+    const flowCount = doing > 0 ? Math.min(doing * 14, 400) : 0
+    let flowPoints = null
+    let flowGeo = null
+    let flowMat = null
+    const flowU = []
+    const flowV = []
+    const flowAng = []
+    const flowSpd = []
+    const flowRad = []
+    if (flowCount > 0) {
+      const flowPos = new Float32Array(flowCount * 3)
+      for (let i = 0; i < flowCount; i++) {
+        // Build an orthonormal basis (u, v) that spans a random orbit plane.
+        const u = new THREE.Vector3().randomDirection()
+        let w = new THREE.Vector3().randomDirection()
+        const v = new THREE.Vector3().crossVectors(u, w)
+        if (v.lengthSq() < 1e-4) { w = new THREE.Vector3(0, 1, 0); v.crossVectors(u, w) }
+        v.normalize()
+        flowU.push(u)
+        flowV.push(v)
+        flowAng.push(Math.random() * Math.PI * 2)
+        flowSpd.push(0.01 + Math.random() * 0.02)
+        flowRad.push(1.18 + Math.random() * 0.18)
+      }
+      flowGeo = new THREE.BufferGeometry()
+      flowGeo.setAttribute('position', new THREE.BufferAttribute(flowPos, 3))
+      flowMat = new THREE.PointsMaterial({
+        size: 0.05,
+        color: 0xf59e0b,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+      flowPoints = new THREE.Points(flowGeo, flowMat)
+      scene.add(flowPoints)
+    }
+
     // Hover raycasting.
     const raycaster = new THREE.Raycaster()
     raycaster.params.Points.threshold = 0.05
@@ -133,6 +173,25 @@ export default function DataSphere({ tasks }) {
         overdueRing.material.opacity = 0.04 + 0.06 * Math.abs(Math.sin(frame * 0.04))
       }
 
+      // Advance flowing in-progress particles along their orbits.
+      if (flowPoints) {
+        const arr = flowGeo.attributes.position.array
+        for (let i = 0; i < flowCount; i++) {
+          flowAng[i] += flowSpd[i]
+          const a = flowAng[i]
+          const ca = Math.cos(a)
+          const sa = Math.sin(a)
+          const R = flowRad[i]
+          const u = flowU[i]
+          const v = flowV[i]
+          arr[i * 3]     = R * (ca * u.x + sa * v.x)
+          arr[i * 3 + 1] = R * (ca * u.y + sa * v.y)
+          arr[i * 3 + 2] = R * (ca * u.z + sa * v.z)
+        }
+        flowGeo.attributes.position.needsUpdate = true
+        flowPoints.rotation.y = sphere.rotation.y
+      }
+
       // Raycast for hover tooltip every 6 frames.
       if (frame % 6 === 0) {
         raycaster.setFromCamera(mouse, camera)
@@ -175,6 +234,8 @@ export default function DataSphere({ tasks }) {
       renderer.dispose()
       geo.dispose()
       mat.dispose()
+      if (flowGeo) flowGeo.dispose()
+      if (flowMat) flowMat.dispose()
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement)
     }
   }, [total, pct, doing]) // re-init when task count, completion, or in-progress count changes

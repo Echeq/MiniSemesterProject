@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
 import ExportMenu from './ExportMenu'
+import NotificationBell from './NotificationBell'
 
 const VIEWS = [
   {
@@ -49,11 +50,12 @@ const Topbar = memo(function Topbar({
   onOpenAccount,
   onOpenAdmin,
   onToggleMobileSidebar,
+  onMenuOpen,
 }) {
   const { t } = useTranslation()
 
   return (
-    <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
+    <header className="relative flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
         <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
         {archived && (
@@ -127,7 +129,7 @@ const Topbar = memo(function Topbar({
 
         {tasks.length > 0 && (
           <div className="hidden sm:block">
-            <ExportMenu tasks={tasks} />
+            <ExportMenu tasks={tasks} onOpen={onMenuOpen} />
           </div>
         )}
 
@@ -141,6 +143,8 @@ const Topbar = memo(function Topbar({
             </svg>
           </button>
         )}
+
+        <NotificationBell userId={session?.user?.id} onOpen={onMenuOpen} />
 
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
 
@@ -165,6 +169,7 @@ const Topbar = memo(function Topbar({
           isAdmin={isAdmin}
           onOpenAccount={onOpenAccount}
           onOpenAdmin={onOpenAdmin}
+          onOpen={onMenuOpen}
         />
       </div>
     </header>

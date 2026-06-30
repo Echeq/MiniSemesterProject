@@ -83,6 +83,7 @@
     "passwordTooShort": "新密码至少需要 6 个字符",
     "passwordChanged": "密码已更改",
     "updating": "更新中…",
+    "update": "更新",
     "updateEmail": "更新邮箱",
     "newEmail": "新邮箱",
     "emailUpdated": "验证邮件已发送到您当前和新的邮箱地址",
@@ -203,6 +204,7 @@
     "invitations": "邀请",
     "logs": "日志",
     "backup": "备份",
+    "restore": "恢复",
     "loading": "加载中…",
     "noInvitations": "暂无邀请。",
     "member": "成员",
@@ -287,6 +289,18 @@
     "day": "天",
     "week": "周",
     "month": "月",
-    "today": "今天"
+    "today": "今天",
+    "dependencies": "依赖关系",
+    "linkHint": "拖动以添加依赖",
+    "removeDep": "点击连线删除依赖"
+  },
+  "notif": {
+    "title": "通知",
+    "empty": "暂无通知",
+    "markAll": "全部标为已读",
+    "justNow": "刚刚",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "daysAgo": "{{count}} 天前"
   }
 }

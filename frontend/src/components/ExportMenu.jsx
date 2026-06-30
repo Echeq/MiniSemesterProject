@@ -12,7 +12,7 @@ function csvEscape(val) {
   return s
 }
 
-export default function ExportMenu({ tasks = [] }) {
+export default function ExportMenu({ tasks = [], onOpen }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -152,7 +152,7 @@ export default function ExportMenu({ tasks = [] }) {
 
   return (
     <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className="btn btn-default !px-2">
+      <button type="button" onClick={() => { if (!open) onOpen?.(); setOpen((o) => !o) }} className="btn btn-default !px-2">
         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
           <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Zm10 0H4v1.5h8Zm0 3H4v1.5h8Zm-8 3h8v1.5H4Z" />
         </svg>
