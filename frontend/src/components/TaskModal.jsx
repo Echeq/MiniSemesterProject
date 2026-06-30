@@ -28,6 +28,7 @@ export default function TaskModal({
   onAddDependency,
   onRemoveDependency,
   onClose,
+  isAdmin = true,
 }) {
   const { t } = useTranslation()
   const STATUS_LABELS = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
@@ -143,6 +144,11 @@ export default function TaskModal({
   return (
     <Modal title={editing ? t('task.edit') : t('task.new')} onClose={onClose}>
       <form onSubmit={handleSubmit}>
+        {!isAdmin && editing && (
+          <p className="mb-4 rounded-md border px-3 py-2 text-xs" style={{ color: 'var(--fg-muted)', borderColor: 'var(--glass-border)', background: 'var(--surface-hover)' }}>
+            You have read-only access. Only admins can edit tasks.
+          </p>
+        )}
         <label className="mb-3 block">
           <span className={labelCls}>{t('task.title')}</span>
           <input type="text" required maxLength={200} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder={t('task.title')} />
@@ -253,11 +259,11 @@ export default function TaskModal({
 
         <div className="flex items-center justify-between">
           {editing ? (
-            <button type="button" onClick={() => setConfirmDelete(true)} disabled={busy} className="btn btn-danger">{t('task.delete')}</button>
+            <button type="button" onClick={() => setConfirmDelete(true)} disabled={busy || !isAdmin} className="btn btn-danger">{t('task.delete')}</button>
           ) : <span />}
           <div className="flex gap-2">
             <button type="button" onClick={onClose} className="btn btn-default">{t('task.cancel')}</button>
-            <button type="submit" disabled={busy} className="btn btn-primary">{editing ? t('task.save') : t('task.create')}</button>
+            <button type="submit" disabled={busy || !isAdmin} className="btn btn-primary">{editing ? t('task.save') : t('task.create')}</button>
           </div>
         </div>
       </form>

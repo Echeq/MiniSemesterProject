@@ -32,6 +32,7 @@ export default function Board({
   loading = false,
   members = [],
   editors,
+  isAdmin,
 }) {
   const { t } = useTranslation()
   const [activeTask, setActiveTask] = useState(null)
@@ -125,9 +126,10 @@ export default function Board({
     if (isMobile) {
       setMobileMenuTask(task)
     } else {
+      if (!isAdmin) return
       onTaskClick(task)
     }
-  }, [isMobile, onTaskClick])
+  }, [isMobile, onTaskClick, isAdmin])
 
   const handleTouchStart = useCallback((e) => {
     touchStartX.current = e.touches[0].clientX
@@ -271,13 +273,15 @@ export default function Board({
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--border)]" />
             <p className="mb-3 text-sm font-semibold truncate">{mobileMenuTask.title}</p>
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
-                className="btn btn-primary w-full justify-center"
-              >
-                {t('task.edit')}
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
+                  className="btn btn-primary w-full justify-center"
+                >
+                  {t('task.edit')}
+                </button>
+              )}
               {STATUSES.filter((s) => s !== mobileMenuTask.status).map((s) => (
                 <button
                   key={s}

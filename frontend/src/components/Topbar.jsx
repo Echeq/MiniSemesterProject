@@ -57,6 +57,33 @@ const Topbar = memo(function Topbar({
   const { t } = useTranslation()
   const [showProjectMenu, setShowProjectMenu] = useState(false)
   const [projectMenuTab, setProjectMenuTab] = useState(null)
+  const [showDesc, setShowDesc] = useState(false)
+
+  if (showDesc) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setShowDesc(false)}>
+        <div className="w-full max-w-md rounded-2xl bg-[var(--card)] p-6 shadow-xl animate-pop-in" onClick={(e) => e.stopPropagation()}>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">{project?.name}</h2>
+              <p className="mt-0.5 text-sm text-[var(--fg-muted)]">Project description</p>
+            </div>
+            <button onClick={() => setShowDesc(false)} className="rounded-lg p-1.5 text-[var(--fg-muted)] hover:bg-[var(--surface-hover)]">
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" /></svg>
+            </button>
+          </div>
+          <p className="text-sm text-[var(--fg)]">{project?.description || 'No description provided.'}</p>
+          {project?.color && (
+            <div className="mt-4 flex items-center gap-2 text-xs text-[var(--fg-muted)]">
+              <span className="h-3 w-3 rounded-full" style={{ background: project.color }} />
+              {project.color}
+            </div>
+          )}
+          <button onClick={() => setShowDesc(false)} className="btn btn-default mt-5 w-full justify-center">Close</button>
+        </div>
+      </div>
+    )
+  }
 
   if (projectMenuTab) {
     return (
@@ -96,18 +123,28 @@ const Topbar = memo(function Topbar({
                 {/* Desktop: dropdown below button */}
                 <div className="hidden sm:block absolute left-0 top-full z-40 mt-1.5 w-52 animate-pop-in rounded-xl border border-[var(--glass-border)] bg-[var(--bg)] p-2 shadow-xl">
                   <p className="mb-2 truncate px-1 text-sm font-semibold">{project.name}</p>
-                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                  <button onClick={() => { setShowProjectMenu(false); setShowDesc(true) }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
                     <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0M1.5 1.75v12.5c0 .138.112.25.25.25h2.875V1.5H1.75a.25.25 0 0 0-.25.25m4.625-.25v13h2.875v-13zm4.375 0v13h2.875a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Z" /></svg>
                     </span>
-                    Edit Project
+                    View Description
                   </button>
-                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
-                    </span>
-                    Add Member
-                  </button>
+                  {isAdmin && (
+                    <>
+                      <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                        </span>
+                        Edit Project
+                      </button>
+                      <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
+                        </span>
+                        Add Member
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Mobile: bottom sheet — portaled to body to avoid stacking context */}
@@ -115,18 +152,28 @@ const Topbar = memo(function Topbar({
                   <div className="block sm:hidden fixed inset-x-4 bottom-6 z-50 animate-slide-up rounded-2xl bg-[var(--bg)] p-5 shadow-xl">
                   <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--glass-border)]" />
                   <p className="mb-4 text-center text-sm font-semibold">{project.name}</p>
-                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                  <button onClick={() => { setShowProjectMenu(false); setShowDesc(true) }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
                     <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
-                      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0M1.5 1.75v12.5c0 .138.112.25.25.25h2.875V1.5H1.75a.25.25 0 0 0-.25.25m4.625-.25v13h2.875v-13zm4.375 0v13h2.875a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Z" /></svg>
                     </span>
-                    Edit Project
+                    View Description
                   </button>
-                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
-                      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
-                    </span>
-                    Add Member
-                  </button>
+                  {isAdmin && (
+                    <>
+                      <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                          <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                        </span>
+                        Edit Project
+                      </button>
+                      <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                          <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
+                        </span>
+                        Add Member
+                      </button>
+                    </>
+                  )}
                   <button onClick={() => setShowProjectMenu(false)} className="btn btn-default mt-4 w-full justify-center">
                     Cancel
                   </button>

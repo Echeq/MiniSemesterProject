@@ -110,9 +110,12 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
-  const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
+  const handleTaskClick = useCallback((task) => {
+    if (!isAdmin || !task?.id) return
+    setModal(task)
+  }, [isAdmin])
 
-  const handleNewTask = useCallback(() => setModal('new'), [])
+  const handleNewTask = useCallback(() => { if (!isAdmin) return; setModal('new') }, [isAdmin])
 
   const handleToggleInsights = useCallback(() => setShowInsights((s) => !s), [])
 
@@ -281,7 +284,7 @@ function BoardPage({ session, theme, toggleTheme }) {
         )}
 
         {scope === '_dashboard' ? (
-          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} onToggleMobileSidebar={() => setMobileOpen((o) => !o)} />
+          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} onToggleMobileSidebar={() => setMobileOpen((o) => !o)} userId={userId} />
         ) : (
           <>
             {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
@@ -296,7 +299,7 @@ function BoardPage({ session, theme, toggleTheme }) {
               allViewTasks={viewTasks}
               updateTask={updateTask}
               onTaskClick={handleTaskClick}
-              onAddTask={(status) => setModal({ defaultStatus: status })}
+              onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}
               labels={labels}
               hideEmptyColumns={isView}
               banner={memoBanner}
@@ -304,6 +307,7 @@ function BoardPage({ session, theme, toggleTheme }) {
               loading={loading}
               members={members}
               editors={editors}
+              isAdmin={isAdmin}
             />
           )}
           </ErrorBoundary>
@@ -331,6 +335,7 @@ function BoardPage({ session, theme, toggleTheme }) {
             onAddDependency={addDependency}
             onRemoveDependency={removeDependency}
             onClose={handleCloseModal}
+            isAdmin={isAdmin}
           />
         )}
 

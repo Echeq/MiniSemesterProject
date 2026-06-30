@@ -6,7 +6,6 @@ import { supabase } from '../api/supabaseClient'
 export function useTaskEditing(userId, displayName) {
   const [editors, setEditors] = useState(new Map())
   const channelRef = useRef(null)
-  // Track the task the current user is editing
   const editingRef = useRef(null)
 
   useEffect(() => {
@@ -20,7 +19,7 @@ export function useTaskEditing(userId, displayName) {
       const state = channel.presenceState()
       const map = new Map()
       for (const [uid, presences] of Object.entries(state)) {
-        if (uid === userId) continue // skip self
+        if (uid === userId) continue
         for (const p of presences) {
           if (p.taskId) {
             const editors = map.get(p.taskId) || []
@@ -34,7 +33,7 @@ export function useTaskEditing(userId, displayName) {
 
     channel.subscribe((status) => {
       channelRef.current = channel
-      if (status === 'SUBSCRIBED') {
+      if (status === 'SUBSCRIBED' && editingRef.current) {
         channel.track({ taskId: editingRef.current, displayName })
       }
     })
@@ -47,12 +46,12 @@ export function useTaskEditing(userId, displayName) {
 
   const startEditing = useCallback((taskId) => {
     editingRef.current = taskId
-    channelRef.current?.track({ taskId, displayName })
+    try { channelRef.current?.track({ taskId, displayName }) } catch {}
   }, [displayName])
 
   const stopEditing = useCallback(() => {
     editingRef.current = null
-    channelRef.current?.track({ taskId: null })
+    try { channelRef.current?.track({ taskId: null }) } catch {}
   }, [])
 
   return { editors, startEditing, stopEditing }

@@ -43,46 +43,31 @@ const ICONS = {
   project: 'M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0M1.5 1.75v12.5c0 .138.112.25.25.25h2.875V1.5H1.75a.25.25 0 0 0-.25.25m4.625-.25v13h2.875v-13zm4.375 0v13h2.875a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Z',
 }
 
-export default function Dashboard({ tasks, projects, members, onlineIds, stats, onToggleMobileSidebar }) {
+export default function Dashboard({ tasks, projects, members, onlineIds, stats, onToggleMobileSidebar, userId }) {
   const { t } = useTranslation()
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
 
+  const myTasks = useMemo(() => tasks.filter((t) => t.assignee === userId), [tasks, userId])
+  const myStats = useMemo(() => stats.filter((t) => t.assignee === userId), [stats, userId])
+
   const counts = useMemo(() => {
     let todo = 0, doing = 0, done = 0
-    for (const t of tasks) {
+    for (const t of myTasks) {
       if (t.status === 'todo') todo++
       else if (t.status === 'doing') doing++
       else if (t.status === 'done') done++
     }
-    const total = tasks.length
-    const overdue = tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date < today).length
+    const total = myTasks.length
+    const overdue = myTasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date < today).length
     return { todo, doing, done, total, overdue, pct: total ? Math.round((done / total) * 100) : 0 }
-  }, [tasks, today])
+  }, [myTasks, today])
 
   const onlineCount = useMemo(() => onlineIds?.size ?? 0, [onlineIds])
   const activeProjects = useMemo(() => projects?.filter((p) => p.status === 'active') ?? [], [projects])
 
-  const topContributors = useMemo(() => {
-    const map = {}
-    for (const t of stats) {
-      if (t.assignee) {
-        const id = t.assignee
-        if (!map[id]) map[id] = { count: 0, done: 0, name: '' }
-        map[id].count++
-        if (t.status === 'done') map[id].done++
-      }
-    }
-    const memberMap = {}
-    for (const m of members) memberMap[m.id] = m.display_name || m.email
-    return Object.entries(map)
-      .map(([id, v]) => ({ id, ...v, name: memberMap[id] || id.slice(0, 8) }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
-  }, [stats, members])
-
   const recentTasks = useMemo(() =>
-    [...tasks].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 6),
-  [tasks])
+    [...myTasks].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 6),
+  [myTasks])
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 sm:p-6">
@@ -93,13 +78,13 @@ export default function Dashboard({ tasks, projects, members, onlineIds, stats, 
         </button>
         <div>
           <h1 className="text-lg font-bold">Dashboard</h1>
-          <p className="text-xs text-[var(--fg-muted)]">Overview of your workspace</p>
+          <p className="text-xs text-[var(--fg-muted)]">Your personal overview</p>
         </div>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard icon={ICONS.inbox} label="Total tasks" value={counts.total} color="var(--fg)" />
+        <StatCard icon={ICONS.inbox} label="My tasks" value={counts.total} color="var(--fg)" />
         <StatCard icon={ICONS.check} label="Completed" value={counts.done} color="var(--done)" />
         <StatCard icon={ICONS.doing} label="In progress" value={counts.doing} color="var(--doing)" />
         <StatCard icon={ICONS.alert} label="Overdue" value={counts.overdue} color="var(--danger)" />
@@ -156,33 +141,10 @@ export default function Dashboard({ tasks, projects, members, onlineIds, stats, 
         </div>
       </div>
 
-      {/* Top contributors */}
-      {topContributors.length > 0 && (
-        <div className={CARD}>
-          <p className="mb-3 text-sm font-semibold">Top contributors</p>
-          <div className="space-y-2">
-            {topContributors.map((c) => {
-              const barPct = counts.total ? (c.count / counts.total) * 100 : 0
-              return (
-                <div key={c.id}>
-                  <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="font-medium text-[var(--fg)]">{c.name}</span>
-                    <span className="text-[var(--fg-muted)]">{c.done}/{c.count} done</span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--glass-border)]">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${barPct}%`, background: 'var(--accent)' }} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Recent tasks */}
+      {/* My recent tasks */}
       {recentTasks.length > 0 && (
         <div className={CARD}>
-          <p className="mb-3 text-sm font-semibold">Recently created</p>
+          <p className="mb-3 text-sm font-semibold">My recent tasks</p>
           <div className="space-y-1.5">
             {recentTasks.map((t) => (
               <div key={t.id} className="flex items-center gap-3 rounded-md bg-[var(--surface-hover)] px-3 py-2 text-xs">
