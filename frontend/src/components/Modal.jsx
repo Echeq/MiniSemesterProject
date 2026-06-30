@@ -9,12 +9,12 @@ export default function Modal({ title, subtitle, onClose, children, maxWidth = '
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm animate-fade-in sm:items-center"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-2 backdrop-blur-sm animate-fade-in sm:items-center sm:p-6"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`glass-strong w-full max-w-full sm:${maxWidth} my-auto rounded-2xl p-6 animate-pop-in`}
+        className={`glass-strong w-full max-w-[calc(100vw-1rem)] rounded-2xl p-5 animate-pop-in sm:p-6 sm:${maxWidth}`}
       >
 
         <div className="mb-5 flex items-start justify-between gap-4">

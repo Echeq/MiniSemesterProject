@@ -32,6 +32,7 @@ export function useProjects() {
   }, [refetch])
 
   const updateProject = useCallback(async (id, fields) => {
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, ...fields } : p)))
     const { error } = await supabase
       .from('projects')
       .update(fields)

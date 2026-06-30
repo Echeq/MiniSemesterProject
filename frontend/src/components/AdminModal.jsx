@@ -57,7 +57,7 @@ export default function AdminModal({ session, onClose }) {
         <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs') || 'Logs'}</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
-      {tab === 'access' && <Access onApproved={(name) => setMsg(`✅ ${name} has been accepted, now a member.`)} />}
+      {tab === 'access' && <Access onApproved={(name) => setMsg(`✅ ${name} has been accepted, now a member.`)} onRequestResolved={() => setPendingCount((c) => Math.max(0, c - 1))} />}
       {tab === 'emailChanges' && <EmailChanges />}
       {tab === 'data' && <DataPanel />}
       {tab === 'logs' && <LogViewer />}
@@ -181,7 +181,7 @@ function Members({ session }) {
   )
 }
 
-function Access({ onApproved }) {
+function Access({ onApproved, onRequestResolved }) {
   const { t } = useTranslation()
   const { members, setRole } = useMembers()
   const [query, setQuery] = useState('')
@@ -234,6 +234,7 @@ function Access({ onApproved }) {
       await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
       await fetchRequests()
       onApproved?.(r.profile?.display_name || 'User')
+      onRequestResolved?.()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -246,6 +247,7 @@ function Access({ onApproved }) {
     try {
       await supabase.from('join_requests').update({ status: 'resolved' }).eq('id', r.id)
       await fetchRequests()
+      onRequestResolved?.()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -341,7 +343,7 @@ function EmailChanges() {
     try {
       const { error: e } = await supabase.rpc('approve_email_change', { request_id: r.id })
       if (e) throw e
-      setMsg(`Approved: ${r.new_email}`)
+      setMsg(`✅ La petición ha sido aceptada: ${r.new_email}`)
       await fetchRequests()
     } catch (err) {
       setError(err.message)
@@ -368,7 +370,7 @@ function EmailChanges() {
 
   return (
     <div>
-      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)' }}>{msg}</p>}
+      {msg && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--done)', borderColor: 'var(--done)', background: 'color-mix(in srgb, var(--done) 12%, transparent)' }}>{msg}</p>}
       {error && <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>{error}</p>}
       {requests.length === 0 ? (
         <p className="py-6 text-center text-sm text-[var(--fg-muted)]">No pending email change requests.</p>

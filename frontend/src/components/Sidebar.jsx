@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import Avatar from './Avatar'
 import EmptyState from './EmptyState'
@@ -29,6 +30,10 @@ const ICONS = {
   clock: 'M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13m.75 3.25v3.19l2.03 2.03a.75.75 0 1 1-1.06 1.06L7.22 9.78a.75.75 0 0 1-.22-.53V4.75a.75.75 0 0 1 1.5 0',
   alert: 'M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0M9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0',
   gear: 'M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z',
+  heart: 'M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314',
+  star: 'M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25',
+  rocket: 'M14.064 0h.186C15.216 0 16 .784 16 1.75v.186a8.75 8.75 0 0 1-1.538 4.95l-.286.408a8.75 8.75 0 0 1-3.696 2.77l-1.766.655-.353 1.06a.75.75 0 0 1-1.01.453l-1.74-.87-.87-1.74a.75.75 0 0 1 .454-1.01l1.059-.353.655-1.766A8.75 8.75 0 0 1 8.704 1.32l.408-.286A8.75 8.75 0 0 1 14.064 0M3 12a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2.5.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0',
+  bookmark: 'M4 0h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 12.583l-5.223 3.333A.5.5 0 0 1 2 15.5V2a2 2 0 0 1 2-2',
 }
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -88,6 +93,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
 
   const onlineMembers = useMemo(
     () => members
+      .filter((m) => m.role !== 'unknown')
       .map((m) => ({ ...m, online: onlineIds?.has(m.id), editing: editingNames.has(m.display_name) }))
       .sort((a, b) => Number(b.online) - Number(a.online)),
     [members, onlineIds, editingNames],
@@ -149,7 +155,11 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
               <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 ${scope?.id === p.id ? 'active' : ''}`}>
 
                     <span className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: p.color || '#6366f1' }} />
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded" style={{ background: p.color || '#6366f1' }}>
+                        <svg className="h-3 w-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+                          <path d={ICONS[p.icon] || ICONS.project} />
+                        </svg>
+                      </span>
                       <span className="truncate">{p.name}</span>
                     </span>
                   </button>
@@ -210,7 +220,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
             </>
           )}
 
-          {members.length > 0 && (
+          {onlineMembers.length > 0 && (
             <>
               <div className="flex items-center justify-between px-2 pb-1 pt-3">
                 <span className="text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)]">{t('sidebar.team')}</span>
@@ -263,18 +273,20 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
         </>
       )}
 
-      {showCreate && (
+      {showCreate && createPortal(
         <CreateProjectModal
           onCreate={(fields) => projectActions.create(fields)}
           onClose={() => setShowCreate(false)}
-        />
+        />,
+        document.body
       )}
-      {settingsProject && (
+      {settingsProject && createPortal(
         <ProjectSettingsModal
           project={settingsProject}
-          onUpdate={(id, fields) => projectActions.update(id, fields)}
+          onUpdate={async (id, fields) => { await projectActions.update(id, fields) }}
           onClose={() => setSettingsProject(null)}
-        />
+        />,
+        document.body
       )}
     </>
   )

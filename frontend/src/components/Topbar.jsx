@@ -1,8 +1,10 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
 import ExportMenu from './ExportMenu'
+import ProjectSettingsModal from './ProjectSettingsModal'
 
 const VIEWS = [
   {
@@ -49,19 +51,27 @@ const Topbar = memo(function Topbar({
   onOpenAccount,
   onOpenAdmin,
   onToggleMobileSidebar,
+  project,
+  onUpdateProject,
 }) {
   const { t } = useTranslation()
+  const [showProjectMenu, setShowProjectMenu] = useState(false)
+  const [projectMenuTab, setProjectMenuTab] = useState(null)
+
+  if (projectMenuTab) {
+    return (
+      <ProjectSettingsModal
+        project={project}
+        initialTab={projectMenuTab}
+        onUpdate={async (id, fields) => { await onUpdateProject?.(id, fields); setProjectMenuTab(null) }}
+        onClose={() => setProjectMenuTab(null)}
+      />
+    )
+  }
 
   return (
     <header className="relative z-10 flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
-        <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
-        {archived && (
-          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)] max-sm:hidden">archived</span>
-        )}
-        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] max-sm:hidden">
-          {taskCount}
-        </span>
         <button
           type="button"
           aria-label="Open sidebar"
@@ -71,6 +81,70 @@ const Topbar = memo(function Topbar({
         >
           <span aria-hidden="true">☰</span>
         </button>
+        {project ? (
+          <div className="relative">
+            <button onClick={() => setShowProjectMenu((s) => !s)} className="flex items-center gap-1.5 truncate rounded-lg border border-[var(--glass-border)] px-2.5 py-1.5 text-base font-semibold transition hover:bg-[var(--surface-hover)]">
+              <span className="truncate">{title}</span>
+              <svg className="h-3.5 w-3.5 flex-shrink-0 text-[var(--fg-subtle)]" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427" />
+              </svg>
+            </button>
+            {showProjectMenu && (
+              <>
+                <div className="fixed inset-0 z-30 sm:hidden" onClick={() => setShowProjectMenu(false)} />
+
+                {/* Desktop: dropdown below button */}
+                <div className="hidden sm:block absolute left-0 top-full z-40 mt-1.5 w-52 animate-pop-in rounded-xl border border-[var(--glass-border)] bg-[var(--bg)] p-2 shadow-xl">
+                  <p className="mb-2 truncate px-1 text-sm font-semibold">{project.name}</p>
+                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                    </span>
+                    Edit Project
+                  </button>
+                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
+                    </span>
+                    Add Member
+                  </button>
+                </div>
+
+                {/* Mobile: bottom sheet — portaled to body to avoid stacking context */}
+                {createPortal(
+                  <div className="block sm:hidden fixed inset-x-4 bottom-6 z-50 animate-slide-up rounded-2xl bg-[var(--bg)] p-5 shadow-xl">
+                  <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--glass-border)]" />
+                  <p className="mb-4 text-center text-sm font-semibold">{project.name}</p>
+                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('settings') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z" /></svg>
+                    </span>
+                    Edit Project
+                  </button>
+                  <button onClick={() => { setShowProjectMenu(false); setProjectMenuTab('members') }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--fg)] transition hover:bg-[var(--surface-hover)]">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--surface-hover)]">
+                      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M10.561 8.073a6 6 0 0 1 3.432 5.142.75.75 0 1 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6 6 0 0 1 3.431-5.142 4 4 0 1 1 5.123 0ZM8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12.25 3a.75.75 0 0 1 .75.75V5h1.25a.75.75 0 0 1 0 1.5H13v1.25a.75.75 0 0 1-1.5 0V6.5h-1.25a.75.75 0 0 1 0-1.5H11.5V3.75a.75.75 0 0 1 .75-.75Z" /></svg>
+                    </span>
+                    Add Member
+                  </button>
+                  <button onClick={() => setShowProjectMenu(false)} className="btn btn-default mt-4 w-full justify-center">
+                    Cancel
+                  </button>
+                  </div>,
+                  document.body
+                )}
+              </>
+            )}
+          </div>
+        ) : (
+          <h1 className="truncate text-base font-semibold">{title}</h1>
+        )}
+        {archived && (
+          <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)] max-sm:hidden">archived</span>
+        )}
+        <span className="rounded-full bg-[var(--surface-hover)] px-2 py-0.5 text-xs font-medium text-[var(--fg-muted)] max-sm:hidden">
+          {taskCount}
+        </span>
       </div>
 
       <div className="flex items-center gap-2.5">

@@ -263,6 +263,8 @@ function BoardPage({ session, theme, toggleTheme }) {
             isAdmin={isAdmin}
             onOpenAccount={handleOpenAccount}
             onOpenAdmin={handleOpenAdmin}
+            project={isProject ? liveScope : null}
+            onUpdateProject={(id, fields) => projectActions.update(id, fields)}
           />
 
           {showFilters && (
@@ -279,7 +281,7 @@ function BoardPage({ session, theme, toggleTheme }) {
         )}
 
         {scope === '_dashboard' ? (
-          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} />
+          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} onToggleMobileSidebar={() => setMobileOpen((o) => !o)} />
         ) : (
           <>
             {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
@@ -380,7 +382,7 @@ export default function App() {
   }
 
   if (session && profile?.role === 'unknown') {
-    return <UnknownGate />
+    return <UnknownGate session={session} />
   }
 
   return (
@@ -391,7 +393,27 @@ export default function App() {
   )
 }
 
-function UnknownGate() {
+function UnknownGate({ session }) {
+  const [state, setState] = useState('loading')
+
+  useEffect(() => {
+    supabase
+      .from('join_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_id', session.user.id)
+      .neq('status', 'resolved')
+      .then(({ count }) => setState(count > 0 ? 'sent' : 'idle'))
+  }, [session.user.id])
+
+  async function requestAccess() {
+    const { error } = await supabase.from('join_requests').insert({
+      requester_id: session.user.id,
+      admin_email: session.user.email,
+      status: 'pending',
+    })
+    if (!error) setState('sent')
+  }
+
   return (
     <div style={{
       height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -403,13 +425,25 @@ function UnknownGate() {
           background: '#1c1f26', display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <svg width={32} height={32} viewBox="0 0 16 16" fill="#6366f1">
-            <path d="M7.467.133a1.75 1.75 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.7 1.7 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Z" />
+            <path d="M7.467.133a1.75 1.75 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.813-5.032 3.855a1.7 1.7 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Z" />
           </svg>
         </div>
-        <h1 style={{ fontSize: 20, marginTop: 20, marginBottom: 8 }}>Access pending</h1>
+        <h1 style={{ fontSize: 20, marginTop: 20, marginBottom: 8 }}>Welcome to PivotPoint! 🎉</h1>
         <p style={{ fontSize: 14, color: '#8b949e', margin: 0, lineHeight: 1.5 }}>
-          Your account is waiting for admin approval.
+          Your account is currently under review. Please contact the administrator to start using the platform.
         </p>
+        {state === 'sent' ? (
+          <p style={{ fontSize: 14, color: '#3fb950', marginTop: 20, fontWeight: 500 }}>
+            Request sent! An admin will review it shortly.
+          </p>
+        ) : (
+          <button onClick={requestAccess} style={{
+            marginTop: 20, padding: '8px 20px', fontSize: 14, fontWeight: 500,
+            border: 'none', borderRadius: 8, cursor: 'pointer', background: '#6366f1', color: '#fff'
+          }}>
+            Request Access
+          </button>
+        )}
       </div>
     </div>
   )

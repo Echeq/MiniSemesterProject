@@ -304,6 +304,12 @@ body {
 }
 .animate-fade-in { animation: fade-in 0.15s ease both; }
 .animate-pop-in { animation: pop-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-up { animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* Sidebar toggle: hidden on desktop (768px+), visible on mobile.
    Uses !important to override .btn { display: inline-flex } from the same stylesheet. */

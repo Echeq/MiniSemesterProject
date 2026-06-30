@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { STATUSES } from '../hooks/useBoard'
 import Modal from './Modal'
@@ -39,6 +39,7 @@ export default function TaskModal({
   const [priority, setPriority] = useState(task?.priority ?? '')
   const [assignee, setAssignee] = useState(task?.assignee ?? '')
   const [projectId, setProjectId] = useState(task?.project_id ?? defaultProjectId ?? '')
+  const [projectMembers, setProjectMembers] = useState([])
   const [selectedLabels, setSelectedLabels] = useState(task?.labels?.map((l) => l.id) ?? [])
   const [blockedBy, setBlockedBy] = useState(task?.depends_on?.map((d) => d.id) ?? [])
   const [error, setError] = useState(null)
@@ -49,6 +50,20 @@ export default function TaskModal({
 
   const availableLabels = labels.filter((l) => l.project_id === projectId || (!projectId && !l.project_id))
   const projectTasks = allTasks.filter((t) => t.id !== task?.id && (t.project_id === projectId || (!projectId && !t.project_id)))
+
+  const assignableMembers = useMemo(() => {
+    if (!projectId) return members
+    return projectMembers
+  }, [projectId, members, projectMembers])
+
+  useEffect(() => {
+    if (!projectId) { setProjectMembers([]); return }
+    supabase
+      .from('project_members')
+      .select('user_id, profile:profiles!project_members_user_id_fkey(display_name, avatar_url)')
+      .eq('project_id', projectId)
+      .then(({ data }) => setProjectMembers(data?.map((m) => ({ id: m.user_id, display_name: m.profile?.display_name, avatar_url: m.profile?.avatar_url })) ?? []))
+  }, [projectId])
 
   function toggleLabel(labelId) {
     setSelectedLabels((prev) =>
@@ -176,7 +191,7 @@ export default function TaskModal({
             <span className={labelCls}>{t('task.assignee')}</span>
             <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="input">
               <option value="">{t('task.unassigned')}</option>
-              {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
+              {assignableMembers.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
             </select>
           </label>
         </div>
