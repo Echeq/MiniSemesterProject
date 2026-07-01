@@ -63,13 +63,13 @@ const Topbar = memo(function Topbar({
     <header className="relative flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
         <h1
-          className={`truncate text-base font-semibold max-sm:hidden ${project ? 'cursor-pointer rounded-lg px-1.5 py-0.5 transition hover:bg-[var(--surface-hover)]' : ''}`}
-          onClick={project ? () => setShowMenu((s) => !s) : undefined}
-          role={project ? 'button' : undefined}
-          tabIndex={project ? 0 : undefined}
-          onKeyDown={project ? (e) => e.key === 'Enter' && setShowMenu((s) => !s) : undefined}
+          className={`truncate text-base font-semibold max-sm:hidden ${project && isAdmin ? 'cursor-pointer rounded-lg px-1.5 py-0.5 transition hover:bg-[var(--surface-hover)]' : ''}`}
+          onClick={project && isAdmin ? () => setShowMenu((s) => !s) : undefined}
+          role={project && isAdmin ? 'button' : undefined}
+          tabIndex={project && isAdmin ? 0 : undefined}
+          onKeyDown={project && isAdmin ? (e) => e.key === 'Enter' && setShowMenu((s) => !s) : undefined}
         >{title}</h1>
-        {showMenu && project && (
+        {showMenu && project && isAdmin && (
           <ProjectMenu
             project={project}
             isAdmin={isAdmin}

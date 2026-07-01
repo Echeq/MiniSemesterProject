@@ -245,7 +245,7 @@ export default function Board({
                     <Column
                       status={status}
                       tasks={byStatus[status]}
-                      onTaskClick={onTaskClick}
+                      onTaskClick={isAdmin ? onTaskClick : undefined}
                       onAddTask={onAddTask}
                       editors={editors}
                     />
@@ -271,14 +271,16 @@ export default function Board({
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--border)]" />
             <p className="mb-3 text-sm font-semibold truncate">{mobileMenuTask.title}</p>
-            <div className="flex flex-col gap-2">
+            {isAdmin && (
               <button
                 type="button"
                 onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
                 className="btn btn-primary w-full justify-center"
               >
-                {isAdmin ? t('task.edit') : t('task.view')}
+                {t('task.edit')}
               </button>
+            )}
+            <div className={`flex flex-col gap-2 ${isAdmin ? '' : 'mt-0'}`}>
               {STATUSES.filter((s) => s !== mobileMenuTask.status).map((s) => (
                 <button
                   key={s}
@@ -293,7 +295,7 @@ export default function Board({
                   }}
                   className="btn btn-default w-full justify-center"
                 >
-                  {t('board.moveTo')} {t(STATUS_LABEL_KEYS[s])}
+                  {t('task.moveTo')} {t(STATUS_LABEL_KEYS[s])}
                 </button>
               ))}
               <button
