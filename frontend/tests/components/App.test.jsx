@@ -58,7 +58,8 @@ vi.mock('../../src/hooks/useBoard', () => ({
   }),
 }))
 
-const mockUseProfile = vi.fn(() => ({
+const mockUseProfile = vi.fn()
+mockUseProfile.mockReturnValue({
   profile: null,
   loading: true,
   updateProfile: vi.fn(),
@@ -66,7 +67,7 @@ const mockUseProfile = vi.fn(() => ({
   changePassword: vi.fn(),
   updateEmail: vi.fn(),
   deleteAccount: vi.fn(),
-}))
+})
 vi.mock('../../src/hooks/useProfile', () => ({
   useProfile: mockUseProfile,
 }))
@@ -85,6 +86,13 @@ describe('App', () => {
 
   it('renders AuthForm when no session', async () => {
     mockSupabase.auth.getSession.mockResolvedValue({ data: { session: null }, error: null })
+    mockSupabase.auth.onAuthStateChange.mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    })
+    mockUseProfile.mockReturnValue({
+      profile: null,
+      loading: false,
+    })
     const { default: App } = await import('../../src/App')
     render(<App />)
     await waitFor(() => {

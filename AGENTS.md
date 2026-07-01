@@ -27,6 +27,8 @@ Supabase CLI (from root or `supabase/`):
 | `supabase db reset` | Run all migrations + seed |
 | `supabase db seed` | Run seed (requires auth user) |
 
+Deploy scripts at `scripts/deploy-supabase.{sh,ps1}` (interactive, prompts for project ref).
+
 **No npm scripts for lint or typecheck** (flat eslint config — run `npx eslint` if needed). CI at `.github/workflows/ci.yml`: tests + build on push/PR to `main`.
 
 ## Dead code — do NOT edit
@@ -39,27 +41,26 @@ Supabase CLI (from root or `supabase/`):
 
 - **Stack**: React 19 + Vite 8 + Tailwind 4 + @dnd-kit + supabase-js. Source is JSX (tsconfig is tooling-only typecheck).
 - **Backend**: Supabase only (auth, PostgREST, realtime, storage, presence). No custom server.
-- **DB source of truth**: `supabase/migrations/` (SQL). 19 migrations from `20260612100000` → `20260629000005`.
+- **DB source of truth**: `supabase/migrations/` (SQL). 29 migrations from `20260612100000` → `20260630120000`.
 - **Supabase MCP applies migrations remotely** — it does NOT write to `supabase/migrations/`. After MCP migrations, run `supabase db pull` locally or copy the SQL into a file to prevent drift.
 - **Entry**: `src/main.jsx` → `App.jsx`. App renders a setup hint when `supabaseClient.js` exports `null` (env vars missing).
 - **Root `package.json`** is a dependency stub (only `@supabase/supabase-js`). All real dependencies in `frontend/`. Install from `frontend/`.
 - **Root `package-lock.json`** is orphaned (gitignored).
-- **Supabase MCP** is pre-configured in `opencode.json` — agents can run SQL, deploy functions, etc.
+- **Supabase MCP** is pre-configured in `opencode.json` (remote mode) — agents can run SQL, deploy functions, etc.
 
 ### Key patterns
 
 - **`useBoard(projectId)`** accepts `'all'`, `null` (shared board, no project), or a project UUID.
 - **Smart views** are client-side filters: `view:mine` (assigned), `view:due` (≤7d), `view:overdue` (past due, not done).
-- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board, can submit join requests). First signup ever → admin. New signups default to `unknown` via `handle_new_user()` trigger. Admin promotes via `admin_set_role` RPC or Requests tab.
-- **Role system**: `admin` (full CRUD), `member` (read-only, own tasks), `unknown` (empty board + invite flow). First signup ever → admin.
+- **Role system**: `admin` (full CRUD), `member` (view tasks in projects + shared board; drag-and-drop only — cannot edit details), `unknown` (empty board, can submit join requests). First signup ever → admin. New signups default to `unknown` via `handle_new_user()` trigger. Admin promotes via `admin_set_role` RPC or Requests tab.
 - **Position system**: float8 `position`. `positionBetween()` at `frontend/src/hooks/useBoard.js:9`. Midpoint on reorder, `max + 1024` on insert. No re-indexing.
 - **`created_by` immutable** via column-level grants. Updatable on tasks: `title, description, status, due_date, position, assignee, project_id, priority`.
 - **DB constraints**: `title` 1-200, `description` ≤5000, `display_name` ≤100 (truncated by trigger).
-- **Priority**: P0 (critical) / P1 (high) / P2 (medium) / P3 (low). Nullable text with DB `CHECK` constraint. Filtered in `FilterPanel`, displayed in `TaskCard`.
+- **Priority**: P0 (critical) / P1 (high) / P2 (medium) / P3 (low). Nullable text with DB `CHECK` constraint. Added out-of-band, captured in migration `20260630120000`. Filtered in `FilterPanel`, displayed in `TaskCard`.
 - **Labels + dependencies**: `labels`, `task_labels`, `task_dependencies` tables. `useBoard` provides `addLabel`, `removeLabel`, `addDependency`, `removeDependency`. Moving a task to `done` calls `check_blocked_tasks` RPC — throws if blockers remain. `add_task_dependency` RPC enforces no self-dependency; `check_circular_dependency` trigger prevents cycles.
 - **Project members**: `project_members` table (project_id, user_id, role). Creator auto-added as admin via trigger. RLS: members only see their projects; admins see all. RPCs `add_project_member` and `remove_project_member` for management.
-- **`notifications` table**: Created by MCP, captured in migration `20260627000001`. Columns: `user_id`, `type` (due_soon, overdue, assignment, mention), `message`, `task_id`, `read`. RPCs `get_notifications` and trigger `on_task_due_notification`.
-- **RLS**: Admins see all tasks; members see assigned only; unknown see none.
+- **`notifications` table**: Columns: `user_id`, `type` (due_soon, overdue, assignment, mention), `message`, `task_id`, `read`. RPCs `get_notifications` and trigger `on_task_due_notification`.
+- **RLS tasks**: admins see all; members see tasks in projects they belong to + shared board (null project_id). Members may UPDATE only status/position (drag-and-drop) enforced by `enforce_member_task_edit` trigger. DELETE is admin-only.
 - **RPCs**: `admin_set_role`, `set_project_status`, `delete_own_account`, `delete_account()` (legacy wrapper), `is_admin()`, `restore_from_backup(data jsonb)`, `log_activity`, `get_logs`, `get_profile_preferences`, `set_profile_preferences`, `check_blocked_tasks`, `add_task_dependency`, `export_all_data`, `get_filtered_tasks`, `get_notifications`, `add_project_member`, `remove_project_member`.
 - **Realtime**: `supabase.channel('board')` subscribes to `tasks` table changes. Re-fetches row with assignee join on INSERT/UPDATE before merging.
 - **Presence**: `usePresence(session, profile)` tracks online users via Supabase Realtime presence.
@@ -78,6 +79,7 @@ Supabase CLI (from root or `supabase/`):
 - `supabase/seed.sql` is idempotent but requires at least one auth user.
 - Vitest timeout: 15s (`frontend/vitest.config.js`). Globals: true (vi, describe, it, expect available without import).
 - `VITE_API_BASE_URL` is unused (legacy NestJS env var). Ignore it.
+- **Playwright** is in devDependencies but no test files exist — unused dependency.
 
 ## Test conventions
 

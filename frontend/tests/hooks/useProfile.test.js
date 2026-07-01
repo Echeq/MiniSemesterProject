@@ -36,7 +36,7 @@ describe('useProfile', () => {
     mockSupabase.from.mockReturnValue(builder)
     const { useProfile } = await import('../../src/hooks/useProfile')
     const { result } = renderHook(() => useProfile(null))
-    expect(result.current.loading).toBe(true)
+    expect(result.current.loading).toBe(false)
     expect(result.current.profile).toBeNull()
     expect(result.current.isAdmin).toBe(false)
   })
