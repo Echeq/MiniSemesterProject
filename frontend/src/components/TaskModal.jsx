@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { supabase } from '../api/supabaseClient'
 import { STATUSES } from '../hooks/useBoard'
 import Modal from './Modal'
 import ConfirmModal from './ConfirmModal'
@@ -15,6 +16,7 @@ const PRIORITIES = [
 export default function TaskModal({
   task,
   members = [],
+  allMembers,
   projects = [],
   defaultProjectId = null,
   defaultStatus = 'todo',
@@ -40,6 +42,25 @@ export default function TaskModal({
   const [priority, setPriority] = useState(task?.priority ?? '')
   const [assignee, setAssignee] = useState(task?.assignee ?? '')
   const [projectId, setProjectId] = useState(task?.project_id ?? defaultProjectId ?? '')
+  const [taskMembers, setTaskMembers] = useState(members)
+
+  useEffect(() => {
+    if (projectId) {
+      supabase
+        .from('project_members')
+        .select('user_id, profile:profiles!project_members_user_id_fkey(id, display_name, avatar_url)')
+        .eq('project_id', projectId)
+        .then(({ data }) => {
+          setTaskMembers((data || []).map((m) => ({
+            id: m.profile?.id || m.user_id,
+            display_name: m.profile?.display_name || 'Unknown',
+            avatar_url: m.profile?.avatar_url,
+          })))
+        })
+    } else {
+      setTaskMembers(allMembers || members)
+    }
+  }, [projectId, allMembers])
   const [selectedLabels, setSelectedLabels] = useState(task?.labels?.map((l) => l.id) ?? [])
   const [blockedBy, setBlockedBy] = useState(task?.depends_on?.map((d) => d.id) ?? [])
   const [error, setError] = useState(null)
@@ -185,7 +206,7 @@ export default function TaskModal({
             <span className={labelCls}>{t('task.assignee')}</span>
             <select value={assignee} disabled={readOnly} onChange={(e) => setAssignee(e.target.value)} className="input">
               <option value="">{t('task.unassigned')}</option>
-              {members.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
+              {taskMembers.map((m) => <option key={m.id} value={m.id}>{m.display_name}</option>)}
             </select>
           </label>
         </div>

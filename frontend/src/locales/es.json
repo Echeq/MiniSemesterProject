@@ -247,7 +247,11 @@
     "icon": "Ícono",
     "cancel": "Cancelar",
     "save": "Guardar",
-    "create": "Crear proyecto"
+    "create": "Crear proyecto",
+    "menuEdit": "Editar proyecto",
+    "menuAddMember": "Agregar miembro",
+    "menuCancel": "Cancelar",
+    "noDescription": "Sin descripción"
   },
   "log": {
     "taskCreated": "Tarea creada",

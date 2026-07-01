@@ -247,7 +247,11 @@
     "icon": "Icon",
     "cancel": "Cancel",
     "save": "Save",
-    "create": "Create project"
+    "create": "Create project",
+    "menuEdit": "Edit project",
+    "menuAddMember": "Add member",
+    "menuCancel": "Cancel",
+    "noDescription": "No description"
   },
   "log": {
     "taskCreated": "Created task",

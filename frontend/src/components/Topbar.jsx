@@ -1,9 +1,10 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
 import ExportMenu from './ExportMenu'
 import NotificationBell from './NotificationBell'
+import ProjectMenu from './ProjectMenu'
 
 const VIEWS = [
   {
@@ -51,13 +52,32 @@ const Topbar = memo(function Topbar({
   onOpenAdmin,
   onToggleMobileSidebar,
   onMenuOpen,
+  project,
+  onEditProject,
+  onAddMember,
 }) {
   const { t } = useTranslation()
+  const [showMenu, setShowMenu] = useState(false)
 
   return (
     <header className="relative flex items-center justify-between gap-3 border-b border-[var(--glass-border)] bg-[var(--glass)] px-4 py-3 backdrop-blur-xl backdrop-saturate-150 sm:px-6">
       <div className="flex min-w-0 items-center gap-2.5">
-        <h1 className="truncate text-base font-semibold max-sm:hidden">{title}</h1>
+        <h1
+          className={`truncate text-base font-semibold max-sm:hidden ${project ? 'cursor-pointer rounded-lg px-1.5 py-0.5 transition hover:bg-[var(--surface-hover)]' : ''}`}
+          onClick={project ? () => setShowMenu((s) => !s) : undefined}
+          role={project ? 'button' : undefined}
+          tabIndex={project ? 0 : undefined}
+          onKeyDown={project ? (e) => e.key === 'Enter' && setShowMenu((s) => !s) : undefined}
+        >{title}</h1>
+        {showMenu && project && (
+          <ProjectMenu
+            project={project}
+            isAdmin={isAdmin}
+            onEditProject={onEditProject}
+            onAddMember={onAddMember}
+            onClose={() => setShowMenu(false)}
+          />
+        )}
         {archived && (
           <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--fg-muted)] max-sm:hidden">archived</span>
         )}

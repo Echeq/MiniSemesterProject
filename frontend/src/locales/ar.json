@@ -247,7 +247,11 @@
     "icon": "الأيقونة",
     "cancel": "إلغاء",
     "save": "حفظ",
-    "create": "إنشاء مشروع"
+    "create": "إنشاء مشروع",
+    "menuEdit": "تعديل المشروع",
+    "menuAddMember": "إضافة عضو",
+    "menuCancel": "إلغاء",
+    "noDescription": "لا يوجد وصف"
   },
   "log": {
     "taskCreated": "تم إنشاء المهمة",

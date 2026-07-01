@@ -247,7 +247,11 @@
     "icon": "图标",
     "cancel": "取消",
     "save": "保存",
-    "create": "创建项目"
+    "create": "创建项目",
+    "menuEdit": "编辑项目",
+    "menuAddMember": "添加成员",
+    "menuCancel": "取消",
+    "noDescription": "暂无描述"
   },
   "log": {
     "taskCreated": "已创建任务",

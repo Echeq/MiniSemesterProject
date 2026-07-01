@@ -14,9 +14,9 @@ const PRESET_ICONS = [
   { key: 'bookmark', path: 'M4 0h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 12.583l-5.223 3.333A.5.5 0 0 1 2 15.5V2a2 2 0 0 1 2-2' },
 ]
 
-export default function ProjectSettingsModal({ project, onUpdate, onClose }) {
+export default function ProjectSettingsModal({ project, onUpdate, onClose, initialTab = 'settings' }) {
   const { t } = useTranslation()
-  const [tab, setTab] = useState('settings')
+  const [tab, setTab] = useState(initialTab)
   const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description || '')
   const [color, setColor] = useState(project.color || '#6366f1')

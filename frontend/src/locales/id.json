@@ -247,7 +247,11 @@
     "icon": "Ikon",
     "cancel": "Batal",
     "save": "Simpan",
-    "create": "Buat proyek"
+    "create": "Buat proyek",
+    "menuEdit": "Edit proyek",
+    "menuAddMember": "Tambah anggota",
+    "menuCancel": "Batal",
+    "noDescription": "Tidak ada deskripsi"
   },
   "log": {
     "taskCreated": "Tugas dibuat",

@@ -27,6 +27,7 @@ const AdminModal = lazy(() => import('./components/AdminModal'))
 const LabelManager = lazy(() => import('./components/LabelManager'))
 const GanttView = lazy(() => import('./components/GanttView'))
 const DataSphere = lazy(() => import('./components/DataSphere'))
+const ProjectSettingsModal = lazy(() => import('./components/ProjectSettingsModal'))
 
 function MissingEnv() {
   return (
@@ -110,6 +111,28 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const { labels } = useLabels(isProject ? scope.id : null)
 
+  const [settingsProject, setSettingsProject] = useState(null)
+  const [settingsProjectTab, setSettingsProjectTab] = useState('settings')
+
+  const [projectMembers, setProjectMembers] = useState(members)
+  useEffect(() => {
+    if (isProject && projectId !== 'all') {
+      supabase
+        .from('project_members')
+        .select('user_id, role, profile:profiles!project_members_user_id_fkey(id, display_name, avatar_url)')
+        .eq('project_id', projectId)
+        .then(({ data }) => {
+          setProjectMembers((data || []).map((m) => ({
+            id: m.profile?.id || m.user_id,
+            display_name: m.profile?.display_name || 'Unknown',
+            avatar_url: m.profile?.avatar_url,
+          })))
+        })
+    } else {
+      setProjectMembers(members)
+    }
+  }, [isProject, projectId, members])
+
   const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
 
   const handleNewTask = useCallback(() => setModal('new'), [])
@@ -159,6 +182,16 @@ function BoardPage({ session, theme, toggleTheme }) {
 
 
   const handleCloseLabelManager = useCallback(() => setShowLabelManager(false), [])
+
+  const handleEditProject = useCallback((project) => {
+    setSettingsProjectTab('settings')
+    setSettingsProject(project)
+  }, [])
+
+  const handleAddMember = useCallback((project) => {
+    setSettingsProjectTab('members')
+    setSettingsProject(project)
+  }, [])
   const handleOpenAccount = useCallback(() => setPanel('account'), [])
   const handleOpenAdmin = useCallback(() => setPanel('admin'), [])
   const handleCloseModal = useCallback(() => { setModal(null); stopEditing() }, [stopEditing])
@@ -220,6 +253,7 @@ function BoardPage({ session, theme, toggleTheme }) {
   const validScope = isProject && !projects.some((p) => p.id === scope.id) ? 'all' : scope
   if (validScope !== scope) setScope(validScope)
   const liveScope = isProject ? projects.find((p) => p.id === scope.id) ?? scope : scope
+  const currentProject = isProject ? liveScope : null
 
   const defaultProjectId = isProject ? scope.id : null
   const VIEW_LABELS = { 'view:mine': t('sidebar.myTasks'), 'view:due': t('sidebar.dueSoon'), 'view:overdue': t('sidebar.overdue') }
@@ -279,6 +313,9 @@ function BoardPage({ session, theme, toggleTheme }) {
             onOpenAccount={handleOpenAccount}
             onOpenAdmin={handleOpenAdmin}
             onMenuOpen={handleMenuOpen}
+            project={currentProject}
+            onEditProject={handleEditProject}
+            onAddMember={handleAddMember}
           />
 
           {showFilters && (
@@ -338,7 +375,8 @@ function BoardPage({ session, theme, toggleTheme }) {
           <TaskModal
             task={modal === 'new' || modal?.defaultStatus ? null : modal}
             defaultStatus={modal?.defaultStatus}
-            members={members}
+            members={projectMembers}
+            allMembers={members}
             projects={projects}
             defaultProjectId={defaultProjectId}
             labels={labels}
@@ -375,6 +413,15 @@ function BoardPage({ session, theme, toggleTheme }) {
 
         {panel === 'admin' && isAdmin && (
           <AdminModal session={session} onClose={handleClosePanel} />
+        )}
+
+        {settingsProject && (
+          <ProjectSettingsModal
+            project={settingsProject}
+            initialTab={settingsProjectTab}
+            onUpdate={(id, fields) => updateProject(id, fields)}
+            onClose={() => setSettingsProject(null)}
+          />
         )}
       </Suspense>
     </div>
