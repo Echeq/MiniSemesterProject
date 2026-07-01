@@ -15,7 +15,7 @@ const TASK_TRANSLATIONS = {
   'task.project': 'Project', 'task.sharedBoard': 'Shared board', 'task.labels': 'Labels',
   'task.blockedBy': 'Blocked by', 'task.delete': 'Delete', 'task.deleteConfirm': 'Delete this task?',
   'task.cancel': 'Cancel', 'task.save': 'Save', 'task.create': 'Create', 'task.close': 'Close',
-  'task.readOnly': 'This task is read-only. Contact your admin for changes.',
+  'task.noPriority': 'None',
 }
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key) => TASK_TRANSLATIONS[key] ?? key }),
@@ -101,15 +101,16 @@ describe('TaskModal', () => {
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('t1'))
   })
 
-  it('is read-only for members: no save/delete, inputs disabled', async () => {
+  it('is read-only for members: detail card, no edit controls', async () => {
     const onUpdate = vi.fn()
     const TaskModal = (await import('../../src/components/TaskModal')).default
     render(<TaskModal task={{ id: 't1', title: 'Member view', description: '', due_date: null, status: 'todo', assignee: null, created_by: 'uid' }} members={[]} projects={[]} onCreate={vi.fn()} onUpdate={onUpdate} onDelete={vi.fn()} onClose={vi.fn()} isAdmin={false} />)
     await waitFor(() => expect(screen.getByText('Task details')).toBeInTheDocument())
-    expect(screen.getByText('This task is read-only. Contact your admin for changes.')).toBeInTheDocument()
+    expect(screen.getByText('Member view').tagName).toBe('H2')
+    expect(screen.getByText('Close')).toBeInTheDocument()
     expect(screen.queryByText('Save')).not.toBeInTheDocument()
     expect(screen.queryByText('Delete')).not.toBeInTheDocument()
-    expect(screen.getByLabelText('Title')).toBeDisabled()
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument()
   })
 
   it('displays error message', async () => {

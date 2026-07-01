@@ -245,7 +245,7 @@ export default function Board({
                     <Column
                       status={status}
                       tasks={byStatus[status]}
-                      onTaskClick={isAdmin ? onTaskClick : undefined}
+                      onTaskClick={onTaskClick}
                       onAddTask={onAddTask}
                       editors={editors}
                     />
@@ -271,13 +271,21 @@ export default function Board({
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--border)]" />
             <p className="mb-3 text-sm font-semibold truncate">{mobileMenuTask.title}</p>
-            {isAdmin && (
+            {isAdmin ? (
               <button
                 type="button"
                 onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
                 className="btn btn-primary w-full justify-center"
               >
                 {t('task.edit')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { onTaskClick(mobileMenuTask); setMobileMenuTask(null) }}
+                className="btn btn-primary w-full justify-center"
+              >
+                {t('task.details')}
               </button>
             )}
             <div className={`flex flex-col gap-2 ${isAdmin ? '' : 'mt-0'}`}>

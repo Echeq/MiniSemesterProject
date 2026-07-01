@@ -148,16 +148,72 @@ export default function TaskModal({
     }
   }
 
+  const priorityObj = PRIORITIES.find((p) => p.value === priority)
+  const assigneeName = assignee ? taskMembers.find((m) => m.id === assignee)?.display_name ?? 'Unknown' : null
+  const projectName = projectId ? projects.find((p) => p.id === projectId)?.name ?? 'Unknown' : null
+  const activeLabels = labels.filter((l) => selectedLabels.includes(l.id))
+  const blockingTasks = allTasks.filter((t) => blockedBy.includes(t.id))
+  const formattedDueDate = dueDate ? new Date(dueDate + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : null
+
   const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--fg)]'
 
   return (
     <Modal title={readOnly ? t('task.details') : editing ? t('task.edit') : t('task.new')} onClose={onClose}>
-      <form onSubmit={handleSubmit}>
-        {readOnly && (
-          <p className="mb-3 rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--fg-muted)', borderColor: 'var(--border)', background: 'var(--surface-hover)' }}>
-            {t('task.readOnly')}
-          </p>
-        )}
+      {readOnly ? (
+        <div className="flex flex-col gap-4 break-words">
+          <div className="flex items-start gap-3">
+            <h2 className="flex-1 text-base font-semibold text-[var(--fg)] leading-snug break-words">{title}</h2>
+            {priorityObj?.color && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: priorityObj.color, color: '#fff' }}>
+                {priorityObj.value}
+              </span>
+            )}
+          </div>
+
+          {description?.trim() && (
+            <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] p-3 text-sm text-[var(--fg-muted)] leading-relaxed whitespace-pre-wrap break-words max-h-[180px] overflow-y-auto">{description}</p>
+          )}
+
+          <div className="overflow-hidden rounded-lg border border-[var(--border)]">
+            <div className="flex items-center justify-between px-4 py-2.5"><span className="text-xs font-medium uppercase tracking-wide text-[var(--fg-muted)]">{t('task.status')}</span><span className="inline-flex items-center gap-1.5 text-sm"><span className="h-2 w-2 rounded-full" style={{ background: status === 'todo' ? '#6b7280' : status === 'doing' ? '#3b82f6' : '#22c55e' }} />{STATUS_LABELS[status]}</span></div>
+            <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2.5"><span className="text-xs font-medium uppercase tracking-wide text-[var(--fg-muted)] shrink-0">{t('task.dueDate')}</span><span className="text-sm break-words text-right">{formattedDueDate ?? '—'}</span></div>
+            <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2.5"><span className="text-xs font-medium uppercase tracking-wide text-[var(--fg-muted)] shrink-0">{t('task.assignee')}</span><span className="text-sm break-words text-right">{assigneeName ?? <span className="text-[var(--fg-muted)]">{t('task.unassigned')}</span>}</span></div>
+            <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2.5"><span className="text-xs font-medium uppercase tracking-wide text-[var(--fg-muted)] shrink-0">{t('task.project')}</span><span className="text-sm break-words text-right">{projectName ?? t('task.sharedBoard')}</span></div>
+            <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-2.5"><span className="text-xs font-medium uppercase tracking-wide text-[var(--fg-muted)] shrink-0">{t('task.priority')}</span>{priorityObj?.color ? <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0" style={{ background: priorityObj.color, color: '#fff' }}>{priorityObj.value}</span> : <span className="text-sm text-[var(--fg-muted)]">{t('task.noPriority')}</span>}</div>
+          </div>
+
+          {activeLabels.length > 0 && (
+            <div>
+              <span className={labelCls}>{t('task.labels')}</span>
+              <div className="flex flex-wrap gap-1.5">
+                {activeLabels.map((l) => (
+                  <span key={l.id} className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: l.color, color: '#fff' }}>{l.name}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {blockingTasks.length > 0 && (
+            <div>
+              <span className={labelCls}>{t('task.blockedBy')}</span>
+              <div className="flex flex-col gap-1">
+                {blockingTasks.map((t) => (
+                  <span key={t.id} className="flex items-center gap-2 text-sm text-[var(--fg-muted)]">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: 'var(--danger)' }} />
+                    {t.title}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-1">
+            <button type="button" onClick={onClose} className="btn btn-default">{t('task.close')}</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <form onSubmit={handleSubmit}>
         <label className="mb-3 block">
           <span className={labelCls}>{t('task.title')}</span>
           <input type="text" required maxLength={200} autoFocus={!readOnly} disabled={readOnly} value={title} onChange={(e) => setTitle(e.target.value)} className="input" placeholder={t('task.title')} />
@@ -288,6 +344,8 @@ export default function TaskModal({
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />
+      )}
+        </>
       )}
     </Modal>
   )

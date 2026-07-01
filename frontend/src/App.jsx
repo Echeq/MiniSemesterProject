@@ -171,7 +171,7 @@ function BoardPage({ session, theme, toggleTheme }) {
       const isMac = /mac/i.test(navigator.platform)
       const mod = isMac ? e.metaKey : e.ctrlKey
 
-      if (mod && key === 'n') {
+      if (mod && key === 'n' && isAdmin) {
         e.preventDefault()
         handleNewTask()
       }
@@ -184,7 +184,7 @@ function BoardPage({ session, theme, toggleTheme }) {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [handleNewTask])
+  }, [handleNewTask, isAdmin])
 
   const handleOpenLabelManager = useCallback(() => setShowLabelManager(true), [])
 
