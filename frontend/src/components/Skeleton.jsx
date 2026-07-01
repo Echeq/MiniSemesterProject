@@ -32,3 +32,49 @@ export function SidebarStatsSkeleton() {
     </div>
   )
 }
+
+export function DashboardSkeleton() {
+  const card = 'rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-4'
+  return (
+    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 sm:p-6 animate-pulse">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className={card}>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-[var(--surface-hover)]" />
+              <div className="flex flex-col gap-1.5">
+                <div className="h-6 w-12 rounded bg-[var(--surface-hover)]" />
+                <div className="h-3 w-16 rounded bg-[var(--surface-hover)]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className={card}>
+          <div className="mb-3 h-4 w-24 rounded bg-[var(--surface-hover)]" />
+          <div className="flex items-center gap-5">
+            <div className="h-20 w-20 rounded-full border-[6px] border-[var(--glass-border)]" />
+            <div className="space-y-1.5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-3 w-28 rounded bg-[var(--surface-hover)]" />
+              ))}
+              <div className="h-3 w-20 rounded bg-[var(--surface-hover)]" />
+            </div>
+          </div>
+        </div>
+        <div className={card}>
+          <div className="mb-3 h-4 w-16 rounded bg-[var(--surface-hover)]" />
+          <div className="h-3 w-48 rounded bg-[var(--surface-hover)]" />
+          <div className="mt-3 flex gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-7 w-7 rounded-full bg-[var(--surface-hover)]" />
+            ))}
+          </div>
+          <div className="mt-3 h-3 w-36 rounded bg-[var(--surface-hover)]" />
+        </div>
+      </div>
+      <div className="h-4" />
+    </div>
+  )
+}

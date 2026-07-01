@@ -45,7 +45,7 @@ export function useBoard(projectId = 'all') {
     query
       .order('position', { ascending: true })
       .then(({ data, error }) => {
-        if (error) setError(error.message)
+        if (error) { setError(error.message); setLoading(false) }
         else {
           setTasks(data)
           // Single-pass: seed max positions while iterating tasks
@@ -62,7 +62,6 @@ export function useBoard(projectId = 'all') {
             supabase.from('task_labels').select('task_id, label_id, label:labels(*)').in('task_id', ids),
             supabase.from('task_dependencies').select('task_id, depends_on_id').in('task_id', ids),
           ]).then(([labelsRes, depsRes]) => {
-            if (!labelsRes.data && !depsRes.data) return
             const labelMap = {}
             ;(labelsRes.data || []).forEach((tl) => {
               if (!labelMap[tl.task_id]) labelMap[tl.task_id] = []
@@ -79,9 +78,9 @@ export function useBoard(projectId = 'all') {
                 blocked_by: depCountMap[t.id] || 0,
               })),
             )
-          }).catch(() => {})
+            setLoading(false)
+          }).catch(() => { setLoading(false) })
         }
-        setLoading(false)
       })
   }, [projectId])
 

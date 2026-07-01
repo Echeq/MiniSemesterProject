@@ -17,7 +17,19 @@
     "newTask": "+ Tugas baru",
     "newTaskShort": "Baru",
     "member": "Anggota",
-    "guest": "Tamu"
+    "guest": "Guest",
+    "kanban": "Kanban",
+    "list": "List",
+    "gantt": "Gantt",
+    "view3d": "3D",
+    "viewSuffix": "view",
+    "showInsights": "Show insights",
+    "hideInsights": "Hide insights",
+    "toggleInsights": "Toggle insights",
+    "manageLabels": "Manage labels",
+    "openSidebar": "Open sidebar",
+    "archived": "archived",
+    "sidebar": "Sidebar"
   },
   "board": {
     "todo": "Harus dilakukan",
@@ -52,13 +64,25 @@
     "deleteTask": "Hapus tugas",
     "readOnly": "Tugas ini hanya baca. Hubungi admin Anda untuk perubahan.",
     "priority": "Prioritas",
-    "project": "Proyek",
-    "labels": "Label",
+    "project": "Project",
+    "labels": "Labels",
+    "priorityOptions": {
+      "none": "None",
+      "p0": "P0 Critical",
+      "p1": "P1 High",
+      "p2": "P2 Medium",
+      "p3": "P3 Low"
+    },
     "blockedBy": "Diblokir oleh",
     "blockedByCount": "Diblokir oleh {{count}}",
     "editing": "Mengedit…",
     "noPriority": "Tidak ada",
-    "sharedBoard": "Papan bersama"
+    "sharedBoard": "Papan bersama",
+    "blocked": " (blocked)",
+    "incompleteTasks": "{{count}} incomplete task � resolve dependencies first.",
+    "incompleteTasks_plural": "{{count}} incomplete tasks � resolve dependencies first.",
+    "deleteConfirmTitle": "Hapus tugas ini?",
+    "deleteConfirmMessage": "Tindakan ini tidak dapat dibatalkan."
   },
   "profile": {
     "title": "Pengaturan Profil",
@@ -136,9 +160,15 @@
     "switcher": "Bahasa"
   },
   "sidebar": {
-    "boards": "Papan",
+    "boards": "Boards",
+    "dashboard": "Dasbor",
     "allTasks": "Semua tugas",
     "sharedBoard": "Papan bersama",
+    "blocked": " (blocked)",
+    "incompleteTasks": "{{count}} incomplete task � resolve dependencies first.",
+    "incompleteTasks_plural": "{{count}} incomplete tasks � resolve dependencies first.",
+    "deleteConfirmTitle": "Delete this task?",
+    "deleteConfirmMessage": "This action cannot be undone.",
     "views": "Tampilan",
     "myTasks": "Tugas saya",
     "dueSoon": "Segera jatuh tempo",
@@ -159,7 +189,15 @@
     "archive": "Arsipkan",
     "delete": "Hapus",
     "restore": "Pulihkan",
-    "deleteProjectConfirm": "Hapus \"{{name}}\"? Tugas-tugasnya juga akan dihapus."
+    "deleteProjectConfirm": "Delete \"{{name}}\"? Its tasks are deleted too.",
+    "archiveConfirm": "Arsipkan \"{{name}}\"?",
+    "archiveDesc": "Proyek akan disembunyikan dari daftar aktif.",
+    "deleteDesc": "Tindakan ini tidak dapat dibatalkan.",
+    "purgeEnabled": "Hapus otomatis diaktifkan",
+    "confirmCancel": "Batal",
+    "viewInfo": "Lihat info",
+    "viewMembers": "Lihat semua {{count}} anggota ?",
+    "noMembers": "Tidak ada anggota."
   },
   "filter": {
     "columns": "Kolom",
@@ -237,7 +275,11 @@
   },
   "project": {
     "newTitle": "Proyek baru",
-    "settingsTitle": "Pengaturan proyek",
+    "settingsTitle": "Project settings",
+    "membersTab": "Members",
+    "settingsTab": "Settings",
+    "searchUser": "Search user to add�",
+    "noMembers": "No members.",
     "name": "Nama",
     "namePlaceholder": "Nama proyek",
     "description": "Deskripsi",
@@ -306,5 +348,42 @@
     "minutesAgo": "{{count}} mnt lalu",
     "hoursAgo": "{{count}} jam lalu",
     "daysAgo": "{{count}} hr lalu"
+  },
+  "dashboard": {
+    "myTasks": "Tugas saya",
+    "completed": "Selesai",
+    "inProgress": "Sedang dikerjakan",
+    "overdue": "Terlambat",
+    "completion": "Penyelesaian",
+    "todo": "Harus dikerjakan",
+    "doing": "Sedang dikerjakan",
+    "done": "Selesai",
+    "percentComplete": "% selesai",
+    "team": "Tim",
+    "onlineCount": "{{online}} daring",
+    "totalMembers": "{{total}} anggota total",
+    "activeProjects": "Proyek aktif: {{count}}",
+    "myRecentTasks": "Tugas terbaru saya"
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "deleteThis": "Hapus tugas ini?",
+    "cannotUndo": "Tindakan ini tidak dapat dibatalkan."
+  },
+  "error": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred. Please try refreshing the page.",
+    "tryAgain": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist or has been moved.",
+    "backToHome": "Back to home"
+  },
+  "theme": {
+    "switchToLight": "Switch to light",
+    "switchToDark": "Switch to dark",
+    "toggleTheme": "Toggle theme"
   }
 }

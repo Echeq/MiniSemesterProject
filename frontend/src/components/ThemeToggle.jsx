@@ -1,11 +1,14 @@
+import { useTranslation } from 'react-i18next'
+
 export default function ThemeToggle({ theme, onToggle }) {
+  const { t } = useTranslation()
   const dark = theme === 'dark'
   return (
     <button
       type="button"
       onClick={onToggle}
-      title={dark ? 'Switch to light' : 'Switch to dark'}
-      aria-label="Toggle theme"
+      title={dark ? t('theme.switchToLight') : t('theme.switchToDark')}
+      aria-label={t('theme.toggleTheme')}
       className="btn btn-default !px-2"
     >
       {dark ? (

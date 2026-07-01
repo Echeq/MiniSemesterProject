@@ -17,7 +17,19 @@
     "newTask": "+ 新任务",
     "newTaskShort": "新建",
     "member": "成员",
-    "guest": "访客"
+    "guest": "访客",
+    "kanban": "看板",
+    "list": "列表",
+    "gantt": "甘特图",
+    "view3d": "3D",
+    "viewSuffix": "视图",
+    "showInsights": "显示统计",
+    "hideInsights": "隐藏统计",
+    "toggleInsights": "切换统计",
+    "manageLabels": "管理标签",
+    "openSidebar": "打开侧边栏",
+    "archived": "已归档",
+    "sidebar": "侧边栏"
   },
   "board": {
     "todo": "待办",
@@ -54,11 +66,23 @@
     "priority": "优先级",
     "project": "项目",
     "labels": "标签",
+    "priorityOptions": {
+      "none": "无",
+      "p0": "P0 紧急",
+      "p1": "P1 高",
+      "p2": "P2 中",
+      "p3": "P3 低"
+    },
     "blockedBy": "被以下任务阻塞",
     "blockedByCount": "被 {{count}} 个任务阻塞",
     "editing": "编辑中…",
     "noPriority": "无",
-    "sharedBoard": "共享看板"
+    "sharedBoard": "共享看板",
+    "blocked": "（阻塞）",
+    "incompleteTasks": "{{count}} 个未完成任务 — 请先解决依赖关系。",
+    "incompleteTasks_plural": "{{count}} 个未完成任务 — 请先解决依赖关系。",
+    "deleteConfirmTitle": "删除此任务？",
+    "deleteConfirmMessage": "此操作无法撤销。"
   },
   "profile": {
     "title": "个人设置",
@@ -137,8 +161,11 @@
   },
   "sidebar": {
     "boards": "看板",
+    "dashboard": "仪表盘",
     "allTasks": "所有任务",
     "sharedBoard": "共享看板",
+    "incompleteTasks": "{{count}} incomplete task � resolve dependencies first.",
+    "incompleteTasks_plural": "{{count}} incomplete tasks � resolve dependencies first.",
     "views": "视图",
     "myTasks": "我的任务",
     "dueSoon": "即将到期",
@@ -159,7 +186,14 @@
     "archive": "归档",
     "delete": "删除",
     "restore": "恢复",
-    "deleteProjectConfirm": "删除「{{name}}」？其所有任务也将被删除。"
+    "deleteProjectConfirm": "Delete \"{{name}}\"? Its tasks are deleted too.",
+    "archiveConfirm": "归档「{{name}}」？",
+    "archiveDesc": "该项目将从活动列表中隐藏。",
+    "deleteDesc": "此操作无法撤销。",
+    "confirmCancel": "取消",
+    "viewInfo": "查看信息",
+    "viewMembers": "查看所有 {{count}} 名成员 →",
+    "noMembers": "暂无成员。"
   },
   "filter": {
     "columns": "列",
@@ -238,6 +272,10 @@
   "project": {
     "newTitle": "新项目",
     "settingsTitle": "项目设置",
+    "membersTab": "成员",
+    "settingsTab": "设置",
+    "searchUser": "搜索用户添加…",
+    "noMembers": "暂无成员。",
     "name": "名称",
     "namePlaceholder": "项目名称",
     "description": "描述",
@@ -306,5 +344,42 @@
     "minutesAgo": "{{count}} 分钟前",
     "hoursAgo": "{{count}} 小时前",
     "daysAgo": "{{count}} 天前"
+  },
+  "dashboard": {
+    "myTasks": "我的任务",
+    "completed": "已完成",
+    "inProgress": "进行中",
+    "overdue": "已逾期",
+    "completion": "完成度",
+    "todo": "待办",
+    "doing": "进行中",
+    "done": "已完成",
+    "percentComplete": "% 已完成",
+    "team": "团队",
+    "onlineCount": "{{online}} 在线",
+    "totalMembers": "共 {{total}} 名成员",
+    "activeProjects": "活跃项目：{{count}}",
+    "myRecentTasks": "我最近的任务"
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "deleteThis": "删除此任务？",
+    "cannotUndo": "此操作无法撤销。"
+  },
+  "error": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred. Please try refreshing the page.",
+    "tryAgain": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist or has been moved.",
+    "backToHome": "Back to home"
+  },
+  "theme": {
+    "switchToLight": "Switch to light",
+    "switchToDark": "Switch to dark",
+    "toggleTheme": "Toggle theme"
   }
 }

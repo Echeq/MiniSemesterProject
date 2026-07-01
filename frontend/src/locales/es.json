@@ -17,7 +17,19 @@
     "newTask": "+ Nueva tarea",
     "newTaskShort": "Nueva",
     "member": "Miembro",
-    "guest": "Invitado"
+    "guest": "Invitado",
+    "kanban": "Kanban",
+    "list": "Lista",
+    "gantt": "Gantt",
+    "view3d": "3D",
+    "viewSuffix": "vista",
+    "showInsights": "Mostrar estadísticas",
+    "hideInsights": "Ocultar estadísticas",
+    "toggleInsights": "Alternar estadísticas",
+    "manageLabels": "Gestionar etiquetas",
+    "openSidebar": "Abrir barra lateral",
+    "archived": "archivado",
+    "sidebar": "Barra lateral"
   },
   "board": {
     "todo": "Por hacer",
@@ -54,11 +66,23 @@
     "priority": "Prioridad",
     "project": "Proyecto",
     "labels": "Etiquetas",
+    "priorityOptions": {
+      "none": "Ninguna",
+      "p0": "P0 Crítico",
+      "p1": "P1 Alto",
+      "p2": "P2 Medio",
+      "p3": "P3 Bajo"
+    },
     "blockedBy": "Bloqueado por",
     "blockedByCount": "Bloqueado por {{count}}",
     "editing": "Editando…",
     "noPriority": "Ninguna",
-    "sharedBoard": "Tablero compartido"
+    "sharedBoard": "Tablero compartido",
+    "blocked": " (bloqueado)",
+    "incompleteTasks": "{{count}} tarea incompleta — resuelve las dependencias primero.",
+    "incompleteTasks_plural": "{{count}} tareas incompletas — resuelve las dependencias primero.",
+    "deleteConfirmTitle": "¿Eliminar esta tarea?",
+    "deleteConfirmMessage": "Esta acción no se puede deshacer."
   },
   "profile": {
     "title": "Configuración de perfil",
@@ -136,7 +160,8 @@
     "switcher": "Idioma"
   },
   "sidebar": {
-    "boards": "Tableros",
+    "boards": "Boards",
+    "dashboard": "Tablero",
     "allTasks": "Todas las tareas",
     "sharedBoard": "Tablero compartido",
     "views": "Vistas",
@@ -159,7 +184,14 @@
     "archive": "Archivar",
     "delete": "Eliminar",
     "restore": "Restaurar",
-    "deleteProjectConfirm": "¿Eliminar \"{{name}}\"? Sus tareas también se eliminarán."
+    "deleteProjectConfirm": "¿Eliminar \"{{name}}\"? Sus tareas también se eliminarán.",
+    "archiveConfirm": "¿Archivar \"{{name}}\"?",
+    "archiveDesc": "El proyecto se ocultará de la lista activa.",
+    "deleteDesc": "Esta acción no se puede deshacer.",
+    "confirmCancel": "Cancelar",
+    "viewInfo": "Ver información",
+    "viewMembers": "Ver todos los {{count}} miembros →",
+    "noMembers": "Sin miembros."
   },
   "filter": {
     "columns": "Columnas",
@@ -238,6 +270,10 @@
   "project": {
     "newTitle": "Nuevo proyecto",
     "settingsTitle": "Configuración del proyecto",
+    "membersTab": "Miembros",
+    "settingsTab": "Configuración",
+    "searchUser": "Buscar usuario para agregar…",
+    "noMembers": "Sin miembros.",
     "name": "Nombre",
     "namePlaceholder": "Nombre del proyecto",
     "description": "Descripción",
@@ -306,5 +342,45 @@
     "minutesAgo": "hace {{count}} min",
     "hoursAgo": "hace {{count}} h",
     "daysAgo": "hace {{count}} d"
+  },
+  "dashboard": {
+    "myTasks": "Mis tareas",
+    "completed": "Completadas",
+    "inProgress": "En progreso",
+    "overdue": "Vencidas",
+    "completion": "Completado",
+    "todo": "Por hacer",
+    "doing": "En progreso",
+    "done": "Hecho",
+    "percentComplete": "% completado",
+    "team": "Equipo",
+    "onlineCount": "{{online}} en línea",
+    "totalMembers": "{{total}} miembros totales",
+    "activeProjects": "Proyectos activos: {{count}}",
+    "myRecentTasks": "Mis tareas recientes"
+  },
+  "confirm": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "deleteThis": "¿Eliminar esta tarea?",
+    "cannotUndo": "Esta acción no se puede deshacer."
+  },
+  "error": {
+    "somethingWentWrong": "Algo salió mal",
+    "unexpectedError": "Ocurrió un error inesperado. Intenta refrescar la página.",
+    "tryAgain": "Intentar de nuevo"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Esta página no existe o ha sido movida.",
+    "backToHome": "Volver al inicio"
+  },
+  "theme": {
+    "switchToLight": "Cambiar a claro",
+    "switchToDark": "Cambiar a oscuro",
+    "toggleTheme": "Alternar tema"
   }
 }
+
+
+

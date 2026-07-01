@@ -9,6 +9,7 @@ export function useProjects() {
   const [error, setError] = useState(null)
 
   const refetch = useCallback(async () => {
+    setLoading(true)
     const { data, error } = await supabase
       .from('projects')
       .select('*')

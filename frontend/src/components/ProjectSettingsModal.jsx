@@ -42,8 +42,8 @@ export default function ProjectSettingsModal({ project, onUpdate, onClose, initi
   return (
     <Modal title={t('project.settingsTitle')} subtitle={project.name} onClose={onClose} maxWidth="max-w-lg">
       <div className="mb-4 flex gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass)] p-1">
-        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</TabButton>
-        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>Members</TabButton>
+        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')}>{t('project.settingsTab')}</TabButton>
+        <TabButton active={tab === 'members'} onClick={() => setTab('members')}>{t('project.membersTab')}</TabButton>
       </div>
 
       {tab === 'settings' ? (
@@ -174,7 +174,7 @@ function ProjectMembers({ projectId }) {
           type="text"
           value={addQuery}
           onChange={(e) => setAddQuery(e.target.value)}
-          placeholder="Search user to add…"
+          placeholder={t('project.searchUser')}
           className="input"
         />
       </div>
@@ -193,9 +193,9 @@ function ProjectMembers({ projectId }) {
       )}
 
       {loading ? (
-        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">Loading…</p>
+        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">{t('admin.loading')}</p>
       ) : members.length === 0 ? (
-        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">No members.</p>
+        <p className="py-4 text-center text-sm text-[var(--fg-muted)]">{t('project.noMembers')}</p>
       ) : (
         <div className="max-h-64 space-y-1.5 overflow-y-auto">
           {members.map((m) => (

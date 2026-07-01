@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Avatar from './Avatar'
+import { DashboardSkeleton } from './Skeleton'
 
 const CARD = 'rounded-lg border border-[var(--glass-border)] bg-[var(--card)] p-4'
 
@@ -43,7 +44,7 @@ const ICONS = {
   project: 'M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0M1.5 1.75v12.5c0 .138.112.25.25.25h2.875V1.5H1.75a.25.25 0 0 0-.25.25m4.625-.25v13h2.875v-13zm4.375 0v13h2.875a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Z',
 }
 
-export default function Dashboard({ tasks, projects, members, onlineIds, stats, userId }) {
+export default function Dashboard({ tasks, projects, members, onlineIds, stats, userId, loading = false }) {
   const { t } = useTranslation()
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
 
@@ -70,46 +71,47 @@ export default function Dashboard({ tasks, projects, members, onlineIds, stats, 
   [myTasks])
 
   return (
+    loading ? <DashboardSkeleton /> :
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 sm:p-6">
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard icon={ICONS.inbox} label="My tasks" value={counts.total} color="var(--fg)" />
-        <StatCard icon={ICONS.check} label="Completed" value={counts.done} color="var(--done)" />
-        <StatCard icon={ICONS.doing} label="In progress" value={counts.doing} color="var(--doing)" />
-        <StatCard icon={ICONS.alert} label="Overdue" value={counts.overdue} color="var(--danger)" />
+        <StatCard icon={ICONS.inbox} label={t('dashboard.myTasks')} value={counts.total} color="var(--fg)" />
+        <StatCard icon={ICONS.check} label={t('dashboard.completed')} value={counts.done} color="var(--done)" />
+        <StatCard icon={ICONS.doing} label={t('dashboard.inProgress')} value={counts.doing} color="var(--doing)" />
+        <StatCard icon={ICONS.alert} label={t('dashboard.overdue')} value={counts.overdue} color="var(--danger)" />
       </div>
 
       {/* Progress + Team */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Progress ring */}
         <div className={CARD}>
-          <p className="mb-3 text-sm font-semibold">Completion</p>
+          <p className="mb-3 text-sm font-semibold">{t('dashboard.completion')}</p>
           <div className="flex items-center gap-5">
             <ProgressRing pct={counts.pct} />
             <div className="space-y-1.5 text-xs text-[var(--fg-muted)]">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ background: 'var(--todo)' }} />
-                To Do <strong className="text-[var(--fg)]">{counts.todo}</strong>
+                {t('dashboard.todo')} <strong className="text-[var(--fg)]">{counts.todo}</strong>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ background: 'var(--doing)' }} />
-                In Progress <strong className="text-[var(--fg)]">{counts.doing}</strong>
+                {t('dashboard.doing')} <strong className="text-[var(--fg)]">{counts.doing}</strong>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ background: 'var(--done)' }} />
-                Done <strong className="text-[var(--fg)]">{counts.done}</strong>
+                {t('dashboard.done')} <strong className="text-[var(--fg)]">{counts.done}</strong>
               </div>
-              <div className="pt-1 text-xs font-semibold text-[var(--accent)]">{counts.pct}% complete</div>
+              <div className="pt-1 text-xs font-semibold text-[var(--accent)]">{counts.pct}{t('dashboard.percentComplete')}</div>
             </div>
           </div>
         </div>
 
         {/* Online team */}
         <div className={CARD}>
-          <p className="mb-3 text-sm font-semibold">Team</p>
+          <p className="mb-3 text-sm font-semibold">{t('dashboard.team')}</p>
           <div className="flex items-center gap-2 text-xs text-[var(--fg-muted)]">
             <span className="h-2 w-2 rounded-full bg-[var(--done)]" />
-            {onlineCount} online · {members?.length ?? 0} total members
+            {t('dashboard.onlineCount', { online: onlineCount })} · {t('dashboard.totalMembers', { total: members?.length ?? 0 })}
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {members?.slice(0, 8).map((m) => (
@@ -126,14 +128,14 @@ export default function Dashboard({ tasks, projects, members, onlineIds, stats, 
               </div>
             )}
           </div>
-          <p className="mt-3 text-xs font-semibold text-[var(--fg)]">Active projects: {activeProjects.length}</p>
+          <p className="mt-3 text-xs font-semibold text-[var(--fg)]">{t('dashboard.activeProjects', { count: activeProjects.length })}</p>
         </div>
       </div>
 
       {/* My recent tasks */}
       {recentTasks.length > 0 && (
         <div className={CARD}>
-          <p className="mb-3 text-sm font-semibold">My recent tasks</p>
+          <p className="mb-3 text-sm font-semibold">{t('dashboard.myRecentTasks')}</p>
           <div className="space-y-1.5">
             {recentTasks.map((t) => (
               <div key={t.id} className="flex items-center gap-3 rounded-md bg-[var(--surface-hover)] px-3 py-2 text-xs">

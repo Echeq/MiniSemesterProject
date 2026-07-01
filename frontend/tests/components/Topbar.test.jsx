@@ -21,7 +21,7 @@ describe('Topbar', () => {
   it('shows archived label when archived', async () => {
     const Topbar = (await import('../../src/components/Topbar')).default
     render(<Topbar title="Archived" archived={true} taskCount={0} tasks={[]} session={{ user: { email: 'a@b.com' } }} profile={{ display_name: 'Alice' }} isAdmin={false} onOpenAccount={vi.fn()} onOpenAdmin={vi.fn()} />)
-    expect(screen.getByText('archived')).toBeInTheDocument()
+    expect(screen.getByText('header.archived')).toBeInTheDocument()
   })
 
   it('renders ProfileMenu avatar', async () => {

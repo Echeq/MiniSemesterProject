@@ -4,6 +4,7 @@ import Avatar from './Avatar'
 import EmptyState from './EmptyState'
 import CreateProjectModal from './CreateProjectModal'
 import ProjectSettingsModal from './ProjectSettingsModal'
+import ProjectInfoModal from './ProjectInfoModal'
 import ConfirmModal from './ConfirmModal'
 import { SidebarStatsSkeleton } from './Skeleton'
 
@@ -28,16 +29,19 @@ const ICONS = {
   clock: 'M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13m.75 3.25v3.19l2.03 2.03a.75.75 0 1 1-1.06 1.06L7.22 9.78a.75.75 0 0 1-.22-.53V4.75a.75.75 0 0 1 1.5 0',
   alert: 'M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0M9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0',
   gear: 'M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0m5.21-5.72-.664-.248-.412-1.344A1 1 0 0 0 8.19 0H7.81a1 1 0 0 0-.944.688l-.412 1.344-.664.248-1.362-.701a1 1 0 0 0-1.236.435l-.19.33a1 1 0 0 0 .16 1.22l.957.998-.006.712-.957.998a1 1 0 0 0-.16 1.22l.19.33a1 1 0 0 0 1.236.434l1.362-.7.664.247.412 1.345a1 1 0 0 0 .944.688h.38a1 1 0 0 0 .944-.688l.412-1.344.664-.248 1.362.701a1 1 0 0 0 1.236-.435l.19-.33a1 1 0 0 0-.16-1.22l-.957-.998v-.712l.957-.998A1 1 0 0 0 13.58 2.6l-.19-.33a1 1 0 0 0-1.236-.435Z',
+  heart: 'M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314',
+  star: 'M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25',
+  rocket: 'M14.064 0h.186C15.216 0 16 .784 16 1.75v.186a8.75 8.75 0 0 1-1.538 4.95l-.286.408a8.75 8.75 0 0 1-3.696 2.77l-1.766.655-.353 1.06a.75.75 0 0 1-1.01.453l-1.74-.87-.87-1.74a.75.75 0 0 1 .454-1.01l1.059-.353.655-1.766A8.75 8.75 0 0 1 8.704 1.32l.408-.286A8.75 8.75 0 0 1 14.064 0M3 12a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2.5.5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0',
+  bookmark: 'M4 0h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 12.583l-5.223 3.333A.5.5 0 0 1 2 15.5V2a2 2 0 0 1 2-2',
 }
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const in7Str = () => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
 
-function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmin, onOpenAdmin, members = [], onlineIds, stats = [], currentUserId, loadingProjects = false, editors, setConfirmAction, setConfirmError }) {
+function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmin, onOpenAdmin, members = [], onlineIds, stats = [], currentUserId, loadingProjects = false, editors, setConfirmAction, setConfirmError, showCreate, setShowCreate, settingsProject, setSettingsProject, setViewProject }) {
 
   const { t } = useTranslation()
-  const [showCreate, setShowCreate] = useState(false)
-  const [settingsProject, setSettingsProject] = useState(null)
+  // (showCreate, settingsProject, setShowCreate, setSettingsProject are lifted to Sidebar)
   const [showAllMembers, setShowAllMembers] = useState(false)
   const INITIAL_MEMBERS = 5
 
@@ -113,7 +117,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
           <SectionLabel>{t('sidebar.boards')}</SectionLabel>
           <button onClick={() => onSelectScope('_dashboard')} className={`nav-item ${scope === '_dashboard' ? 'active' : ''}`}>
-            <Icon path="M0 1.75A.75.75 0 0 1 .75 1h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75A.75.75 0 0 1 0 6.25Zm0 8A.75.75 0 0 1 .75 9h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75Zm6-8A.75.75 0 0 1 6.75 1h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 6 1.75Zm0 8a.75.75 0 0 1 .75-.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1-.75-.75Z" /> Dashboard
+            <Icon path="M0 1.75A.75.75 0 0 1 .75 1h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75A.75.75 0 0 1 0 6.25Zm0 8A.75.75 0 0 1 .75 9h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75Zm6-8A.75.75 0 0 1 6.75 1h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 6 1.75Zm0 8a.75.75 0 0 1 .75-.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1-.75-.75Z" /> {t('sidebar.dashboard')}
           </button>
           {isAdmin && (
             <button onClick={() => onSelectScope('all')} className={`nav-item ${scope === 'all' ? 'active' : ''}`}>
@@ -154,16 +158,18 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
               <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 ${scope?.id === p.id ? 'active' : ''}`}>
 
                     <span className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: p.color || '#6366f1' }} />
+                      <span className="shrink-0" style={{ color: p.color || '#6366f1' }}>
+                        <Icon path={ICONS[p.icon] || ICONS.project} className="h-4 w-4" />
+                      </span>
                       <span className="truncate">{p.name}</span>
                     </span>
                   </button>
                   <div className="flex flex-shrink-0 opacity-0 transition group-hover:opacity-100">
-                    <button title={t('sidebar.settings')} onClick={() => setSettingsProject(p)} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--fg)]">
-                      <Icon path={ICONS.gear} className="h-3.5 w-3.5" />
-                    </button>
-                    {isAdmin && (
+                    {isAdmin ? (
                       <>
+                        <button title={t('sidebar.settings')} onClick={() => setSettingsProject(p)} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--fg)]">
+                          <Icon path={ICONS.gear} className="h-3.5 w-3.5" />
+                        </button>
                         <button
                           title={t('sidebar.archive')}
                           onClick={() => setConfirmAction({ type: 'archive', project: p })}
@@ -179,6 +185,10 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
                           <Icon path={ICONS.trash} className="h-3.5 w-3.5" />
                         </button>
                       </>
+                    ) : (
+                      <button title={t('sidebar.viewInfo')} onClick={() => setViewProject(p)} className="rounded p-1 text-[var(--fg-muted)] hover:text-[var(--fg)]">
+                        <Icon path={ICONS.inbox} className="h-3.5 w-3.5" />
+                      </button>
                     )}
                   </div>
                 </div>
@@ -200,10 +210,12 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
               {archived.map((p) => (
                 <div key={p.id} className="group flex items-center">
                   <button onClick={() => onSelectScope(p)} className={`nav-item min-w-0 flex-1 text-[var(--fg-muted)] ${scope?.id === p.id ? 'active' : ''}`}>
-                    <span className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: p.color || '#6366f1' }} />
-                      <span className="truncate line-through">{p.name}</span>
-                    </span>
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="shrink-0 opacity-50" style={{ color: p.color || '#6366f1' }}>
+                          <Icon path={ICONS[p.icon] || ICONS.project} className="h-4 w-4" />
+                        </span>
+                        <span className="truncate line-through">{p.name}</span>
+                      </span>
                   </button>
                   {isAdmin && (
                     <button title={t('sidebar.restore')} onClick={async () => { try { await projectActions.setStatus(p.id, 'active') } catch (e) { setConfirmError(e.message) } }} className="rounded p-1 text-[var(--fg-muted)] opacity-0 transition hover:text-[var(--done)] group-hover:opacity-100">
@@ -249,7 +261,7 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
               ))}
               {onlineMembers.length > INITIAL_MEMBERS && !showAllMembers && (
                 <button onClick={() => setShowAllMembers(true)} className="w-full rounded-md px-2 py-1.5 text-xs font-medium text-[var(--accent)] transition hover:bg-[var(--surface-hover)]">
-                  View all {onlineMembers.length} members →
+                  {t('sidebar.viewMembers', { count: onlineMembers.length })}
                 </button>
               )}
             </>
@@ -266,20 +278,6 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
             </button>
           </div>
         </>
-      )}
-
-      {showCreate && (
-        <CreateProjectModal
-          onCreate={(fields) => projectActions.create(fields)}
-          onClose={() => setShowCreate(false)}
-        />
-      )}
-      {settingsProject && (
-        <ProjectSettingsModal
-          project={settingsProject}
-          onUpdate={(id, fields) => projectActions.update(id, fields)}
-          onClose={() => setSettingsProject(null)}
-        />
       )}
     </>
   )
@@ -304,8 +302,11 @@ const Sidebar = memo(function Sidebar({
   const { t } = useTranslation()
   const [confirmAction, setConfirmAction] = useState(null)
   const [confirmError, setConfirmError] = useState(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [settingsProject, setSettingsProject] = useState(null)
+  const [viewProject, setViewProject] = useState(null)
 
-  const sharedContentProps = { projects, scope, projectActions, isAdmin, onOpenAdmin, members, onlineIds, stats, currentUserId, loadingProjects, editors, setConfirmAction, setConfirmError }
+  const sharedContentProps = { projects, scope, projectActions, isAdmin, onOpenAdmin, members, onlineIds, stats, currentUserId, loadingProjects, editors, setConfirmAction, setConfirmError, showCreate, setShowCreate, settingsProject, setSettingsProject, setViewProject }
 
   return (
     <>
@@ -336,13 +337,31 @@ const Sidebar = memo(function Sidebar({
         />
       </aside>
 
+      {/* Modals — rendered OUTSIDE backdrop-filter containers to avoid stacking-context clipping */}
+      {showCreate && (
+        <CreateProjectModal
+          onCreate={(fields) => projectActions.create(fields)}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
+      {settingsProject && (
+        <ProjectSettingsModal
+          project={settingsProject}
+          onUpdate={(id, fields) => projectActions.update(id, fields)}
+          onClose={() => setSettingsProject(null)}
+        />
+      )}
+      {viewProject && (
+        <ProjectInfoModal project={viewProject} onClose={() => setViewProject(null)} />
+      )}
+
       {/* Confirm modals — rendered OUTSIDE backdrop-filter containers to avoid stacking-context clipping */}
       {confirmAction && (
         <ConfirmModal
           title={confirmAction.type === 'archive' ? t('sidebar.archiveConfirm', { name: confirmAction.project.name }) : t('sidebar.deleteProjectConfirm', { name: confirmAction.project.name })}
-          message={confirmAction.type === 'archive' ? 'The project will be hidden from the active list.' : 'This action cannot be undone.'}
-          confirmLabel={confirmAction.type === 'archive' ? 'Archive' : 'Delete'}
-          cancelLabel="Cancel"
+          message={confirmAction.type === 'archive' ? t('sidebar.archiveDesc') : t('sidebar.deleteDesc')}
+          confirmLabel={confirmAction.type === 'archive' ? t('sidebar.archive') : t('sidebar.delete')}
+          cancelLabel={t('sidebar.confirmCancel')}
           danger={confirmAction.type === 'delete'}
           onConfirm={async () => {
             try {

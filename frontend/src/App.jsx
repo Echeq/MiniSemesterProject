@@ -364,7 +364,7 @@ function BoardPage({ session, theme, toggleTheme }) {
                 overdueCount={dashboardCounts.overdueCount}
               />
             </div>
-            <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} userId={userId} />
+            <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} userId={userId} loading={loading} />
           </>
         ) : (
           <>

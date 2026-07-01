@@ -17,7 +17,19 @@
     "newTask": "+ مهمة جديدة",
     "newTaskShort": "جديد",
     "member": "عضو",
-    "guest": "ضيف"
+    "guest": "ضيف",
+    "kanban": "كانبان",
+    "list": "قائمة",
+    "gantt": "غانت",
+    "view3d": "3D",
+    "viewSuffix": "عرض",
+    "showInsights": "إظهار الإحصائيات",
+    "hideInsights": "إخفاء الإحصائيات",
+    "toggleInsights": "تبديل الإحصائيات",
+    "manageLabels": "إدارة التسميات",
+    "openSidebar": "فتح الشريط الجانبي",
+    "archived": "مؤرشف",
+    "sidebar": "الشريط الجانبي"
   },
   "board": {
     "todo": "للتنفيذ",
@@ -54,11 +66,23 @@
     "priority": "الأولوية",
     "project": "المشروع",
     "labels": "التسميات",
+    "priorityOptions": {
+      "none": "بلا",
+      "p0": "P0 حرج",
+      "p1": "P1 عالي",
+      "p2": "P2 متوسط",
+      "p3": "P3 منخفض"
+    },
     "blockedBy": "محظور بواسطة",
     "blockedByCount": "محظور بواسطة {{count}}",
     "editing": "جاري التعديل…",
     "noPriority": "لا شيء",
-    "sharedBoard": "اللوحة المشتركة"
+    "sharedBoard": "اللوحة المشتركة",
+    "blocked": " (محظور)",
+    "incompleteTasks": "{{count}} مهمة غير مكتملة — قم بحل التبعيات أولاً.",
+    "incompleteTasks_plural": "{{count}} مهام غير مكتملة — قم بحل التبعيات أولاً.",
+    "deleteConfirmTitle": "حذف هذه المهمة؟",
+    "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
   },
   "profile": {
     "title": "إعدادات الملف الشخصي",
@@ -136,9 +160,12 @@
     "switcher": "اللغة"
   },
   "sidebar": {
-    "boards": "اللوحات",
+    "boards": "الألواح",
+    "dashboard": "لوحة البيانات",
     "allTasks": "جميع المهام",
     "sharedBoard": "اللوحة المشتركة",
+    "incompleteTasks": "{{count}} incomplete task � resolve dependencies first.",
+    "incompleteTasks_plural": "{{count}} incomplete tasks � resolve dependencies first.",
     "views": "طرق العرض",
     "myTasks": "مهامي",
     "dueSoon": "مستحق قريبًا",
@@ -159,7 +186,14 @@
     "archive": "أرشفة",
     "delete": "حذف",
     "restore": "استعادة",
-    "deleteProjectConfirm": "حذف \"{{name}}\"؟ ستُحذف مهامه أيضًا."
+    "deleteProjectConfirm": "Delete \"{{name}}\"? Its tasks are deleted too.",
+    "archiveConfirm": "أرشفة \"{{name}}\"?",
+    "archiveDesc": "سيتم إخفاء المشروع من القائمة النشطة.",
+    "deleteDesc": "لا يمكن التراجع عن هذا الإجراء.",
+    "confirmCancel": "إلغاء",
+    "viewInfo": "عرض المعلومات",
+    "viewMembers": "عرض جميع {{count}} الأعضاء ←",
+    "noMembers": "لا يوجد أعضاء."
   },
   "filter": {
     "columns": "الأعمدة",
@@ -238,6 +272,10 @@
   "project": {
     "newTitle": "مشروع جديد",
     "settingsTitle": "إعدادات المشروع",
+    "membersTab": "الأعضاء",
+    "settingsTab": "الإعدادات",
+    "searchUser": "ابحث عن مستخدم للإضافة…",
+    "noMembers": "لا يوجد أعضاء.",
     "name": "الاسم",
     "namePlaceholder": "اسم المشروع",
     "description": "الوصف",
@@ -304,5 +342,42 @@
     "minutesAgo": "قبل {{count}} د",
     "hoursAgo": "قبل {{count}} س",
     "daysAgo": "قبل {{count}} ي"
+  },
+  "dashboard": {
+    "myTasks": "مهامي",
+    "completed": "مكتملة",
+    "inProgress": "قيد التنفيذ",
+    "overdue": "متأخرة",
+    "completion": "الإنجاز",
+    "todo": "للقيام",
+    "doing": "قيد التنفيذ",
+    "done": "تم",
+    "percentComplete": "% مكتمل",
+    "team": "الفريق",
+    "onlineCount": "{{online}} متصل",
+    "totalMembers": "{{total}} عضو",
+    "activeProjects": "المشاريع النشطة: {{count}}",
+    "myRecentTasks": "مهامي الأخيرة"
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "deleteThis": "حذف هذه المهمة؟",
+    "cannotUndo": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "error": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred. Please try refreshing the page.",
+    "tryAgain": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist or has been moved.",
+    "backToHome": "Back to home"
+  },
+  "theme": {
+    "switchToLight": "Switch to light",
+    "switchToDark": "Switch to dark",
+    "toggleTheme": "Toggle theme"
   }
 }

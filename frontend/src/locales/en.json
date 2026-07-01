@@ -17,7 +17,19 @@
     "newTask": "+ New task",
     "newTaskShort": "New",
     "member": "Member",
-    "guest": "Guest"
+    "guest": "Guest",
+    "kanban": "Kanban",
+    "list": "List",
+    "gantt": "Gantt",
+    "view3d": "3D",
+    "viewSuffix": "view",
+    "showInsights": "Show insights",
+    "hideInsights": "Hide insights",
+    "toggleInsights": "Toggle insights",
+    "manageLabels": "Manage labels",
+    "openSidebar": "Open sidebar",
+    "archived": "archived",
+    "sidebar": "Sidebar"
   },
   "board": {
     "todo": "To Do",
@@ -54,11 +66,23 @@
     "priority": "Priority",
     "project": "Project",
     "labels": "Labels",
+    "priorityOptions": {
+      "none": "None",
+      "p0": "P0 Critical",
+      "p1": "P1 High",
+      "p2": "P2 Medium",
+      "p3": "P3 Low"
+    },
     "blockedBy": "Blocked by",
     "blockedByCount": "Blocked by {{count}}",
     "editing": "Editing…",
     "noPriority": "None",
-    "sharedBoard": "Shared board"
+    "sharedBoard": "Shared board",
+    "blocked": " (blocked)",
+    "incompleteTasks": "{{count}} incomplete task — resolve dependencies first.",
+    "incompleteTasks_plural": "{{count}} incomplete tasks — resolve dependencies first.",
+    "deleteConfirmTitle": "Delete this task?",
+    "deleteConfirmMessage": "This action cannot be undone."
   },
   "profile": {
     "title": "Profile Settings",
@@ -137,6 +161,7 @@
   },
   "sidebar": {
     "boards": "Boards",
+    "dashboard": "Dashboard",
     "allTasks": "All tasks",
     "sharedBoard": "Shared board",
     "views": "Views",
@@ -159,7 +184,14 @@
     "archive": "Archive",
     "delete": "Delete",
     "restore": "Restore",
-    "deleteProjectConfirm": "Delete \"{{name}}\"? Its tasks are deleted too."
+    "deleteProjectConfirm": "Delete \"{{name}}\"? Its tasks are deleted too.",
+    "archiveConfirm": "Archive \"{{name}}\"?",
+    "archiveDesc": "The project will be hidden from the active list.",
+    "deleteDesc": "This action cannot be undone.",
+    "confirmCancel": "Cancel",
+    "viewInfo": "View info",
+    "viewMembers": "View all {{count}} members →",
+    "noMembers": "No members."
   },
   "filter": {
     "columns": "Columns",
@@ -238,6 +270,10 @@
   "project": {
     "newTitle": "New project",
     "settingsTitle": "Project settings",
+    "membersTab": "Members",
+    "settingsTab": "Settings",
+    "searchUser": "Search user to add…",
+    "noMembers": "No members.",
     "name": "Name",
     "namePlaceholder": "Project name",
     "description": "Description",
@@ -306,5 +342,42 @@
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
     "daysAgo": "{{count}}d ago"
+  },
+  "dashboard": {
+    "myTasks": "My tasks",
+    "completed": "Completed",
+    "inProgress": "In progress",
+    "overdue": "Overdue",
+    "completion": "Completion",
+    "todo": "To Do",
+    "doing": "In Progress",
+    "done": "Done",
+    "percentComplete": "% complete",
+    "team": "Team",
+    "onlineCount": "{{online}} online",
+    "totalMembers": "{{total}} total members",
+    "activeProjects": "Active projects: {{count}}",
+    "myRecentTasks": "My recent tasks"
+  },
+  "confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "deleteThis": "Delete this task?",
+    "cannotUndo": "This action cannot be undone."
+  },
+  "error": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred. Please try refreshing the page.",
+    "tryAgain": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page doesn't exist or has been moved.",
+    "backToHome": "Back to home"
+  },
+  "theme": {
+    "switchToLight": "Switch to light",
+    "switchToDark": "Switch to dark",
+    "toggleTheme": "Toggle theme"
   }
 }

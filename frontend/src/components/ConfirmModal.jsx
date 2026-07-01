@@ -8,7 +8,7 @@ export default function ConfirmModal({ title, message, confirmLabel, cancelLabel
   }, [onCancel])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm" onClick={onCancel}>
       <div onClick={(e) => e.stopPropagation()} className="glass-strong w-full max-w-sm rounded-2xl p-6 shadow-xl animate-pop-in">
         <h3 className="text-lg font-semibold">{title}</h3>
         {message && <p className="mt-2 text-sm text-[var(--fg-muted)]">{message}</p>}
