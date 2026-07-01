@@ -5,6 +5,7 @@ export function createMockBuilder(resolveValue) {
   const builder = {
     select: vi.fn(() => builder),
     order: vi.fn(() => builder),
+    limit: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     neq: vi.fn(() => builder),
     is: vi.fn(() => builder),

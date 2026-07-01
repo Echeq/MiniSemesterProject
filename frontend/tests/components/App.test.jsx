@@ -109,6 +109,7 @@ describe('App', () => {
     mockUseProfile.mockReturnValue({
       profile: { id: 'uid', display_name: 'Admin', role: 'admin', avatar_url: null },
       loading: false,
+      isAdmin: true,
     })
     const { default: App } = await import('../../src/App')
     render(<App />)

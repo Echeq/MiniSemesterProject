@@ -53,10 +53,12 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
     let mine = 0, overdue = 0, dueSoon = 0
     for (let i = 0; i < stats.length; i++) {
       const t = stats[i]
-      if (t.assignee === currentUserId) mine++
-      if (t.due_date && t.status !== 'done') {
-        if (t.due_date < todayVal) overdue++
-        else if (t.due_date <= in7Val) dueSoon++
+      if (t.assignee === currentUserId) {
+        mine++
+        if (t.due_date && t.status !== 'done') {
+          if (t.due_date < todayVal) overdue++
+          else if (t.due_date <= in7Val) dueSoon++
+        }
       }
     }
     return { mineCount: mine, overdueCount: overdue, dueSoonCount: dueSoon }
@@ -113,12 +115,16 @@ function SidebarContent({ projects, scope, onSelectScope, projectActions, isAdmi
           <button onClick={() => onSelectScope('_dashboard')} className={`nav-item ${scope === '_dashboard' ? 'active' : ''}`}>
             <Icon path="M0 1.75A.75.75 0 0 1 .75 1h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75A.75.75 0 0 1 0 6.25Zm0 8A.75.75 0 0 1 .75 9h4.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1-.75-.75Zm6-8A.75.75 0 0 1 6.75 1h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 6 1.75Zm0 8a.75.75 0 0 1 .75-.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1-.75-.75Z" /> Dashboard
           </button>
-          <button onClick={() => onSelectScope('all')} className={`nav-item ${scope === 'all' ? 'active' : ''}`}>
-            <Icon path={ICONS.inbox} /> {t('sidebar.allTasks')}
-          </button>
-          <button onClick={() => onSelectScope(null)} className={`nav-item ${scope === null ? 'active' : ''}`}>
-            <Icon path={ICONS.globe} /> {t('sidebar.sharedBoard')}
-          </button>
+          {isAdmin && (
+            <button onClick={() => onSelectScope('all')} className={`nav-item ${scope === 'all' ? 'active' : ''}`}>
+              <Icon path={ICONS.inbox} /> {t('sidebar.allTasks')}
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={() => onSelectScope(null)} className={`nav-item ${scope === null ? 'active' : ''}`}>
+              <Icon path={ICONS.globe} /> {t('sidebar.sharedBoard')}
+            </button>
+          )}
 
           <SectionLabel>{t('sidebar.views')}</SectionLabel>
           <ViewItem icon={ICONS.person} label={t('sidebar.myTasks')} count={mineCount} active={scope === 'view:mine'} onClick={() => onSelectScope('view:mine')} />

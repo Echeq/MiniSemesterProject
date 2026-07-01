@@ -43,7 +43,7 @@ const ICONS = {
   project: 'M1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0M1.5 1.75v12.5c0 .138.112.25.25.25h2.875V1.5H1.75a.25.25 0 0 0-.25.25m4.625-.25v13h2.875v-13zm4.375 0v13h2.875a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25Z',
 }
 
-export default function Dashboard({ tasks, projects, members, onlineIds, stats, onToggleMobileSidebar, userId }) {
+export default function Dashboard({ tasks, projects, members, onlineIds, stats, userId }) {
   const { t } = useTranslation()
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
 
@@ -71,17 +71,6 @@ export default function Dashboard({ tasks, projects, members, onlineIds, stats, 
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4 sm:p-6">
-      {/* Title */}
-      <div className="flex items-center gap-3">
-        <button onClick={onToggleMobileSidebar} className="btn btn-default !px-2 md:!hidden">
-          <span aria-hidden="true">☰</span>
-        </button>
-        <div>
-          <h1 className="text-lg font-bold">Dashboard</h1>
-          <p className="text-xs text-[var(--fg-muted)]">Your personal overview</p>
-        </div>
-      </div>
-
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard icon={ICONS.inbox} label="My tasks" value={counts.total} color="var(--fg)" />

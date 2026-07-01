@@ -20,6 +20,7 @@ import FilterPanel from './components/FilterPanel'
 import InsightsPanel from './components/InsightsPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 import Dashboard from './components/Dashboard'
+import DashboardTopbar from './components/DashboardTopbar'
 
 const TaskModal = lazy(() => import('./components/TaskModal'))
 const ProfileModal = lazy(() => import('./components/ProfileModal'))
@@ -133,6 +134,13 @@ function BoardPage({ session, theme, toggleTheme }) {
     }
   }, [isProject, projectId, members])
 
+  // Redirect members away from global views they shouldn't access
+  useEffect(() => {
+    if (!isAdmin && (scope === 'all' || scope === null)) {
+      setScope('view:mine')
+    }
+  }, [isAdmin, scope])
+
   const handleTaskClick = useCallback((task) => { setModal(task); startEditing(task.id) }, [startEditing])
 
   const handleNewTask = useCallback(() => setModal('new'), [])
@@ -209,8 +217,8 @@ function BoardPage({ session, theme, toggleTheme }) {
     const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
     const v = scope.slice(5)
     if (v === 'mine') return tasks.filter((t) => t.assignee === userId)
-    if (v === 'overdue') return tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date < today)
-    if (v === 'due') return tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= today && t.due_date <= in7)
+    if (v === 'overdue') return tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date < today && t.assignee === userId)
+    if (v === 'due') return tasks.filter((t) => t.due_date && t.status !== 'done' && t.due_date >= today && t.due_date <= in7 && t.assignee === userId)
     return tasks
   }, [tasks, isView, scope, userId])
 
@@ -257,6 +265,14 @@ function BoardPage({ session, theme, toggleTheme }) {
 
   const defaultProjectId = isProject ? scope.id : null
   const VIEW_LABELS = { 'view:mine': t('sidebar.myTasks'), 'view:due': t('sidebar.dueSoon'), 'view:overdue': t('sidebar.overdue') }
+  const dashboardCounts = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10)
+    return {
+      taskCount: tasks.filter((t) => t.assignee === userId).length,
+      overdueCount: stats.filter((t) => t.assignee === userId && t.due_date && t.status !== 'done' && t.due_date < today).length,
+    }
+  }, [tasks, stats, userId])
+
   const scopeLabel = isProject
     ? liveScope.name
     : scope === null
@@ -332,7 +348,24 @@ function BoardPage({ session, theme, toggleTheme }) {
         )}
 
         {scope === '_dashboard' ? (
-          <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} onToggleMobileSidebar={() => setMobileOpen((o) => !o)} userId={userId} />
+          <>
+            <div className="relative z-10">
+              <DashboardTopbar
+                session={session}
+                profile={profile}
+                isAdmin={isAdmin}
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onToggleMobileSidebar={() => setMobileOpen((o) => !o)}
+                onOpenAccount={handleOpenAccount}
+                onOpenAdmin={handleOpenAdmin}
+                onMenuOpen={handleMenuOpen}
+                taskCount={dashboardCounts.taskCount}
+                overdueCount={dashboardCounts.overdueCount}
+              />
+            </div>
+            <Dashboard tasks={tasks} projects={projects} members={members} onlineIds={onlineIds} stats={stats} userId={userId} />
+          </>
         ) : (
           <>
             {error && <p className="px-6 py-2 text-sm" style={{ color: 'var(--danger)' }}>Error: {error}</p>}
