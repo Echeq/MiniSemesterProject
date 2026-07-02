@@ -1,32 +1,69 @@
-# Frontend setup
+# Frontend Setup
 
-## First time
+## Prerequisites
+
+- Node.js >= 18
+- A Supabase project (local or remote)
+
+## Step 1: Install dependencies
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env   # then fill in Supabase credentials
-npm run dev             # http://localhost:5173
 ```
 
-## Environment variables
+## Step 2: Configure environment variables
 
-Create `frontend/.env`:
-
-```env
-VITE_SUPABASE_URL=https://<project>.supabase.co
-VITE_SUPABASE_ANON_KEY=<publishable-key>
-VITE_TEST_USER_EMAIL=test@example.com
-VITE_TEST_USER_PASSWORD=your-password
+```bash
+cp .env.example .env
 ```
+
+Edit `frontend/.env` with your Supabase project credentials:
+
+```ini
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
+```
+
+### How to find your Supabase credentials
+
+1. Go to the **Supabase Dashboard** → [database.new](https://database.new) (create a project if needed)
+2. In your project, click **Settings** (gear icon) in the left sidebar
+3. Click **API** in the menu
+4. Copy these two values:
+
+   | Variable | Where to find it |
+   |---|---|
+   | `VITE_SUPABASE_URL` | "Project URL" — e.g. `https://abc...supabase.co` |
+   | `VITE_SUPABASE_ANON_KEY` | "Project API keys" → **anon public** key (starts with `sb_publishable_` or `eyJ`) |
+
+   > [!IMPORTANT]
+   > Use the **anon / publishable** key, NOT the `service_role` key.
+   > The anon key is safe for client-side use. The `service_role` key bypasses RLS and must stay secret.
+
+## Step 3: Start the dev server
+
+```bash
+npm run dev
+```
+
+Open **http://localhost:5173** in your browser.
+
+> [!TIP]
+> If you see a "Supabase not configured" page, your `.env` file is missing or incomplete.
+> Make sure both `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set.
 
 ## Available commands
 
 | Command | Action |
 |---|---|
-| `npm run dev` | Start Vite dev server (port 5173, LAN via `host: true`) |
-| `npm test` | Run Vitest (89 tests, excludes api.test.js) |
-| `npm run test:watch` | Vitest watch mode |
-| `npm run build` | Production build |
-| `npx vitest run --reporter=verbose` | All tests with names |
-| `npx vitest run tests/api.test.js` | API integration tests (excluded from default) |
+| `npm run dev` | Start Vite dev server (port 5173, LAN accessible) |
+| `npm test` | Run Vitest unit tests (excludes API tests) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run build` | Create production build |
+| `npm run preview` | Preview the production build |
+| `npx vitest run tests/api.test.js` | Run API integration tests |
+
+---
+
+**[⬆ Back to Top](#) | [📂 Documentation Index](../INDEX.md)**

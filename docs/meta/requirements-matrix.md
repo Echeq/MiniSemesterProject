@@ -235,3 +235,7 @@
 | `ProfileSettings.jsx` | Unused — replaced by `ProfileModal.jsx` |
 | `useIsMobile.js` (hook) | Unused — never imported in any source file |
 | `socket.io-client` in package.json | Unused — realtime uses Supabase Realtime |
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

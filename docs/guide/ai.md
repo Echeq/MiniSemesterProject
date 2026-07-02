@@ -43,3 +43,7 @@ $ opencode
 @ai-commit
 ✅ Commit created: feat: add Kanban column component
 ```
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

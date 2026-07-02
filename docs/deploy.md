@@ -2,6 +2,10 @@
 
 ## Overview
 
+> [!NOTE]
+> This guide covers deployment to a new Supabase project and hosting the frontend on Vercel or Netlify.
+> The database source of truth is in `supabase/migrations/` (29 migration files).
+
 TaskFlow is a **React SPA** backed entirely by **Supabase** — no custom server. Deploying to a new Supabase project means:
 
 1. Create a new Supabase project
@@ -81,7 +85,7 @@ supabase login
 # Link to your new project
 supabase link --project-ref <project-ref>
 
-# Apply all 10 migrations (tables, RLS, triggers, RPCs, storage)
+# Apply all 29 migrations (tables, RLS, triggers, RPCs, storage)
 supabase db push
 ```
 
@@ -135,7 +139,7 @@ Open [http://localhost:5173](http://localhost:5173). The first user to sign up b
 ## 6. Verify
 
 ```bash
-npm test                      # 82 unit tests
+npm test                      # 116 unit tests
 npx vitest run tests/api.test.js  # API integration tests
 ```
 
@@ -404,3 +408,7 @@ No `VITE_TEST_USER_*` needed on production hosts.
 | `docs/api.md` | Auth, CRUD, Realtime, RPCs |
 | `supabase/README.md` | Per-table schema reference |
 | `AGENTS.md` | Developer commands and conventions |
+---
+
+**[? Back to Top](#) | [?? Documentation Index](INDEX.md)**
+

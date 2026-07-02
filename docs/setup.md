@@ -18,15 +18,25 @@ npm install
 
 ---
 
-## 2. Configure environment
+## 2. Get Supabase credentials
 
-Copy the template and fill in your credentials:
+Create a free project at [database.new](https://database.new). Once it's ready, go to **Settings → API** and copy:
+
+| Variable | Where to find it |
+|---|---|
+| `VITE_SUPABASE_URL` | "Project URL" field |
+| `VITE_SUPABASE_ANON_KEY` | "Project API keys" → **anon public** key |
+
+> [!IMPORTANT]
+> Use the **anon / publishable** key. The `service_role` key bypasses Row-Level Security and must never be exposed client-side.
+
+## 3. Configure environment
 
 ```bash
-cp .env.example .env
+cp frontend/.env.example frontend/.env
 ```
 
-Edit `frontend/.env`:
+Edit `frontend/.env` and paste the Supabase values:
 
 ```env
 VITE_SUPABASE_URL=https://<project>.supabase.co
@@ -143,3 +153,7 @@ npx vitest run tests/api.test.js
 | Phone can't connect | Ensure same WiFi; disable VPN; check firewall |
 | `npm install` fails | Use Node.js 20+ and npm 10+ |
 | MCP auth fails | Run `opencode mcp debug supabase` to diagnose |
+---
+
+**[? Back to Top](#) | [?? Documentation Index](INDEX.md)**
+

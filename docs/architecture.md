@@ -1,5 +1,9 @@
 # Architecture
 
+> [!NOTE]
+> PivotPoint uses a **JAMstack architecture** with React on the frontend and Supabase as the full backend.
+> There is **no custom server** — the backend is entirely Supabase (Auth, PostgREST, Realtime, Storage).
+
 ## Overview
 
 TaskFlow is a single-page Kanban application. The frontend is a **React 19** SPA that communicates directly with **Supabase** — there is no custom server. Supabase provides authentication, a PostgreSQL database with Row-Level Security, realtime WebSocket broadcasts, and presence tracking.
@@ -196,3 +200,7 @@ The project was originally built with **Vue 3 + NestJS**. After migration to Rea
 | `frontend/src/assets/` | Empty directory — Vue 3 remnant |
 
 The **`backend/prisma/schema.prisma`** is NOT the active schema — `supabase/migrations/` is the source of truth.
+---
+
+**[? Back to Top](#) | [?? Documentation Index](INDEX.md)**
+

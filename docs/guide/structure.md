@@ -105,3 +105,7 @@ PivotPoint/
 | Path | Why |
 |---|---|
 | `backend/` | Orphaned NestJS scaffold — only dist/, generated/, node_modules/, .env remain |
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

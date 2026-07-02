@@ -29,3 +29,7 @@ Generates skill documentation pages from `.agents/skills/`, updates them increme
 ---
 
 **[⬆ Back to Top](#)** | **[📂 Skill Index](/docs/README.md)**
+---
+
+**[? Back to Top](#) | [?? Skill Index](../README.md)**
+

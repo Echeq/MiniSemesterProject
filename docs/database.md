@@ -268,3 +268,7 @@ Fires after project insert. Automatically adds the creator (`created_by`) as a `
 ## Trigger: `handle_updated_at()`
 
 Sets `new.updated_at = now()` on every task UPDATE.
+---
+
+**[? Back to Top](#) | [?? Documentation Index](INDEX.md)**
+

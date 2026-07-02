@@ -28,3 +28,7 @@ Supports auto-classification, manual flags, adaptive planning, memory system, hy
 ---
 
 **[⬆ Back to Top](#)** | **[📂 Skill Index](/docs/README.md)**
+---
+
+**[? Back to Top](#) | [?? Skill Index](../README.md)**
+

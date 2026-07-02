@@ -1,4 +1,13 @@
-# Skill Index
+# Documentation Index
+
+This is the PivotPoint documentation root.
+
+> The main documentation index with all sections is at **[INDEX.md](INDEX.md)**.
+> The skill index for AI agents is below.
+
+---
+
+## Skill Index
 
 | Skill | Description | Trigger |
 |---|---|---|
@@ -11,4 +20,4 @@
 
 ---
 
-**[⬆ Back to Top](#)**
+**[⬆ Back to Top](#)** | **[📂 Full Documentation Index](INDEX.md)**

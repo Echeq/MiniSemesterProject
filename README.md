@@ -24,15 +24,46 @@
 
 ## Quick Start
 
+### 1. Install
+
 ```bash
 cd frontend
 npm install
-# Create frontend/.env with Supabase credentials
-cp .env.example .env    # or create manually
+```
+
+### 2. Get Supabase credentials
+
+Create a free project at [database.new](https://database.new) (takes ~2 min). Then go to **Settings → API** and copy:
+
+- **Project URL** → `VITE_SUPABASE_URL`
+- **anon public key** → `VITE_SUPABASE_ANON_KEY` (starts with `sb_publishable_`)
+
+### 3. Configure .env
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and paste the two values:
+
+```ini
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_your_key_here
+```
+
+> [!IMPORTANT]  
+> Use the **anon/publishable** key, NOT the `service_role` key. The service role bypasses database security and must stay secret.
+
+### 4. Run
+
+```bash
 npm run dev
 ```
 
-> **Prerequisites:** Node.js 20+, Supabase project (free tier works).
+Open **http://localhost:5173** — the first user to sign up becomes admin.
+
+> [!TIP]  
+> If you see "Supabase not configured", your `.env` file is missing or has invalid credentials.
 
 [Full setup guide →](docs/setup.md)
 

@@ -253,6 +253,18 @@ await supabase.rpc('admin_set_role', { target_user: userId, new_role: 'admin' })
 
 // Delete own account
 await supabase.rpc('delete_own_account')
+
+// Notify all admin users (any authenticated user can call)
+await supabase.rpc('notify_admins', { p_message: 'User exported 15 tasks as Excel' })
+
+// Get system configuration (site_name, default_language, default_theme)
+const { data: config } = await supabase.rpc('get_system_config')
+
+// Set a system configuration key-value (admin only via RLS)
+await supabase.rpc('set_system_config', { p_key: 'site_name', p_value: '"PivotPoint"' })
+
+// Delete a system configuration key
+await supabase.rpc('delete_system_config', { p_key: 'site_name' })
 ```
 
 ---
@@ -367,3 +379,7 @@ A Thunder Client collection is available at `docs/reference/thunder-collection_T
 ## Legacy NestJS Backend
 
 The `backend/` directory contains an empty NestJS scaffold. It has no controllers, services, or gateways. The Prisma schema (`backend/prisma/schema.prisma`) is **not** the active schema — `supabase/migrations/` is the source of truth. Do not modify `backend/`.
+---
+
+**[? Back to Top](#) | [?? Documentation Index](INDEX.md)**
+

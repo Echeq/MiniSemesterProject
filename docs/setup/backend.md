@@ -5,3 +5,7 @@ The `backend/` directory contains an **empty NestJS scaffold** that is no longer
 The current backend is **pure Supabase** — see [Supabase setup](supabase.md).
 
 Do not modify `backend/`. See `AGENTS.md` for the list of dead directories.
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

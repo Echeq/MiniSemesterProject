@@ -28,3 +28,7 @@ Scans source files for common issues across security, performance, maintainabili
 ---
 
 **[⬆ Back to Top](#)** | **[📂 Skill Index](/docs/README.md)**
+---
+
+**[? Back to Top](#) | [?? Skill Index](../README.md)**
+

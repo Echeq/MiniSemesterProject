@@ -9,3 +9,7 @@ npm run dev
 ```
 
 Available commands: see the [frontend setup](frontend.md).
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

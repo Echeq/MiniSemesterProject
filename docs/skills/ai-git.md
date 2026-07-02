@@ -27,3 +27,7 @@ Modular Git workflow automation. Each sub-command loads its own instruction file
 ---
 
 **[⬆ Back to Top](#)** | **[📂 Skill Index](/docs/README.md)**
+---
+
+**[? Back to Top](#) | [?? Skill Index](../README.md)**
+

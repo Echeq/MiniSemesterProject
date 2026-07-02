@@ -48,3 +48,7 @@ Use the local credentials from `supabase start` output.
 ## Security
 
 The anon key is safe on the client because **Row Level Security** is enforced on all tables. All queries run as the signed-in user.
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

@@ -138,3 +138,7 @@ npm run dev          # http://localhost:5173
 **Storage:** public `avatars` bucket (`{userId}/{file}`)
 
 **See [Database](database.md) for full schema, RLS details, and migration history.**
+---
+
+**[? Back to Top](#) | [?? Documentation Index](../INDEX.md)**
+

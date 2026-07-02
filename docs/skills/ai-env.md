@@ -28,3 +28,7 @@ Scans source code for environment variable usage, maintains `.env.example` in sy
 ---
 
 **[⬆ Back to Top](#)** | **[📂 Skill Index](/docs/README.md)**
+---
+
+**[? Back to Top](#) | [?? Skill Index](../README.md)**
+
