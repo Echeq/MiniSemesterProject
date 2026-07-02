@@ -248,7 +248,8 @@
     "revoke": "Revoke",
     "demote": "Demote",
     "promote": "Promote",
-    "allActions": "All actions"
+    "allActions": "All actions",
+    "settings": "System Settings"
   },
   "export": {
     "button": "Export",

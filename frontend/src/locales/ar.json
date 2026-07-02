@@ -250,7 +250,8 @@
     "revoke": "إلغاء",
     "demote": "تخفيض الرتبة",
     "promote": "ترقية",
-    "allActions": "جميع الإجراءات"
+    "allActions": "جميع الإجراءات",
+    "settings": "إعدادات النظام"
   },
   "export": {
     "button": "تصدير",

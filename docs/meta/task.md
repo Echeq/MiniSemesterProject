@@ -505,7 +505,7 @@ Admin-only features for system management.
 - [x] Add Log viewer tab (filter by action, date) — LogViewer.jsx in AdminModal
 - [x] Add Export Backup button (download all data as JSON via export_all_data RPC) — BackupPanel.jsx in AdminModal
 - [x] Add Restore from Backup (upload JSON via restore_from_backup RPC) — RestorePanel.jsx in AdminModal
-- [ ] Add System Settings page (configurable options)
+- [x] Add System Settings page (configurable options)
 
 ### Acceptance Criteria
 - [x] Only Admins can access admin panel

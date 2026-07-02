@@ -248,7 +248,8 @@
     "revoke": "Revocar",
     "demote": "Degradar",
     "promote": "Promover",
-    "allActions": "Todas las acciones"
+    "allActions": "Todas las acciones",
+    "settings": "Configuración del sistema"
   },
   "export": {
     "button": "Exportar",

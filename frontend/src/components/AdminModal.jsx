@@ -5,6 +5,7 @@ import Avatar from './Avatar'
 import { useMembers } from '../hooks/useMembers'
 import LogViewer from './LogViewer'
 import { supabase } from '../api/supabaseClient'
+import { useSystemConfig } from '../hooks/useSystemConfig'
 
 function Spinner() {
   return (
@@ -54,12 +55,14 @@ export default function AdminModal({ session, onClose }) {
         </TabButton>
         <TabButton active={tab === 'emailChanges'} onClick={() => setTab('emailChanges')}>Email Changes</TabButton>
         <TabButton active={tab === 'data'} onClick={() => setTab('data')}>Data</TabButton>
+        <TabButton active={tab === 'settings'} onClick={() => setTab('settings')}>{t('admin.settings') || 'Settings'}</TabButton>
         <TabButton active={tab === 'logs'} onClick={() => setTab('logs')}>{t('admin.logs') || 'Logs'}</TabButton>
       </div>
       {tab === 'members' && <Members session={session} />}
       {tab === 'access' && <Access onApproved={(name) => setMsg(`✅ ${name} has been accepted, now a member.`)} onRequestResolved={() => setPendingCount((c) => Math.max(0, c - 1))} />}
       {tab === 'emailChanges' && <EmailChanges />}
       {tab === 'data' && <DataPanel />}
+      {tab === 'settings' && <SystemSettings />}
       {tab === 'logs' && <LogViewer />}
     </Modal>
   )
@@ -550,6 +553,98 @@ function DataPanel() {
           </p>
         )}
         {restoreError && <p className="mt-2 text-xs" style={{ color: 'var(--danger)' }}>{restoreError}</p>}
+      </div>
+    </div>
+  )
+}
+
+function SystemSettings() {
+  const { t } = useTranslation()
+  const { config, loading, error, setConfigValue } = useSystemConfig()
+  const [local, setLocal] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (config) setLocal({ ...config })
+  }, [config])
+
+  async function handleSave() {
+    setBusy(true)
+    setSaved(false)
+    try {
+      for (const [key, value] of Object.entries(local)) {
+        if (config[key] !== value) {
+          await setConfigValue(key, value)
+        }
+      }
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      // error shown via useSystemConfig hook
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (loading) {
+    return <p className="py-8 text-center text-sm text-[var(--fg-muted)]">{t('admin.loading') || 'Loading…'}</p>
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {error && (
+        <p className="rounded-md border px-3 py-2 text-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'var(--danger-soft)' }}>
+          {error}
+        </p>
+      )}
+
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Site Name</span>
+        <input
+          type="text"
+          value={local.site_name || ''}
+          onChange={(e) => setLocal((p) => ({ ...p, site_name: e.target.value }))}
+          maxLength={100}
+          className="input"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Default Language</span>
+        <select
+          value={local.default_language || 'en'}
+          onChange={(e) => setLocal((p) => ({ ...p, default_language: e.target.value }))}
+          className="input"
+        >
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ar">العربية</option>
+        </select>
+      </label>
+
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium text-[var(--fg)]">Default Theme</span>
+        <select
+          value={local.default_theme || 'light'}
+          onChange={(e) => setLocal((p) => ({ ...p, default_theme: e.target.value }))}
+          className="input"
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+
+      <div className="flex items-center justify-between pt-2">
+        {saved && (
+          <span className="text-sm font-medium" style={{ color: 'var(--done)' }}>Settings saved</span>
+        )}
+        {!saved && <span />}
+        <button type="button" onClick={handleSave} disabled={busy} className="btn btn-primary">
+          {busy ? t('profile.saving') || 'Saving…' : t('project.save') || 'Save'}
+        </button>
       </div>
     </div>
   )

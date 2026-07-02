@@ -250,7 +250,8 @@
     "revoke": "撤销",
     "demote": "降级",
     "promote": "升级",
-    "allActions": "所有操作"
+    "allActions": "所有操作",
+    "settings": "系统设置"
   },
   "export": {
     "button": "导出",

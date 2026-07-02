@@ -254,7 +254,8 @@
     "revoke": "Cabut",
     "demote": "Turunkan",
     "promote": "Promosikan",
-    "allActions": "Semua tindakan"
+    "allActions": "Semua tindakan",
+    "settings": "Pengaturan sistem"
   },
   "export": {
     "button": "Ekspor",
