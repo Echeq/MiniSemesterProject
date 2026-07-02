@@ -82,7 +82,9 @@
     "incompleteTasks": "{{count}} incomplete task � resolve dependencies first.",
     "incompleteTasks_plural": "{{count}} incomplete tasks � resolve dependencies first.",
     "deleteConfirmTitle": "Hapus tugas ini?",
-    "deleteConfirmMessage": "Tindakan ini tidak dapat dibatalkan."
+    "deleteConfirmMessage": "Tindakan ini tidak dapat dibatalkan.",
+    "bulkSelected": "{{count}} dipilih",
+    "bulkDeleteConfirm": "Hapus {{count}} tugas?"
   },
   "profile": {
     "title": "Pengaturan Profil",
@@ -259,7 +261,8 @@
     "excel": "Ekspor Excel",
     "pdf": "Ekspor PDF",
     "csv": "Ekspor CSV",
-    "pdfTitle": "Ekspor tugas"
+    "pdfTitle": "Ekspor tugas",
+    "columns": "Kolom"
   },
   "label": {
     "manageTitle": "Kelola label",

@@ -2,7 +2,7 @@ import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ThemeToggle from './ThemeToggle'
 import ProfileMenu from './ProfileMenu'
-import ExportMenu from './ExportMenu'
+import ExportModal from './ExportModal'
 import NotificationBell from './NotificationBell'
 import ProjectMenu from './ProjectMenu'
 import ProjectInfoModal from './ProjectInfoModal'
@@ -60,6 +60,7 @@ const Topbar = memo(function Topbar({
   const { t } = useTranslation()
   const [showMenu, setShowMenu] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
+  const [showExport, setShowExport] = useState(false)
 
   return (
     <>
@@ -151,9 +152,16 @@ const Topbar = memo(function Topbar({
         )}
 
         {tasks.length > 0 && (
-          <div className="hidden sm:block">
-            <ExportMenu tasks={tasks} onOpen={onMenuOpen} />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowExport(true)}
+            className="btn btn-default !px-2 hidden sm:inline-flex"
+            title={t('export.button')}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Zm10 0H4v1.5h8Zm0 3H4v1.5h8Zm-8 3h8v1.5H4Z" />
+            </svg>
+          </button>
         )}
 
 
@@ -198,6 +206,9 @@ const Topbar = memo(function Topbar({
     </header>
     {showInfo && project && !isAdmin && (
       <ProjectInfoModal project={project} onClose={() => setShowInfo(false)} />
+    )}
+    {showExport && (
+      <ExportModal tasks={tasks} session={session} onClose={() => setShowExport(false)} />
     )}
     </>
   )

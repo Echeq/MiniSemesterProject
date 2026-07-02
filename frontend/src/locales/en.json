@@ -82,7 +82,9 @@
     "incompleteTasks": "{{count}} incomplete task — resolve dependencies first.",
     "incompleteTasks_plural": "{{count}} incomplete tasks — resolve dependencies first.",
     "deleteConfirmTitle": "Delete this task?",
-    "deleteConfirmMessage": "This action cannot be undone."
+    "deleteConfirmMessage": "This action cannot be undone.",
+    "bulkSelected": "{{count}} selected",
+    "bulkDeleteConfirm": "Delete {{count}} tasks?"
   },
   "profile": {
     "title": "Profile Settings",
@@ -253,7 +255,8 @@
     "excel": "Export Excel",
     "pdf": "Export PDF",
     "csv": "Export CSV",
-    "pdfTitle": "Task Export"
+    "pdfTitle": "Task Export",
+    "columns": "Columns"
   },
   "label": {
     "manageTitle": "Manage labels",

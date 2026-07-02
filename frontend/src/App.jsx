@@ -381,6 +381,7 @@ function BoardPage({ session, theme, toggleTheme }) {
                       tasks={filteredViewTasks}
                       allViewTasks={viewTasks}
                       updateTask={updateTask}
+                      onDeleteTask={deleteTask}
                       isAdmin={isAdmin}
                       onTaskClick={handleTaskClick}
                       onAddTask={isAdmin ? (status) => setModal({ defaultStatus: status }) : null}

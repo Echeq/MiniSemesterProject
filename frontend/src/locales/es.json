@@ -82,7 +82,9 @@
     "incompleteTasks": "{{count}} tarea incompleta — resuelve las dependencias primero.",
     "incompleteTasks_plural": "{{count}} tareas incompletas — resuelve las dependencias primero.",
     "deleteConfirmTitle": "¿Eliminar esta tarea?",
-    "deleteConfirmMessage": "Esta acción no se puede deshacer."
+    "deleteConfirmMessage": "Esta acción no se puede deshacer.",
+    "bulkSelected": "{{count}} seleccionados",
+    "bulkDeleteConfirm": "¿Eliminar {{count}} tareas?"
   },
   "profile": {
     "title": "Configuración de perfil",
@@ -253,7 +255,8 @@
     "excel": "Exportar Excel",
     "pdf": "Exportar PDF",
     "csv": "Exportar CSV",
-    "pdfTitle": "Exportar tareas"
+    "pdfTitle": "Exportar tareas",
+    "columns": "Columnas"
   },
   "label": {
     "manageTitle": "Gestionar etiquetas",
@@ -381,6 +384,3 @@
     "toggleTheme": "Alternar tema"
   }
 }
-
-
-

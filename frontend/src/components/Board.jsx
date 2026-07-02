@@ -23,6 +23,7 @@ export default function Board({
   tasks,
   allViewTasks,
   updateTask,
+  onDeleteTask,
   isAdmin = false,
   onTaskClick,
   onAddTask,
@@ -161,7 +162,7 @@ export default function Board({
   }
 
   if (activeView === 'list') {
-    return <ListView tasks={tasks} onTaskClick={onTaskClick} members={members} labels={labels} />
+    return <ListView tasks={tasks} onTaskClick={onTaskClick} members={members} labels={labels} updateTask={updateTask} onDeleteTask={onDeleteTask} />
   }
 
   return (

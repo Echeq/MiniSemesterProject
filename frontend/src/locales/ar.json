@@ -82,7 +82,9 @@
     "incompleteTasks": "{{count}} مهمة غير مكتملة — قم بحل التبعيات أولاً.",
     "incompleteTasks_plural": "{{count}} مهام غير مكتملة — قم بحل التبعيات أولاً.",
     "deleteConfirmTitle": "حذف هذه المهمة؟",
-    "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء."
+    "deleteConfirmMessage": "لا يمكن التراجع عن هذا الإجراء.",
+    "bulkSelected": "تم تحديد {{count}}",
+    "bulkDeleteConfirm": "حذف {{count}} مهمة؟"
   },
   "profile": {
     "title": "إعدادات الملف الشخصي",
@@ -255,7 +257,8 @@
     "excel": "تصدير Excel",
     "pdf": "تصدير PDF",
     "csv": "تصدير CSV",
-    "pdfTitle": "تصدير المهام"
+    "pdfTitle": "تصدير المهام",
+    "columns": "الأعمدة"
   },
   "label": {
     "manageTitle": "إدارة التسميات",

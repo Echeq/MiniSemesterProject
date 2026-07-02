@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Avatar from './Avatar'
 
@@ -20,7 +20,7 @@ function SortIcon({ active, dir }) {
   return <span className="ml-1">{dir === 'asc' ? '↑' : '↓'}</span>
 }
 
-export default function ListView({ tasks, onTaskClick, members = [], labels = [] }) {
+export default function ListView({ tasks, onTaskClick, members = [], labels = [], updateTask, onDeleteTask }) {
   const { t } = useTranslation()
 
   const STATUS_LABEL = { todo: t('board.todo'), doing: t('board.inProgress'), done: t('board.done') }
@@ -37,9 +37,14 @@ export default function ListView({ tasks, onTaskClick, members = [], labels = []
   const [fDueFrom, setFDueFrom] = useState(prefs.fDueFrom || '')
   const [fDueTo, setFDueTo] = useState(prefs.fDueTo || '')
 
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState(/** @type {Set<string>} */ (new Set()))
+
   useEffect(() => {
     savePrefs({ sortCol: sort.col, sortDir: sort.dir, compact, fStatus, fPriority, fAssignee, fLabel, fDueFrom, fDueTo })
   }, [sort, compact, fStatus, fPriority, fAssignee, fLabel, fDueFrom, fDueTo])
+
+  useEffect(() => { setSelectedIds(new Set()) }, [fStatus, fPriority, fAssignee, fLabel, fDueFrom, fDueTo])
 
   function toggleSort(col) {
     setSort((prev) => prev.col === col ? { col, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { col, dir: 'asc' })
@@ -76,6 +81,53 @@ export default function ListView({ tasks, onTaskClick, members = [], labels = []
     })
     return result
   }, [tasks, sort, fStatus, fPriority, fAssignee, fLabel, fDueFrom, fDueTo])
+
+  const displayedIds = useMemo(() => new Set(displayed.map((t) => t.id)), [displayed])
+  const allSelected = displayed.length > 0 && displayed.every((t) => selectedIds.has(t.id))
+  const someSelected = displayed.some((t) => selectedIds.has(t.id))
+  const selectedCount = displayed.filter((t) => selectedIds.has(t.id)).length
+
+  function toggleSelect(id) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        for (const id of displayedIds) next.delete(id)
+        return next
+      })
+    } else {
+      setSelectedIds((prev) => { const n = new Set(prev); for (const id of displayedIds) n.add(id); return n })
+    }
+  }
+
+  function clearSelection() { setSelectedIds(new Set()) }
+
+  const handleBulkStatus = useCallback(async (status) => {
+    const ids = displayed.filter((t) => selectedIds.has(t.id)).map((t) => t.id)
+    for (const id of ids) { await updateTask(id, { status }).catch(() => {}) }
+    clearSelection()
+  }, [displayed, selectedIds, updateTask])
+
+  const handleBulkPriority = useCallback(async (priority) => {
+    const ids = displayed.filter((t) => selectedIds.has(t.id)).map((t) => t.id)
+    for (const id of ids) { await updateTask(id, { priority: priority || null }).catch(() => {}) }
+    clearSelection()
+  }, [displayed, selectedIds, updateTask])
+
+  const handleBulkDelete = useCallback(() => {
+    const ids = displayed.filter((t) => selectedIds.has(t.id)).map((t) => t.id)
+    if (!window.confirm(t('task.bulkDeleteConfirm', { count: ids.length }))) return
+    ids.forEach((id) => onDeleteTask?.(id)?.catch(() => {}))
+    clearSelection()
+  }, [displayed, selectedIds, onDeleteTask, t])
 
   const th = 'cursor-pointer select-none py-2 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--fg-muted)] hover:text-[var(--fg)] transition whitespace-nowrap'
 
@@ -115,6 +167,43 @@ export default function ListView({ tasks, onTaskClick, members = [], labels = []
         )}
         <span className="ml-auto text-xs text-[var(--fg-subtle)]">{t('filter.taskCount', { count: displayed.length })}</span>
       </div>
+
+      {/* Selection toolbar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-3 border-b border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] px-4 py-2 sm:px-6 text-sm">
+          <span className="text-xs font-medium text-[var(--accent)]">{t('task.bulkSelected', { count: selectedCount })}</span>
+          <span className="h-4 w-px bg-[var(--border)]" />
+          <select
+            onChange={(e) => { const s = e.target.value; if (s) handleBulkStatus(s) }}
+            className="input !py-1 !text-xs"
+            defaultValue=""
+          >
+            <option value="">{t('task.status')}…</option>
+            <option value="todo">{t('board.todo')}</option>
+            <option value="doing">{t('board.inProgress')}</option>
+            <option value="done">{t('board.done')}</option>
+          </select>
+          <select
+            onChange={(e) => { const p = e.target.value; if (p !== '') handleBulkPriority(p) }}
+            className="input !py-1 !text-xs"
+            defaultValue=""
+          >
+            <option value="">{t('task.priority')}…</option>
+            <option value="P0">P0 {t('filter.p0')}</option>
+            <option value="P1">P1 {t('filter.p1')}</option>
+            <option value="P2">P2 {t('filter.p2')}</option>
+            <option value="P3">P3 {t('filter.p3')}</option>
+          </select>
+          {onDeleteTask && (
+            <button type="button" onClick={handleBulkDelete} className="btn btn-danger !py-1 !text-xs">
+              {t('task.delete')}
+            </button>
+          )}
+          <button type="button" onClick={clearSelection} className="ml-auto text-xs text-[var(--fg-muted)] hover:text-[var(--fg)] transition">
+            {t('task.cancel')}
+          </button>
+        </div>
+      )}
 
       {/* Filter panel */}
       {showFilters && (
@@ -183,6 +272,15 @@ export default function ListView({ tasks, onTaskClick, members = [], labels = []
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--border-muted)]">
+              <th className="w-8 py-2 pl-2 pr-0">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected }}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+                />
+              </th>
               <th className={th} onClick={() => toggleSort('title')}>{t('task.title')} <SortIcon active={sort.col === 'title'} dir={sort.dir} /></th>
               <th className={th} onClick={() => toggleSort('status')}>{t('task.status')} <SortIcon active={sort.col === 'status'} dir={sort.dir} /></th>
               <th className={th} onClick={() => toggleSort('priority')}>{t('task.priority')} <SortIcon active={sort.col === 'priority'} dir={sort.dir} /></th>
@@ -193,14 +291,24 @@ export default function ListView({ tasks, onTaskClick, members = [], labels = []
           </thead>
           <tbody>
             {displayed.length === 0 && (
-              <tr><td colSpan={compact ? 5 : 6} className="py-12 text-center text-sm text-[var(--fg-muted)]">{t('filter.noMatch')}</td></tr>
+              <tr><td colSpan={compact ? 6 : 7} className="py-12 text-center text-sm text-[var(--fg-muted)]">{t('filter.noMatch')}</td></tr>
             )}
             {displayed.map((task) => {
               const isOverdue = task.due_date && task.status !== 'done' && task.due_date < new Date().toISOString().slice(0, 10)
+              const selected = selectedIds.has(task.id)
               return (
-                <tr key={task.id} onClick={() => onTaskClick?.(task)}
+                <tr key={task.id}
+                  onClick={() => onTaskClick?.(task)}
                   className="cursor-pointer border-b border-[var(--border-muted)] transition hover:bg-[var(--surface-hover)]"
                 >
+                  <td className={`w-8 py-2.5 pl-2 pr-0 ${compact ? 'py-1.5' : 'py-2.5'}`} onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => toggleSelect(task.id)}
+                      className="h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+                    />
+                  </td>
                   <td className={`pr-3 font-medium ${compact ? 'py-1.5' : 'py-2.5'}`}>{task.title}</td>
                   <td className={`pr-3 ${compact ? 'py-1.5' : 'py-2.5'}`}>
                     <span className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"

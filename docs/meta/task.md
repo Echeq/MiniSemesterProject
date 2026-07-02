@@ -310,15 +310,15 @@ Implement Gantt chart for timeline view of tasks.
 - [x] Create GanttView component
 - [x] Map tasks to Gantt tasks (start date, end date, progress)
 - [x] Add zoom controls (Quarter Day, Half Day, Day, Week, Month)
-- [ ] Show dependency lines
+- [x] Show dependency lines
 - [x] Allow drag to adjust dates (update API)
-- [ ] Allow drag to adjust dependencies
+- [x] Allow drag to adjust dependencies
 - [x] Export Gantt as PNG
 
 ### Acceptance Criteria
 - [x] Users can switch to Gantt view (via Topbar view switcher)
 - [x] Tasks appear as bars on timeline
-- [ ] Dependencies shown as arrows
+- [x] Dependencies shown as arrows
 - [x] Dragging task bar updates due date
 - [x] Zoom in/out works
 - [x] Export to PNG works
@@ -347,7 +347,7 @@ Create 3D sphere visualization using Three.js to show project progress.
 - [x] Create particle system (particles = tasks)
 - [x] Map task completion to sphere color (red→green)
 - [x] Add rotation animation
-- [ ] Map in-progress tasks to flowing particles
+- [x] Map in-progress tasks to flowing particles
 - [x] Map overdue tasks to pulsing effect
 - [x] Add mouse interaction (drag to rotate, zoom)
 - [x] Add hover tooltip with task details
@@ -366,7 +366,7 @@ Create 3D sphere visualization using Three.js to show project progress.
 - [x] Color changes based on completion %
 - [x] Hover shows task details
 - [x] Works on modern browsers (WebGL)
-- [ ] Doesn't kill performance (<200 tasks)
+- [x] Doesn't kill performance (<200 tasks)
 
 ### Dependencies
 - Issue #4 (Task CRUD)
@@ -400,7 +400,7 @@ Create a table/list view with advanced filtering and sorting.
 - [x] Filters work together (AND logic via client-side filtering)
 - [x] Sorting works on any column (click header asc/desc)
 - [x] Filter preferences persist after page reload
-- [ ] Bulk edit possible (checkboxes)
+- [x] Bulk edit possible (checkboxes)
 
 ### Dependencies
 - Issue #4 (Task CRUD)
@@ -465,16 +465,16 @@ Allow users to export task data to Excel and PDF.
 - [x] Create ExportMenu dropdown (PDF / CSV)
 - [x] Export current filtered view to PDF (jsPDF table with columns: title, status, priority, assignee, due_date)
 - [x] Export current filtered view to CSV (downloadable .csv file)
-- [ ] Add option to select columns to export
-- [ ] Format dates and priorities correctly in exports
+- [x] Add option to select columns to export
+- [x] Format dates and priorities correctly in exports
 
 ### Acceptance Criteria
 - [x] Click Export → CSV downloads .csv file
 - [x] Click Export → PDF downloads .pdf file
 - [x] PDF is readable and formatted well
 - [x] Exports use current filtered view
-- [ ] CSV column selection (choose which columns to include)
-- [ ] Date formatting in exports
+- [x] CSV column selection (choose which columns to include)
+- [x] Date formatting in exports
 
 ### Dependencies
 - Issue #4 (Task CRUD)
